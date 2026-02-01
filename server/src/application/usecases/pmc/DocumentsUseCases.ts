@@ -4,10 +4,16 @@ import { Request, Response } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import { createUploader } from '../../../interfaces/http/middlewares/upload'
 import { env } from '../../../infrastructure/config/env'
-import type { ApplicantDocumentRepository, DistrictPlasticCommitteeDocumentRepository, DistrictRepository } from '../../../domain/repositories/pmc'
+import type {
+  ApplicantDocumentRepository,
+  ApplicantRepository,
+  DistrictPlasticCommitteeDocumentRepository,
+  DistrictRepository,
+} from '../../../domain/repositories/pmc'
 import type { UserRepository } from '../../../domain/repositories/accounts'
 import {
   applicantDocumentRepositoryMongo,
+  applicantRepositoryMongo,
   districtPlasticCommitteeDocumentRepositoryMongo,
   districtRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
@@ -17,6 +23,7 @@ type AuthRequest = Request & { user?: any; file?: Express.Multer.File }
 
 type DocumentsDeps = {
   applicantDocRepo: ApplicantDocumentRepository
+  applicantRepo: ApplicantRepository
   districtDocRepo: DistrictPlasticCommitteeDocumentRepository
   districtRepo: DistrictRepository
   userRepo: UserRepository
@@ -24,6 +31,7 @@ type DocumentsDeps = {
 
 const defaultDeps: DocumentsDeps = {
   applicantDocRepo: applicantDocumentRepositoryMongo,
+  applicantRepo: applicantRepositoryMongo,
   districtDocRepo: districtPlasticCommitteeDocumentRepositoryMongo,
   districtRepo: districtRepositoryMongo,
   userRepo: userRepositoryMongo,
@@ -140,6 +148,55 @@ export const listDistrictDocuments = asyncHandler(async (_req: Request, res: Res
     document: toDocumentUrl((doc as any).documentPath),
   }))
   return res.json(data)
+})
+
+export const downloadLatestApplicantDocument = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?._id
+  if (!userId) {
+    return res.status(401).json({ message: 'Authentication required' })
+  }
+
+  const documentDescription = String(req.query.document_description || '')
+  if (!documentDescription) {
+    return res.status(400).json({ error: 'Document description parameter is required.' })
+  }
+
+  let applicant =
+    (await defaultDeps.applicantRepo.findOne({ createdBy: userId })) ||
+    (await defaultDeps.applicantRepo.findOne({ created_by: userId } as any))
+
+  if (!applicant && req.user?.djangoId) {
+    applicant = await defaultDeps.applicantRepo.findOne({ created_by: req.user.djangoId } as any)
+  }
+
+  if (!applicant) {
+    return res.status(404).json({ error: 'Applicant not found for the logged-in user.' })
+  }
+
+  const document = await defaultDeps.applicantDocRepo.findLatestByApplicantAndDescription(
+    (applicant as any).numericId,
+    documentDescription
+  )
+
+  if (!document || !(document as any).documentPath) {
+    return res.status(404).json({
+      error: `No document found with description '${documentDescription}'.`,
+    })
+  }
+
+  const relativePath = String((document as any).documentPath).replace(/^\/+/, '')
+  const normalizedPath = relativePath.startsWith('media/')
+    ? relativePath.replace(/^media\//, '')
+    : relativePath
+  const filePath = path.join(env.uploadDir, normalizedPath)
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ message: 'File not found' })
+  }
+
+  const filename = path.basename(filePath)
+  res.setHeader('Content-Disposition', `attachment; filename=${filename}`)
+  return res.sendFile(path.resolve(filePath))
 })
 
 export const downloadMedia = asyncHandler(async (req: Request, res: Response) => {

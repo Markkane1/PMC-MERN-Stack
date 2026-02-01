@@ -1,5 +1,6 @@
 import { Response, Request } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
+import { logAccess } from '../../services/common/LogService'
 import type { AuthRequest } from '../../../interfaces/http/middlewares/auth'
 import {
   applicantRepositoryMongo,
@@ -109,6 +110,15 @@ export const listApplicants = asyncHandler(async (req: AuthRequest, res: Respons
   const { filter } = await filterByUserGroups(req)
   const applicants = await defaultDeps.applicantRepo.list(filter)
   const data = await Promise.all(applicants.map((a) => assembleApplicantDetail(a)))
+  await logAccess({
+    userId: req.user?._id ? String(req.user._id) : undefined,
+    username: req.user?.username,
+    modelName: 'ApplicantDetail',
+    objectId: 'LIST',
+    method: req.method,
+    ipAddress: req.ip,
+    endpoint: req.originalUrl,
+  })
   res.json(data)
 })
 
@@ -116,6 +126,15 @@ export const getApplicant = asyncHandler(async (req: AuthRequest, res: Response)
   const applicant = await defaultDeps.applicantRepo.findByNumericId(Number(req.params.id))
   if (!applicant) return res.status(404).json({ message: 'Not found' })
   const data = await assembleApplicantDetail(applicant)
+  await logAccess({
+    userId: req.user?._id ? String(req.user._id) : undefined,
+    username: req.user?.username,
+    modelName: 'ApplicantDetail',
+    objectId: String(req.params.id),
+    method: req.method,
+    ipAddress: req.ip,
+    endpoint: req.originalUrl,
+  })
   return res.json(data)
 })
 
@@ -203,12 +222,30 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
     const filter = clauses.length ? { $and: clauses } : {}
     const applicants = await defaultDeps.applicantRepo.list(filter)
     const data = await Promise.all(applicants.map((a) => assembleApplicantDetail(a)))
+    await logAccess({
+      userId: req.user?._id ? String(req.user._id) : undefined,
+      username: req.user?.username,
+      modelName: 'ApplicantDetail',
+      objectId: 'LIST_MAIN',
+      method: req.method,
+      ipAddress: req.ip,
+      endpoint: req.originalUrl,
+    })
     return res.json(data)
   }
 
   const { filter } = await filterByUserGroups(req)
   const applicants = await defaultDeps.applicantRepo.list(filter)
   const data = await Promise.all(applicants.map((a) => assembleApplicantDetail(a)))
+  await logAccess({
+    userId: req.user?._id ? String(req.user._id) : undefined,
+    username: req.user?.username,
+    modelName: 'ApplicantDetail',
+    objectId: 'LIST_MAIN_DO',
+    method: req.method,
+    ipAddress: req.ip,
+    endpoint: req.originalUrl,
+  })
   return res.json(data)
 })
 
@@ -242,6 +279,15 @@ export const listApplicantsMainDO = asyncHandler(async (req: AuthRequest, res: R
 
   const applicants = await defaultDeps.applicantRepo.list({ $and: clauses })
   const data = await Promise.all(applicants.map((a) => assembleApplicantDetail(a)))
+  await logAccess({
+    userId: req.user?._id ? String(req.user._id) : undefined,
+    username: req.user?.username,
+    modelName: 'ApplicantDetail',
+    objectId: 'LIST_MAIN_DO',
+    method: req.method,
+    ipAddress: req.ip,
+    endpoint: req.originalUrl,
+  })
   return res.json(data)
 })
 
@@ -262,3 +308,4 @@ function mapApplicantPayload(body: any) {
     assignedGroup: body.assigned_group ?? body.assignedGroup,
   }
 }
+

@@ -26,6 +26,11 @@ const navigationIcon: NavigationIcons = {
     FaUserShield: <TablerIcon name="shield" />,
     HiOutlineDocumentText: <TablerIcon name="file-text" />,
     MdSecurity: <TablerIcon name="shield-lock" />,
+    MdReceiptLong: <TablerIcon name="receipt" />,
+    MdHistory: <TablerIcon name="history" />,
+    MdListAlt: <TablerIcon name="list" />,
+    MdSettings: <TablerIcon name="settings" />,
+    MdVpnKey: <TablerIcon name="key" />,
 }
 
 export default navigationIcon

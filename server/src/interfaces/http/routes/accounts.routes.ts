@@ -1,4 +1,4 @@
-﻿import { Router } from 'express'
+import { Router } from 'express'
 import {
   register,
   login,
@@ -29,6 +29,13 @@ import {
   deleteSuperadmin,
   getRoleDashboardConfig,
   updateRoleDashboardConfig,
+  listApiLogs,
+  listAuditLogs,
+  listAccessLogs,
+  listServiceConfigurations,
+  createServiceConfiguration,
+  updateServiceConfiguration,
+  listExternalTokens,
 } from '../controllers/accounts/AdminController'
 import { authenticate, requireGroup } from '../middlewares/auth'
 
@@ -65,3 +72,12 @@ accountsRouter.get('/admin/superadmins/', authenticate, requireGroup(['Super']),
 accountsRouter.post('/admin/superadmins/', authenticate, requireGroup(['Super']), createSuperadmin)
 accountsRouter.patch('/admin/superadmins/:id/', authenticate, requireGroup(['Super']), updateSuperadmin)
 accountsRouter.delete('/admin/superadmins/:id/', authenticate, requireGroup(['Super']), deleteSuperadmin)
+
+// Admin Logs & Config
+accountsRouter.get('/admin/api-logs/', authenticate, requireGroup(['Admin', 'Super']), listApiLogs)
+accountsRouter.get('/admin/audit-logs/', authenticate, requireGroup(['Admin', 'Super']), listAuditLogs)
+accountsRouter.get('/admin/access-logs/', authenticate, requireGroup(['Admin', 'Super']), listAccessLogs)
+accountsRouter.get('/admin/service-configs/', authenticate, requireGroup(['Admin', 'Super']), listServiceConfigurations)
+accountsRouter.post('/admin/service-configs/', authenticate, requireGroup(['Admin', 'Super']), createServiceConfiguration)
+accountsRouter.patch('/admin/service-configs/:id/', authenticate, requireGroup(['Admin', 'Super']), updateServiceConfiguration)
+accountsRouter.get('/admin/external-tokens/', authenticate, requireGroup(['Admin', 'Super']), listExternalTokens)

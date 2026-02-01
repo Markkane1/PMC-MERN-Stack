@@ -489,6 +489,19 @@ export const applicantDocumentRepositoryMongo: ApplicantDocumentRepository = {
     const created = await ApplicantDocumentModel.create(payload)
     return mapApplicantDocument(created.toObject())
   },
+  async findLatestByApplicantAndDescription(applicantId: number, description: string) {
+    const doc = await ApplicantDocumentModel.findOne({ applicantId, documentDescription: description })
+      .sort({ createdAt: -1 })
+      .lean()
+    if (doc) return mapApplicantDocument(doc)
+    const legacy = await ApplicantDocumentModel.findOne({
+      applicant_id: String(applicantId),
+      document_description: description,
+    })
+      .sort({ created_at: -1 })
+      .lean()
+    return legacy ? mapApplicantDocument(legacy) : null
+  },
 }
 
 export const applicantFieldResponseRepositoryMongo: ApplicantFieldResponseRepository = {
@@ -557,6 +570,17 @@ export const psidTrackingRepositoryMongo: PSIDTrackingRepository = {
     const legacy = await PSIDTrackingModel.findOne({ consumer_number: consumerNumber }).lean()
     return legacy ? mapPSIDTracking(legacy) : null
   },
+  async findByConsumerAndDept(consumerNumber: string, deptTransactionId: string) {
+    const doc = await PSIDTrackingModel.findOne({ consumerNumber, deptTransactionId }).sort({ createdAt: -1 }).lean()
+    if (doc) return mapPSIDTracking(doc)
+    const legacy = await PSIDTrackingModel.findOne({
+      consumer_number: consumerNumber,
+      dept_transaction_id: deptTransactionId,
+    })
+      .sort({ created_at: -1 })
+      .lean()
+    return legacy ? mapPSIDTracking(legacy) : null
+  },
   async countByApplicantId(applicantId: number) {
     return PSIDTrackingModel.countDocuments({ applicantId })
   },
@@ -573,6 +597,10 @@ export const psidTrackingRepositoryMongo: PSIDTrackingRepository = {
   async create(payload: Record<string, unknown>) {
     const created = await PSIDTrackingModel.create(payload)
     return mapPSIDTracking(created.toObject())
+  },
+  async updateById(id: string, updates: Record<string, unknown>) {
+    const doc = await PSIDTrackingModel.findByIdAndUpdate(id, updates, { new: true }).lean()
+    return doc ? mapPSIDTracking(doc) : null
   },
 }
 

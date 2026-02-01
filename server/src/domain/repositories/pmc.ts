@@ -81,6 +81,7 @@ export interface ApplicantDocumentRepository {
   listByApplicantId(applicantId: number): Promise<ApplicantDocument[]>
   list(): Promise<ApplicantDocument[]>
   create(payload: Record<string, unknown>): Promise<ApplicantDocument>
+  findLatestByApplicantAndDescription(applicantId: number, description: string): Promise<ApplicantDocument | null>
 }
 
 export interface ApplicantFieldResponseRepository {
@@ -103,10 +104,12 @@ export interface ApplicantFeeRepository {
 export interface PSIDTrackingRepository {
   listPaidByApplicantId(applicantId: number): Promise<PSIDTracking[]>
   findByConsumerNumber(consumerNumber: string): Promise<PSIDTracking | null>
+  findByConsumerAndDept(consumerNumber: string, deptTransactionId: string): Promise<PSIDTracking | null>
   countByApplicantId(applicantId: number): Promise<number>
   findLatestByApplicantId(applicantId: number): Promise<PSIDTracking | null>
   list(): Promise<PSIDTracking[]>
   create(payload: Record<string, unknown>): Promise<PSIDTracking>
+  updateById(id: string, updates: Record<string, unknown>): Promise<PSIDTracking | null>
 }
 
 export interface ProducerRepository {

@@ -12,6 +12,9 @@ import type { SyntheticEvent } from 'react'
 import { Autocomplete, TextField, Chip, Hidden, List } from '@mui/material'
 import Group from '@/components/ui/Checkbox/Group'
 import useFormStore from '../../../store/supid/supidStore'
+import AxiosBase from '@/services/axios/AxiosBase'
+import Button from '@/components/ui/Button'
+import TablerIcon from '@/components/shared/TablerIcon'
 
 type BusinessDetailSectionProps = FormSectionBaseProps & {
     readOnly?: boolean // Add this prop
@@ -159,6 +162,33 @@ const LicenseDetailProducerSection = ({
     console.log('has_identity_document')
     console.log('has_identity_document', applicantDetail.has_identity_document)
 
+    const downloadLatestDocument = async (description: string) => {
+        try {
+            const response = await AxiosBase.get(
+                `/pmc/download_latest_document/?document_description=${encodeURIComponent(
+                    description,
+                )}`,
+                { responseType: 'blob' },
+            )
+            const blobUrl = window.URL.createObjectURL(new Blob([response.data]))
+            const link = document.createElement('a')
+            link.href = blobUrl
+            link.setAttribute(
+                'download',
+                `${description.replace(/\s+/g, '_')}.pdf`,
+            )
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+        } catch (error) {
+            console.error(
+                'Failed to download latest document:',
+                error?.response || error?.message || error,
+            )
+            alert('Unable to download the latest document.')
+        }
+    }
+
     return (
         <Card>
             <h4 className="mb-6">Document</h4>
@@ -215,7 +245,35 @@ const LicenseDetailProducerSection = ({
 
             <div>
                 {applicantDetail.has_identity_document && (
-                    <label>Identity Document is already Uploaded!</label>
+                    <div className="flex flex-col gap-2">
+                        <label>Identity Document is already Uploaded!</label>
+                        <div className="flex flex-wrap gap-2">
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="solid"
+                                icon={<TablerIcon name="download" />}
+                                onClick={() =>
+                                    downloadLatestDocument('Identity Document')
+                                }
+                            >
+                                Download Latest Identity Document
+                            </Button>
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="solid"
+                                icon={<TablerIcon name="download" />}
+                                onClick={() =>
+                                    downloadLatestDocument(
+                                        'Identity Document - 2',
+                                    )
+                                }
+                            >
+                                Download Latest Identity Document (Back Side)
+                            </Button>
+                        </div>
+                    </div>
                 )}
             </div>
         </Card>
