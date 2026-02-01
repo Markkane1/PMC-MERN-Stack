@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		--neutral: #ffffff;
+		--primary: #0085db;
+		--primary-deep: #006aaf;
+		--primary-mild: #46caeb;
+		--primary-subtle: #e5f3fb;
+		--error: #fb977d;
+		--error-subtle: #ffede9;
+		--success: #4bd08b;
+		--success-subtle: #dffef3;
+		--info: #0085db;
+		--info-subtle: #e5f3fb;
+		--warning: #f8c076;
+		--warning-subtle: #fff6ea;
+		--gray-50: #f0f5f9;
+		--gray-100: #e6ecf1;
+		--gray-200: #e7ecf0;
+		--gray-300: #c4c9cc;
+		--gray-400: #707a82;
+		--gray-500: #111c2d;
+		--gray-600: #c4c9cc;
+		--gray-700: #5f686f;
+		--gray-800: #e2e4e6;
+		--gray-900: #111c2d;
+		--gray-950: #0b1626;
+	}
+
+	.dark {
+		--neutral: #ffffff;
+		--primary: #0085db;
+		--primary-deep: #006aaf;
+		--primary-mild: #46caeb;
+		--primary-subtle: #e5f3fb;
+		--error: #fb977d;
+		--error-subtle: #ffede9; 
+		--success: #4bd08b;
+		--success-subtle: #dffef3;
+		--info: #0085db;
+		--info-subtle: #e5f3fb;
+		--warning: #f8c076;
+		--warning-subtle: #fff6ea;
+		--gray-50: #f0f5f9;
+		--gray-100: #e6ecf1;
+		--gray-200: #e7ecf0;
+		--gray-300: #c4c9cc;
+		--gray-400: #707a82;
+		--gray-500: #111c2d;
+		--gray-600: #c4c9cc;
+		--gray-700: #5f686f;
+		--gray-800: #e2e4e6;
+		--gray-900: #111c2d;
+		--gray-950: #0b1626;
+	}
+
+
+	body {
+		@apply text-gray-500 dark:text-gray-400 text-sm bg-gray-100 dark:bg-gray-950 leading-normal font-medium;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	h1,
+	.h1 {
+		@apply text-4xl font-bold text-gray-900 dark:text-gray-100;
+	}
+
+	h2,
+	.h2 {
+		@apply text-3xl font-bold text-gray-900 dark:text-gray-100;
+	}
+
+	h3,
+	.h3 {
+		@apply text-2xl font-bold text-gray-900 dark:text-gray-100;
+	}
+
+	h4,
+	.h4 {
+		@apply text-xl font-bold text-gray-900 dark:text-gray-100;
+	}
+
+	h5,
+	.h5 {
+		@apply text-lg font-bold text-gray-900 dark:text-gray-100;
+	}
+
+	h6,
+	.h6 {
+		@apply text-base font-semibold text-gray-900 dark:text-gray-100;
+	}
+
+	hr {
+		@apply border-gray-200 dark:border-gray-600;
+	}
+
+	.heading-text {
+		@apply text-gray-900 dark:text-gray-100;
+	}
+}
