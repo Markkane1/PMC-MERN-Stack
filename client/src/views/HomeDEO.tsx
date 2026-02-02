@@ -140,6 +140,11 @@ const Home = () => {
     const [selectedTile, setSelectedTile] = useState(null) // State for the selected tile
     const [loading, setLoading] = useState(false)
     const [feeStats, setFeeStats] = useState([]) // Store fetched data
+    const [rowCount, setRowCount] = useState(0)
+    const [pagination, setPagination] = useState({
+        pageIndex: 0,
+        pageSize: 25,
+    })
 
     // APPLICANT > LSO > LSM > DO > LSM2 > TL > DEO > Download License
 
@@ -325,6 +330,8 @@ const Home = () => {
                         {
                             params: {
                                 assigned_group: 'LSO',
+                                page: pagination.pageIndex + 1,
+                                page_size: pagination.pageSize,
                             },
                         },
                     )
@@ -332,6 +339,15 @@ const Home = () => {
                         (item) =>
                             item.submittedapplication?.id % 3 === moduloValue,
                     )
+                    const totalHeader =
+                        response.headers?.['x-total-count'] ||
+                        response.headers?.['X-Total-Count']
+                    const total = totalHeader
+                        ? Number(totalHeader)
+                        : Array.isArray(filteredData)
+                          ? filteredData.length
+                          : 0
+                    setRowCount(Number.isFinite(total) ? total : 0)
                     // Update the table data
                     const extracted = extractColumns(filteredData)
                     setFlattenedData(extracted.flattenedData)
@@ -351,10 +367,21 @@ const Home = () => {
                                     group === 'Challan-Downloaded'
                                         ? 'Fee Challan'
                                         : undefined,
+                                page: pagination.pageIndex + 1,
+                                page_size: pagination.pageSize,
                             },
                         },
                     )
                     const filteredData = response.data || []
+                    const totalHeader =
+                        response.headers?.['x-total-count'] ||
+                        response.headers?.['X-Total-Count']
+                    const total = totalHeader
+                        ? Number(totalHeader)
+                        : Array.isArray(filteredData)
+                          ? filteredData.length
+                          : 0
+                    setRowCount(Number.isFinite(total) ? total : 0)
 
                     // Update the table data
                     const extracted = extractColumns(filteredData)
@@ -369,8 +396,14 @@ const Home = () => {
                 setLoading(false) // Hide the loading spinner
             }
         },
-        [extractColumns],
+        [extractColumns, pagination.pageIndex, pagination.pageSize],
     )
+
+    useEffect(() => {
+        if (selectedTile) {
+            handleTileClick(selectedTile)
+        }
+    }, [pagination.pageIndex, pagination.pageSize])
 
     const navigate = useNavigate()
 
@@ -613,6 +646,10 @@ const Home = () => {
                     enableTopToolbar={true} // Disables the top-right controls entirely
                     // enableGlobalFilter={false} // Disables the global search/filter box
                     enablePagination={true} // Optionally disable pagination controls
+                    manualPagination
+                    rowCount={rowCount}
+                    onPaginationChange={setPagination}
+                    state={{ pagination, isLoading: loading }}
                     // enableSorting={false} // Optionally disable column sorting
                 />
             )}

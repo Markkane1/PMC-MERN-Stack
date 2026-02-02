@@ -444,8 +444,14 @@ async function getOrRefreshToken(config: ServiceConfig) {
   const content = response.data?.content?.[0]
   const tokenInfo = content?.token || {}
   const accessToken = tokenInfo.accessToken || ''
-  const expiryMs = content?.expiryDate
-  const expiresAt = expiryMs ? new Date(Number(expiryMs)) : new Date(Date.now() + 3600 * 1000)
+  const expiryRaw =
+    content?.expiryDate ??
+    content?.expiry_date ??
+    content?.expiresAt ??
+    content?.expires_at ??
+    null
+  const parsedExpiry = parseExpiryValue(expiryRaw)
+  const expiresAt = parsedExpiry || new Date(Date.now() + 3600 * 1000)
 
   const created = await ExternalServiceTokenModel.create({
     serviceName: config.serviceName,
@@ -454,6 +460,29 @@ async function getOrRefreshToken(config: ServiceConfig) {
   })
 
   return created.accessToken
+}
+
+function parseExpiryValue(raw: any): Date | null {
+  if (!raw) return null
+  if (raw instanceof Date && !Number.isNaN(raw.getTime())) return raw
+  if (typeof raw === 'number' && Number.isFinite(raw)) {
+    const ms = raw < 1e12 ? raw * 1000 : raw
+    const d = new Date(ms)
+    return Number.isNaN(d.getTime()) ? null : d
+  }
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim()
+    if (!trimmed) return null
+    const asNum = Number(trimmed)
+    if (Number.isFinite(asNum)) {
+      const ms = asNum < 1e12 ? asNum * 1000 : asNum
+      const d = new Date(ms)
+      return Number.isNaN(d.getTime()) ? null : d
+    }
+    const d = new Date(trimmed)
+    return Number.isNaN(d.getTime()) ? null : d
+  }
+  return null
 }
 
 async function postJson(url: string, payload: Record<string, unknown>, headers: Record<string, string> = {}) {

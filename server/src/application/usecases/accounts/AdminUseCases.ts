@@ -950,5 +950,23 @@ export const listExternalTokens = asyncHandler(async (req: AuthRequest, res: Res
   const filter: Record<string, any> = {}
   if (query.service) filter.serviceName = String(query.service)
   const items = await ExternalServiceTokenModel.find(filter).sort({ createdAt: -1 }).limit(200).lean()
-  return res.json(items)
+  const normalized = items.map((item: any) => {
+    const createdAt = item.createdAt ? new Date(item.createdAt) : null
+    let expiresAt = item.expiresAt ? new Date(item.expiresAt) : null
+    if (expiresAt && Number.isNaN(expiresAt.getTime())) {
+      expiresAt = null
+    }
+    if (createdAt && expiresAt && expiresAt.getTime() < createdAt.getTime()) {
+      expiresAt = new Date(createdAt.getTime() + 60 * 60 * 1000)
+    }
+    return {
+      id: item._id,
+      legacyId: item.legacyId,
+      serviceName: item.serviceName,
+      accessToken: item.accessToken,
+      expiresAt: expiresAt ? expiresAt.toISOString() : null,
+      createdAt: createdAt ? createdAt.toISOString() : null,
+    }
+  })
+  return res.json(normalized)
 })

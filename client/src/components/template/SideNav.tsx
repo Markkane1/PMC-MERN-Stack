@@ -78,7 +78,7 @@ const SideNav = ({
                 }
                 hoverTimeoutRef.current = window.setTimeout(() => {
                     setIsHovered(false)
-                }, 250)
+                }, 650)
             }}
         >
             {/* Logo */}

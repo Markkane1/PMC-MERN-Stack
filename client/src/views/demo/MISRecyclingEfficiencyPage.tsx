@@ -11,7 +11,7 @@ import MISDirectory from '@/views/demo/MISRecyclingEfficiency' // Adjust the pat
  */
 const MISDirectoryPage = () => {
     const headerText = (
-        <h6 className="header-text">
+        <h6>
             <span className="font-bold">Management Information System</span>
             <span className="text-sm ml-2">Recycling Efficiency</span>
         </h6>

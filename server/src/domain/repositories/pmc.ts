@@ -20,6 +20,10 @@ export interface ApplicantRepository {
   findOne(filter: Record<string, unknown>): Promise<ApplicantDetail | null>
   findOneWithCreator(filter: Record<string, unknown>): Promise<any | null>
   list(filter?: Record<string, unknown>): Promise<ApplicantDetail[]>
+  listPaged(
+    filter?: Record<string, unknown>,
+    options?: { page?: number; limit?: number; sort?: Record<string, 1 | -1> }
+  ): Promise<ApplicantDetail[]>
   create(applicant: Partial<ApplicantDetail>): Promise<ApplicantDetail>
   updateByNumericId(numericId: number, updates: Partial<ApplicantDetail>): Promise<ApplicantDetail | null>
   updateOne(filter: Record<string, unknown>, updates: Record<string, unknown>): Promise<void>

@@ -309,8 +309,12 @@ export const applicantLocationPublic = asyncHandler(async (_req: Request, res: R
 })
 
 export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: Response) => {
+  const excludedStatuses = ['Created', 'Fee Challan']
   const applicants = await defaultDeps.applicantRepo.list({
-    applicationStatus: { $nin: ['Created', 'Fee Challan'] },
+    $and: [
+      { $or: [{ applicationStatus: { $nin: excludedStatuses } }, { applicationStatus: { $exists: false } }] },
+      { $or: [{ application_status: { $nin: excludedStatuses } }, { application_status: { $exists: false } }] },
+    ],
   })
 
   const profiles = await defaultDeps.businessProfileRepo.listByApplicantIds(applicants.map((a: any) => (a as any).numericId))
@@ -321,7 +325,7 @@ export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: R
   for (const applicant of applicants) {
     const profile = profiles.find((p: any) => (p as any).applicantId === (applicant as any).numericId)
     const districtName = (profile?.districtId ? districtMap.get(profile.districtId) : null) || 'Unknown'
-    const regFor = (applicant as any).registrationFor || 'Unknown'
+    const regFor = (applicant as any).registrationFor || (applicant as any).registration_for || 'Unknown'
     districtData[districtName] ||= {}
     districtData[districtName][regFor] = (districtData[districtName][regFor] || 0) + 1
   }
@@ -335,38 +339,43 @@ export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: R
   )
 
   const registrationStats: Record<string, any> = {}
-  for (const applicant of await defaultDeps.applicantRepo.list({ registrationFor: { $ne: null } })) {
-    const key = (applicant as any).registrationFor || 'Unknown'
+  const registrationApplicants = await defaultDeps.applicantRepo.list({
+    $or: [{ registrationFor: { $ne: null } }, { registration_for: { $ne: null } }],
+  })
+  for (const applicant of registrationApplicants) {
+    const key = (applicant as any).registrationFor || (applicant as any).registration_for || 'Unknown'
     if (!registrationStats[key]) {
       registrationStats[key] = { registration_for: key, Applications: 0, DO: 0, PMC: 0, APPLICANT: 0, Licenses: 0 }
     }
 
-    const isExcluded = ['Created', 'Fee Challan'].includes((applicant as any).applicationStatus || '')
+    const appStatus = (applicant as any).applicationStatus || (applicant as any).application_status || ''
+    const assignedGroup = (applicant as any).assignedGroup || (applicant as any).assigned_group
+    const isExcluded = excludedStatuses.includes(appStatus || '')
     if (!isExcluded) registrationStats[key].Applications += 1
 
     if (
-      !['Created', 'Completed', 'Rejected', 'Fee Challan'].includes((applicant as any).applicationStatus || '') &&
-      (applicant as any).assignedGroup === 'DO'
+      !['Created', 'Completed', 'Rejected', 'Fee Challan'].includes(appStatus || '') &&
+      assignedGroup === 'DO'
     ) {
       registrationStats[key].DO += 1
     }
 
     if (
-      !['Created', 'Completed', 'Rejected', 'Fee Challan'].includes((applicant as any).applicationStatus || '') &&
-      (applicant as any).assignedGroup !== 'DO' &&
-      (applicant as any).assignedGroup !== 'APPLICANT'
+      !['Created', 'Completed', 'Rejected', 'Fee Challan'].includes(appStatus || '') &&
+      assignedGroup !== 'DO' &&
+      assignedGroup !== 'APPLICANT'
     ) {
       registrationStats[key].PMC += 1
     }
 
     if (
-      !['Created', 'Completed', 'Rejected', 'Fee Challan'].includes((applicant as any).applicationStatus || '') &&
-      (applicant as any).assignedGroup === 'APPLICANT'
+      !['Created', 'Completed', 'Rejected', 'Fee Challan'].includes(appStatus || '') &&
+      assignedGroup === 'APPLICANT'
     ) {
       registrationStats[key].APPLICANT += 1
     }
 
-    if ((applicant as any).applicationStatus === 'Completed') {
+    if (appStatus === 'Completed') {
       registrationStats[key].Licenses += 1
     }
   }
@@ -395,10 +404,10 @@ export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: R
       last_name: (a as any).lastName,
       cnic: (a as any).cnic,
       mobile_no: (a as any).mobileNo,
-      application_status: (a as any).applicationStatus,
-      tracking_number: (a as any).trackingNumber,
-      assigned_group: (a as any).assignedGroup,
-      registration_for: (a as any).registrationFor,
+      application_status: (a as any).applicationStatus || (a as any).application_status,
+      tracking_number: (a as any).trackingNumber || (a as any).tracking_number,
+      assigned_group: (a as any).assignedGroup || (a as any).assigned_group,
+      registration_for: (a as any).registrationFor || (a as any).registration_for,
       businessprofile__district__district_name: districtName,
     }
   })
@@ -415,6 +424,22 @@ export const misApplicantStatistics = applicantStatistics
 export const districtPlasticStats = asyncHandler(async (_req: Request, res: Response) => {
   const districts = await defaultDeps.districtRepo.list()
 
+  const readNumber = (value: any) => {
+    if (value === null || value === undefined || value === '') return 0
+    const num = typeof value === 'number' ? value : parseFloat(String(value))
+    return Number.isFinite(num) ? num : 0
+  }
+
+  const readFromKeys = (obj: any, keys: string[]) => {
+    if (!obj) return 0
+    for (const key of keys) {
+      if (obj[key] !== undefined && obj[key] !== null && obj[key] !== '') {
+        return readNumber(obj[key])
+      }
+    }
+    return 0
+  }
+
   const result = []
   for (const district of districts) {
     const profiles = await defaultDeps.businessProfileRepo.listByDistrictId((district as any).districtId)
@@ -425,21 +450,88 @@ export const districtPlasticStats = asyncHandler(async (_req: Request, res: Resp
     const collectors = await defaultDeps.collectorRepo.listByApplicantIds(applicantIds)
     const recyclers = await defaultDeps.recyclerRepo.listByApplicantIds(applicantIds)
 
-    const produced = producers.reduce((sum: number, p: any) => sum + ((p as any).totalCapacityValue || 0), 0)
-    const distributed = consumers.reduce((sum: number, c: any) => sum + (parseFloat((c as any).consumption || '0') || 0), 0)
-    const collected = collectors.reduce((sum: number, c: any) => sum + ((c as any).totalCapacityValue || 0), 0)
+    const produced = producers.reduce(
+      (sum: number, p: any) =>
+        sum +
+        readFromKeys(p, [
+          'totalCapacityValue',
+          'total_capacity_value',
+          'total_capacity',
+          'averageProductionCapacity',
+          'average_production_capacity',
+          'production_capacity',
+          'avg_production_capacity',
+        ]),
+      0
+    )
+    const distributed = consumers.reduce(
+      (sum: number, c: any) =>
+        sum +
+        readFromKeys(c, [
+          'consumption',
+          'averageSale',
+          'average_sale',
+          'average_sale_per_day',
+          'avg_sale',
+          'avg_sale_per_day',
+        ]),
+      0
+    )
+    const collected = collectors.reduce(
+      (sum: number, c: any) =>
+        sum +
+        readFromKeys(c, [
+          'totalCapacityValue',
+          'total_capacity_value',
+          'total_capacity',
+          'averageCollection',
+          'average_collection',
+          'avg_collection',
+        ]),
+      0
+    )
 
     const wasteCollected = recyclers.reduce((sum: number, r: any) => {
-      const items = Array.isArray((r as any).selectedCategories) ? (r as any).selectedCategories : []
+      const items = Array.isArray((r as any).selectedCategories)
+        ? (r as any).selectedCategories
+        : Array.isArray((r as any).selected_categories)
+            ? (r as any).selected_categories
+            : []
       return (
-        sum + items.reduce((s: number, item: any) => s + (parseFloat(item?.wasteCollection || 0) || 0), 0)
+        sum +
+        items.reduce(
+          (s: number, item: any) =>
+            s +
+            readFromKeys(item, [
+              'wasteCollection',
+              'waste_collection',
+              'wasteCollected',
+              'waste_collected',
+            ]),
+          0
+        )
       )
     }, 0)
 
     const wasteDisposed = recyclers.reduce((sum: number, r: any) => {
-      const items = Array.isArray((r as any).selectedCategories) ? (r as any).selectedCategories : []
+      const items = Array.isArray((r as any).selectedCategories)
+        ? (r as any).selectedCategories
+        : Array.isArray((r as any).selected_categories)
+            ? (r as any).selected_categories
+            : []
       return (
-        sum + items.reduce((s: number, item: any) => s + (parseFloat(item?.wasteDisposal || 0) || 0), 0)
+        sum +
+        items.reduce(
+          (s: number, item: any) =>
+            s +
+            readFromKeys(item, [
+              'wasteDisposal',
+              'waste_disposal',
+              'wasteDisposed',
+              'waste_disposed',
+            ]),
+          0
+        )
       )
     }, 0)
 

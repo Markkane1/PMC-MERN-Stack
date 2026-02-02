@@ -31,12 +31,11 @@ const HeaderTemplate = ({ headerText = <></>, children }) => {
                         <span className="header-text">PMIS</span>
                     </div>
                 </Link>
-                {headerText}
+                {headerText && <div className="header-subtext">{headerText}</div>}
                 <nav className="banner-nav">
                     <Link
                         to="/sign-in"
                         className="nav-link transition-all duration-300 ease-in-out transform hover:scale-105"
-                        style={{ paddingLeft: 300 }}
                     >
                         Login
                     </Link>

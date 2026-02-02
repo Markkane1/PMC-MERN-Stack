@@ -108,8 +108,12 @@ async function filterByUserGroups(req: AuthRequest) {
 
 export const listApplicants = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { filter } = await filterByUserGroups(req)
-  const applicants = await defaultDeps.applicantRepo.list(filter)
+  const page = Number(req.query.page || 1)
+  const limit = Number(req.query.page_size || req.query.limit || 200)
+  const applicants = await defaultDeps.applicantRepo.listPaged(filter, { page, limit, sort: { createdAt: -1 } })
   const data = await Promise.all(applicants.map((a) => assembleApplicantDetail(a)))
+  const totalCount = await defaultDeps.applicantRepo.count(filter)
+  res.setHeader('X-Total-Count', String(totalCount))
   await logAccess({
     userId: req.user?._id ? String(req.user._id) : undefined,
     username: req.user?.username,
@@ -220,8 +224,12 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
     }
 
     const filter = clauses.length ? { $and: clauses } : {}
-    const applicants = await defaultDeps.applicantRepo.list(filter)
+    const page = Number(req.query.page || 1)
+    const limit = Number(req.query.page_size || req.query.limit || 200)
+    const applicants = await defaultDeps.applicantRepo.listPaged(filter, { page, limit, sort: { createdAt: -1 } })
     const data = await Promise.all(applicants.map((a) => assembleApplicantDetail(a)))
+    const totalCount = await defaultDeps.applicantRepo.count(filter)
+    res.setHeader('X-Total-Count', String(totalCount))
     await logAccess({
       userId: req.user?._id ? String(req.user._id) : undefined,
       username: req.user?.username,
@@ -235,8 +243,12 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
   }
 
   const { filter } = await filterByUserGroups(req)
-  const applicants = await defaultDeps.applicantRepo.list(filter)
+  const page = Number(req.query.page || 1)
+  const limit = Number(req.query.page_size || req.query.limit || 200)
+  const applicants = await defaultDeps.applicantRepo.listPaged(filter, { page, limit, sort: { createdAt: -1 } })
   const data = await Promise.all(applicants.map((a) => assembleApplicantDetail(a)))
+  const totalCount = await defaultDeps.applicantRepo.count(filter)
+  res.setHeader('X-Total-Count', String(totalCount))
   await logAccess({
     userId: req.user?._id ? String(req.user._id) : undefined,
     username: req.user?.username,
@@ -277,8 +289,12 @@ export const listApplicantsMainDO = asyncHandler(async (req: AuthRequest, res: R
     clauses.push(legacyApplicationStatusFilter(req.query.application_status as string))
   }
 
-  const applicants = await defaultDeps.applicantRepo.list({ $and: clauses })
+  const page = Number(req.query.page || 1)
+  const limit = Number(req.query.page_size || req.query.limit || 200)
+  const applicants = await defaultDeps.applicantRepo.listPaged({ $and: clauses }, { page, limit, sort: { createdAt: -1 } })
   const data = await Promise.all(applicants.map((a) => assembleApplicantDetail(a)))
+  const totalCount = await defaultDeps.applicantRepo.count({ $and: clauses })
+  res.setHeader('X-Total-Count', String(totalCount))
   await logAccess({
     userId: req.user?._id ? String(req.user._id) : undefined,
     username: req.user?.username,

@@ -1,6 +1,6 @@
-import { ApiLogModel } from '../../infrastructure/database/models/common/ApiLog'
-import { AuditLogModel } from '../../infrastructure/database/models/common/AuditLog'
-import { AccessLogModel } from '../../infrastructure/database/models/common/AccessLog'
+import { ApiLogModel } from '../../../infrastructure/database/models/common/ApiLog'
+import { AuditLogModel } from '../../../infrastructure/database/models/common/AuditLog'
+import { AccessLogModel } from '../../../infrastructure/database/models/common/AccessLog'
 
 export async function logApiCall(params: {
   serviceName: string

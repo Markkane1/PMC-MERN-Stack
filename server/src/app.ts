@@ -10,7 +10,13 @@ import { apiRouter } from './interfaces/http/routes'
 export function createApp() {
   const app = express()
 
-  app.use(cors({ origin: env.corsOrigin, credentials: true }))
+  app.use(
+    cors({
+      origin: env.corsOrigin,
+      credentials: true,
+      exposedHeaders: ['X-Total-Count'],
+    })
+  )
   app.use(helmet())
   app.use(compression())
   app.use(express.json({ limit: '50mb' }))

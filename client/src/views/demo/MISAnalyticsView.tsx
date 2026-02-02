@@ -180,39 +180,49 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                 }
 
                 // Map registration_statistics into tilesData
+                const readNumber = (value: any) => {
+                    const num = typeof value === 'number' ? value : parseFloat(String(value))
+                    return Number.isFinite(num) ? num : 0
+                }
+                const readStat = (stat: any, key: string) =>
+                    stat?.[key] ?? stat?.[key.toLowerCase()] ?? stat?.[key.replace(/_/g, '').toLowerCase()]
+
                 const dynamicTiles = respons.data.registration_statistics.map(
-                    (stat: any) => ({
-                        title: stat.registration_for,
-                        data: [
-                            {
-                                value: stat.Applications,
-                                label: 'Applications',
-                                title: 'Applications',
-                            },
-                            {
-                                value: stat.DO,
-                                label: 'DO',
-                                title: 'District Officer (Environment)/Assistant/Deputy Director/District In-Charge',
-                            },
-                            {
-                                value: stat.PMC,
-                                label: 'PMC',
-                                title: 'Plastic Management Cell',
-                            },
-                            {
-                                value: stat.APPLICANT,
-                                label: 'Applicant',
-                                title: 'Applicant',
-                            },
-                            {
-                                value: stat.Licenses,
-                                label: 'Licenses',
-                                title: 'Licenses',
-                            },
-                        ],
-                        color: colorMap[stat.registration_for] || 'bg-gray-500',
-                        icon: iconMap[stat.registration_for] || null,
-                    }),
+                    (stat: any) => {
+                        const title = stat.registration_for || stat.registrationFor || stat.registration || 'Unknown'
+                        return {
+                            title,
+                            data: [
+                                {
+                                    value: readNumber(readStat(stat, 'Applications')),
+                                    label: 'Applications',
+                                    title: 'Applications',
+                                },
+                                {
+                                    value: readNumber(readStat(stat, 'DO')),
+                                    label: 'DO',
+                                    title: 'District Officer (Environment)/Assistant/Deputy Director/District In-Charge',
+                                },
+                                {
+                                    value: readNumber(readStat(stat, 'PMC')),
+                                    label: 'PMC',
+                                    title: 'Plastic Management Cell',
+                                },
+                                {
+                                    value: readNumber(readStat(stat, 'APPLICANT')),
+                                    label: 'Applicant',
+                                    title: 'Applicant',
+                                },
+                                {
+                                    value: readNumber(readStat(stat, 'Licenses')),
+                                    label: 'Licenses',
+                                    title: 'Licenses',
+                                },
+                            ],
+                            color: colorMap[title] || 'bg-gray-500',
+                            icon: iconMap[title] || null,
+                        }
+                    },
                 )
 
                 // Process district-wise statistics for ApexCharts

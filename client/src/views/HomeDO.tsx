@@ -73,6 +73,11 @@ const Home = () => {
     const [statistics, setStatistics] = useState({})
     const [selectedTile, setSelectedTile] = useState(null) // State for the selected tile
     const [loading, setLoading] = useState(false)
+    const [rowCount, setRowCount] = useState(0)
+    const [pagination, setPagination] = useState({
+        pageIndex: 0,
+        pageSize: 25,
+    })
 
     // APPLICANT > LSO > LSM > DO > LSM2 > TL > DEO > Download License
 
@@ -239,6 +244,8 @@ const Home = () => {
                         {
                             params: {
                                 assigned_group: 'LSO',
+                                page: pagination.pageIndex + 1,
+                                page_size: pagination.pageSize,
                             },
                         },
                     )
@@ -246,6 +253,15 @@ const Home = () => {
                         (item) =>
                             item.submittedapplication?.id % 3 === moduloValue,
                     )
+                    const totalHeader =
+                        response.headers?.['x-total-count'] ||
+                        response.headers?.['X-Total-Count']
+                    const total = totalHeader
+                        ? Number(totalHeader)
+                        : Array.isArray(filteredData)
+                          ? filteredData.length
+                          : 0
+                    setRowCount(Number.isFinite(total) ? total : 0)
                     // Update the table data
                     const extracted = extractColumns(
                         filteredData,
@@ -269,10 +285,21 @@ const Home = () => {
                                     group === 'Challan-Downloaded'
                                         ? 'Fee Challan'
                                         : undefined,
+                                page: pagination.pageIndex + 1,
+                                page_size: pagination.pageSize,
                             },
                         },
                     )
                     const filteredData = response.data || []
+                    const totalHeader =
+                        response.headers?.['x-total-count'] ||
+                        response.headers?.['X-Total-Count']
+                    const total = totalHeader
+                        ? Number(totalHeader)
+                        : Array.isArray(filteredData)
+                          ? filteredData.length
+                          : 0
+                    setRowCount(Number.isFinite(total) ? total : 0)
 
                     // Update the table data
                     const extracted = extractColumns(
@@ -291,8 +318,14 @@ const Home = () => {
                 setLoading(false) // Hide the loading spinner
             }
         },
-        [extractColumns, userGroups],
+        [extractColumns, userGroups, pagination.pageIndex, pagination.pageSize],
     )
+
+    useEffect(() => {
+        if (selectedTile) {
+            handleTileClick(selectedTile)
+        }
+    }, [pagination.pageIndex, pagination.pageSize])
 
     const navigate = useNavigate()
     useEffect(() => {
@@ -524,6 +557,10 @@ const Home = () => {
                     columnResizeMode="onChange"
                     enableTopToolbar={true}
                     enablePagination={true}
+                    manualPagination
+                    rowCount={rowCount}
+                    onPaginationChange={setPagination}
+                    state={{ pagination, isLoading: loading }}
                 />
             )}
         </div>
