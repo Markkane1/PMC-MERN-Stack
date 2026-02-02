@@ -840,11 +840,15 @@ function parseDateRange(query: Record<string, any>) {
   return Object.keys(range).length ? range : null
 }
 
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 export const listApiLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
   const query = req.query as Record<string, any>
   const filter: Record<string, any> = {}
   if (query.service) filter.serviceName = String(query.service)
-  if (query.endpoint) filter.endpoint = new RegExp(String(query.endpoint), 'i')
+  if (query.endpoint) filter.endpoint = new RegExp(escapeRegExp(String(query.endpoint)), 'i')
   if (query.status) filter.statusCode = Number(query.status)
   const range = parseDateRange(query)
   if (range) filter.createdAt = range
@@ -861,7 +865,7 @@ export const listApiLogs = asyncHandler(async (req: AuthRequest, res: Response) 
 export const listAuditLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
   const query = req.query as Record<string, any>
   const filter: Record<string, any> = {}
-  if (query.user) filter.username = new RegExp(String(query.user), 'i')
+  if (query.user) filter.username = new RegExp(escapeRegExp(String(query.user)), 'i')
   if (query.action) filter.action = String(query.action)
   if (query.model) filter.modelName = String(query.model)
   const range = parseDateRange(query)
@@ -879,10 +883,10 @@ export const listAuditLogs = asyncHandler(async (req: AuthRequest, res: Response
 export const listAccessLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
   const query = req.query as Record<string, any>
   const filter: Record<string, any> = {}
-  if (query.user) filter.username = new RegExp(String(query.user), 'i')
+  if (query.user) filter.username = new RegExp(escapeRegExp(String(query.user)), 'i')
   if (query.model) filter.modelName = String(query.model)
   if (query.method) filter.method = String(query.method).toUpperCase()
-  if (query.endpoint) filter.endpoint = new RegExp(String(query.endpoint), 'i')
+  if (query.endpoint) filter.endpoint = new RegExp(escapeRegExp(String(query.endpoint)), 'i')
   const range = parseDateRange(query)
   if (range) filter.timestamp = range
 

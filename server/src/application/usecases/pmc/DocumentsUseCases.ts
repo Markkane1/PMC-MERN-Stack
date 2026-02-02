@@ -40,6 +40,15 @@ const defaultDeps: DocumentsDeps = {
 const applicantUploader = createUploader('media/documents')
 const districtUploader = createUploader('media/plastic_committee')
 
+function resolveSafePath(rootDir: string, parts: string[]) {
+  const root = path.resolve(rootDir)
+  const target = path.resolve(root, ...parts)
+  if (!target.startsWith(root + path.sep)) {
+    return null
+  }
+  return target
+}
+
 function toDocumentUrl(docPath?: string) {
   if (!docPath) return docPath
   if (docPath.startsWith('/api/pmc/media')) return docPath
@@ -188,9 +197,9 @@ export const downloadLatestApplicantDocument = asyncHandler(async (req: AuthRequ
   const normalizedPath = relativePath.startsWith('media/')
     ? relativePath.replace(/^media\//, '')
     : relativePath
-  const filePath = path.join(env.uploadDir, normalizedPath)
+  const filePath = resolveSafePath(env.uploadDir, normalizedPath.split('/'))
 
-  if (!fs.existsSync(filePath)) {
+  if (!filePath || !fs.existsSync(filePath)) {
     return res.status(404).json({ message: 'File not found' })
   }
 
@@ -202,8 +211,8 @@ export const downloadLatestApplicantDocument = asyncHandler(async (req: AuthRequ
 export const downloadMedia = asyncHandler(async (req: Request, res: Response) => {
   const { folder_name, folder_name2, file_name } = req.params
   const parts = [folder_name, folder_name2, file_name].filter(Boolean) as string[]
-  const filePath = path.join(env.uploadDir, ...parts)
-  if (!fs.existsSync(filePath)) {
+  const filePath = resolveSafePath(env.uploadDir, parts)
+  if (!filePath || !fs.existsSync(filePath)) {
     return res.status(404).json({ message: 'File not found' })
   }
   return res.sendFile(path.resolve(filePath))

@@ -187,7 +187,80 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                 const readStat = (stat: any, key: string) =>
                     stat?.[key] ?? stat?.[key.toLowerCase()] ?? stat?.[key.replace(/_/g, '').toLowerCase()]
 
-                const dynamicTiles = respons.data.registration_statistics.map(
+                const computeStatsFromGrid = (rows: any[]) => {
+                    const result: Record<
+                        string,
+                        { registration_for: string; Applications: number; DO: number; PMC: number; APPLICANT: number; Licenses: number }
+                    > = {}
+                    const isExcluded = (status: string) =>
+                        ['Created', 'Fee Challan'].includes(status || '')
+                    const isInFlightExcluded = (status: string) =>
+                        ['Created', 'Completed', 'Rejected', 'Fee Challan'].includes(status || '')
+                    rows.forEach((row) => {
+                        const registrationFor =
+                            row.registration_for || row.registrationFor || 'Unknown'
+                        const status = row.application_status || row.applicationStatus || ''
+                        const group = row.assigned_group || row.assignedGroup || ''
+                        if (!result[registrationFor]) {
+                            result[registrationFor] = {
+                                registration_for: registrationFor,
+                                Applications: 0,
+                                DO: 0,
+                                PMC: 0,
+                                APPLICANT: 0,
+                                Licenses: 0,
+                            }
+                        }
+                        if (!isExcluded(status)) {
+                            result[registrationFor].Applications += 1
+                        }
+                        if (!isInFlightExcluded(status) && group === 'DO') {
+                            result[registrationFor].DO += 1
+                        }
+                        if (
+                            !isInFlightExcluded(status) &&
+                            group !== 'DO' &&
+                            group !== 'APPLICANT'
+                        ) {
+                            result[registrationFor].PMC += 1
+                        }
+                        if (!isInFlightExcluded(status) && group === 'APPLICANT') {
+                            result[registrationFor].APPLICANT += 1
+                        }
+                        if (status === 'Completed') {
+                            result[registrationFor].Licenses += 1
+                        }
+                    })
+                    const rowsOut = Object.values(result)
+                    const totals = rowsOut.reduce(
+                        (acc, item) => {
+                            acc.Applications += item.Applications
+                            acc.DO += item.DO
+                            acc.PMC += item.PMC
+                            acc.APPLICANT += item.APPLICANT
+                            acc.Licenses += item.Licenses
+                            return acc
+                        },
+                        { Applications: 0, DO: 0, PMC: 0, APPLICANT: 0, Licenses: 0 }
+                    )
+                    rowsOut.unshift({ registration_for: 'Total', ...totals })
+                    return rowsOut
+                }
+
+                const normalizedStats = Array.isArray(registration_statistics)
+                    ? registration_statistics
+                    : []
+                const hasNonZero = normalizedStats.some((stat: any) =>
+                    ['Applications', 'DO', 'PMC', 'APPLICANT', 'Licenses'].some(
+                        (key) => readNumber(readStat(stat, key)) > 0
+                    )
+                )
+                const statsSource =
+                    hasNonZero || !Array.isArray(grid_data)
+                        ? normalizedStats
+                        : computeStatsFromGrid(grid_data)
+
+                const dynamicTiles = statsSource.map(
                     (stat: any) => {
                         const title = stat.registration_for || stat.registrationFor || stat.registration || 'Unknown'
                         return {

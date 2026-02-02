@@ -11,7 +11,7 @@ This repo contains the MERN backend and React frontend for the PMC system.
 ### 1) Install dependencies
 
 ```powershell
-cd "C:\Users\IS\Downloads\Compressed\PMC Mernstack"
+cd "PMC Mernstack"
 npm install
 npm install --prefix server
 npm install --prefix client
