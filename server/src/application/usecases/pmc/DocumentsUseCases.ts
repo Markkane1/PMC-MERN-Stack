@@ -4,11 +4,21 @@ import { Request, Response } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import { createUploader } from '../../../interfaces/http/middlewares/upload'
 import { env } from '../../../infrastructure/config/env'
+<<<<<<< HEAD
 import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
 import type { ApplicantDocumentRepository, DistrictPlasticCommitteeDocumentRepository, DistrictRepository } from '../../../domain/repositories/pmc'
+=======
+import type {
+  ApplicantDocumentRepository,
+  ApplicantRepository,
+  DistrictPlasticCommitteeDocumentRepository,
+  DistrictRepository,
+} from '../../../domain/repositories/pmc'
+>>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
 import type { UserRepository } from '../../../domain/repositories/accounts'
 import {
   applicantDocumentRepositoryMongo,
+  applicantRepositoryMongo,
   districtPlasticCommitteeDocumentRepositoryMongo,
   districtRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
@@ -18,6 +28,7 @@ type AuthRequest = Request & { user?: any; file?: Express.Multer.File }
 
 type DocumentsDeps = {
   applicantDocRepo: ApplicantDocumentRepository
+  applicantRepo: ApplicantRepository
   districtDocRepo: DistrictPlasticCommitteeDocumentRepository
   districtRepo: DistrictRepository
   userRepo: UserRepository
@@ -25,6 +36,7 @@ type DocumentsDeps = {
 
 const defaultDeps: DocumentsDeps = {
   applicantDocRepo: applicantDocumentRepositoryMongo,
+  applicantRepo: applicantRepositoryMongo,
   districtDocRepo: districtPlasticCommitteeDocumentRepositoryMongo,
   districtRepo: districtRepositoryMongo,
   userRepo: userRepositoryMongo,
@@ -38,6 +50,15 @@ function parsePositiveInt(value: unknown): number | null {
   const parsed = Number(value)
   if (!Number.isInteger(parsed) || parsed <= 0) return null
   return parsed
+}
+
+function resolveSafePath(rootDir: string, parts: string[]) {
+  const root = path.resolve(rootDir)
+  const target = path.resolve(root, ...parts)
+  if (!target.startsWith(root + path.sep)) {
+    return null
+  }
+  return target
 }
 
 function toDocumentUrl(docPath?: string) {
@@ -165,9 +186,59 @@ export const listDistrictDocuments = asyncHandler(async (_req: Request, res: Res
   return res.json(data)
 })
 
+export const downloadLatestApplicantDocument = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?._id
+  if (!userId) {
+    return res.status(401).json({ message: 'Authentication required' })
+  }
+
+  const documentDescription = String(req.query.document_description || '')
+  if (!documentDescription) {
+    return res.status(400).json({ error: 'Document description parameter is required.' })
+  }
+
+  let applicant =
+    (await defaultDeps.applicantRepo.findOne({ createdBy: userId })) ||
+    (await defaultDeps.applicantRepo.findOne({ created_by: userId } as any))
+
+  if (!applicant && req.user?.djangoId) {
+    applicant = await defaultDeps.applicantRepo.findOne({ created_by: req.user.djangoId } as any)
+  }
+
+  if (!applicant) {
+    return res.status(404).json({ error: 'Applicant not found for the logged-in user.' })
+  }
+
+  const document = await defaultDeps.applicantDocRepo.findLatestByApplicantAndDescription(
+    (applicant as any).numericId,
+    documentDescription
+  )
+
+  if (!document || !(document as any).documentPath) {
+    return res.status(404).json({
+      error: `No document found with description '${documentDescription}'.`,
+    })
+  }
+
+  const relativePath = String((document as any).documentPath).replace(/^\/+/, '')
+  const normalizedPath = relativePath.startsWith('media/')
+    ? relativePath.replace(/^media\//, '')
+    : relativePath
+  const filePath = resolveSafePath(env.uploadDir, normalizedPath.split('/'))
+
+  if (!filePath || !fs.existsSync(filePath)) {
+    return res.status(404).json({ message: 'File not found' })
+  }
+
+  const filename = path.basename(filePath)
+  res.setHeader('Content-Disposition', `attachment; filename=${filename}`)
+  return res.sendFile(path.resolve(filePath))
+})
+
 export const downloadMedia = asyncHandler(async (req: Request, res: Response) => {
   const { folder_name, folder_name2, file_name } = req.params
   const parts = [folder_name, folder_name2, file_name].filter(Boolean) as string[]
+<<<<<<< HEAD
   if (!parts.length || parts.some((part) => !SAFE_PATH_SEGMENT.test(part))) {
     return res.status(400).json({ message: 'Invalid file path' })
   }
@@ -179,6 +250,10 @@ export const downloadMedia = asyncHandler(async (req: Request, res: Response) =>
   }
 
   if (!fs.existsSync(filePath)) {
+=======
+  const filePath = resolveSafePath(env.uploadDir, parts)
+  if (!filePath || !fs.existsSync(filePath)) {
+>>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
     return res.status(404).json({ message: 'File not found' })
   }
   if (!fs.statSync(filePath).isFile()) {

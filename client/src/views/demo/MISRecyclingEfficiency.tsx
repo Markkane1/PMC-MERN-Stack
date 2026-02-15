@@ -715,13 +715,17 @@ const CategoryTiles = ({
                 </Typography>
 
                 {/* Tile Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     {tileDefs.concat(tileDefs2).map((tile) => {
                         const value = getTileDisplayValue(tile.key)
                         return (
                             <div
                                 key={tile.key}
-                                className={`flex items-center justify-start p-4 rounded-lg shadow-md transition cursor-pointer opacity-100 ${tile.bgColor} ${tile.key === 'Un-Managed' || tile.key === 'Recycling Efficiency' ? 'col-span-2' : ''}`}
+                                className={`flex items-center justify-start p-4 rounded-lg shadow-md transition cursor-pointer opacity-100 ${tile.bgColor} ${
+                                    tile.key === 'Un-Managed' || tile.key === 'Recycling Efficiency'
+                                        ? 'sm:col-span-2'
+                                        : ''
+                                }`}
                             >
                                 <div className="mr-3">{tile.icon}</div>
                                 <h2 className="text-lg font-bold text-white">

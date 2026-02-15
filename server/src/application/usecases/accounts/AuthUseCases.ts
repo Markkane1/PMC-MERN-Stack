@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
 import svgCaptcha from 'svg-captcha'
 import NodeCache from 'node-cache'
+import { logAudit } from '../../services/common/LogService'
 import { createUser, signTokens, validatePassword } from '../../services/accounts/AuthService'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import type { AuthRequest } from '../../../interfaces/http/middlewares/auth'
@@ -78,6 +79,16 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
     lastName: last_name,
   })
 
+  await logAudit({
+    userId: String(userId),
+    username,
+    action: 'create',
+    modelName: 'User',
+    objectId: String(userId),
+    description: 'User registered',
+    ipAddress: req.ip,
+  })
+
   return res.status(201).json({ id: userId, username })
 })
 
@@ -109,6 +120,15 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const tokens = signTokens(String(user.id))
+  await logAudit({
+    userId: String(user.id),
+    username: user.username,
+    action: 'login',
+    modelName: 'User',
+    objectId: String(user.id),
+    description: 'User logged in',
+    ipAddress: req.ip,
+  })
   return res.json(tokens)
 })
 
@@ -191,7 +211,19 @@ export const generateCaptcha = asyncHandler(async (_req: Request, res: Response)
   })
 })
 
-export const logout = asyncHandler(async (_req: Request, res: Response) => {
+export const logout = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const user = req.user
+  if (user) {
+    await logAudit({
+      userId: String(user._id || user.id),
+      username: user.username,
+      action: 'logout',
+      modelName: 'User',
+      objectId: String(user._id || user.id),
+      description: 'User logged out',
+      ipAddress: req.ip,
+    })
+  }
   return res.json({ message: 'Signed out' })
 })
 
@@ -389,3 +421,4 @@ export const createOrUpdateInspector = asyncHandler(async (req: AuthRequest, res
     message: `Inspector '${normalizedUsername}' created successfully in district '${district?.districtName || ''}'.`,
   })
 })
+

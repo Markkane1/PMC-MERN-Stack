@@ -36,10 +36,70 @@ export type UserDto = {
     is_active: boolean
 }
 
+export type ApiLogDto = {
+    id?: string
+    legacyId?: number
+    serviceName: string
+    endpoint: string
+    requestData?: Record<string, unknown>
+    responseData?: Record<string, unknown>
+    statusCode?: number
+    createdAt?: string
+}
+
+export type AuditLogDto = {
+    id?: string
+    legacyId?: number
+    userId?: string
+    username?: string
+    action: string
+    modelName?: string
+    objectId?: string
+    description?: string
+    ipAddress?: string
+    timestamp?: string
+    createdAt?: string
+}
+
+export type AccessLogDto = {
+    id?: string
+    legacyId?: number
+    userId?: string
+    username?: string
+    modelName?: string
+    objectId?: string
+    method?: string
+    ipAddress?: string
+    endpoint?: string
+    timestamp?: string
+    createdAt?: string
+}
+
+export type ServiceConfigDto = {
+    _id?: string
+    id?: string
+    serviceName: string
+    baseUrl?: string
+    authEndpoint?: string
+    generatePsidEndpoint?: string
+    transactionStatusEndpoint?: string
+    clientId?: string
+    clientSecret?: string
+}
+
+export type ExternalTokenDto = {
+    id?: string
+    legacyId?: number
+    serviceName: string
+    accessToken: string
+    expiresAt?: string
+    createdAt?: string
+}
 
 export type RoleDashboardConfig = {
     mappings: Record<string, string>
 }
+
 const AdminService = {
     listPermissions() {
         return ApiService.fetchDataWithAxios<PermissionDto[]>({
@@ -148,7 +208,54 @@ const AdminService = {
             data: payload,
         })
     },
+    listApiLogs(params?: Record<string, any>) {
+        return ApiService.fetchDataWithAxios<{ items: ApiLogDto[]; total: number; page: number; limit: number }>({
+            url: '/accounts/admin/api-logs/',
+            method: 'get',
+            params,
+        })
+    },
+    listAuditLogs(params?: Record<string, any>) {
+        return ApiService.fetchDataWithAxios<{ items: AuditLogDto[]; total: number; page: number; limit: number }>({
+            url: '/accounts/admin/audit-logs/',
+            method: 'get',
+            params,
+        })
+    },
+    listAccessLogs(params?: Record<string, any>) {
+        return ApiService.fetchDataWithAxios<{ items: AccessLogDto[]; total: number; page: number; limit: number }>({
+            url: '/accounts/admin/access-logs/',
+            method: 'get',
+            params,
+        })
+    },
+    listServiceConfigs() {
+        return ApiService.fetchDataWithAxios<ServiceConfigDto[]>({
+            url: '/accounts/admin/service-configs/',
+            method: 'get',
+        })
+    },
+    createServiceConfig(payload: ServiceConfigDto) {
+        return ApiService.fetchDataWithAxios<ServiceConfigDto>({
+            url: '/accounts/admin/service-configs/',
+            method: 'post',
+            data: payload,
+        })
+    },
+    updateServiceConfig(id: string, payload: ServiceConfigDto) {
+        return ApiService.fetchDataWithAxios<ServiceConfigDto>({
+            url: `/accounts/admin/service-configs/${id}/`,
+            method: 'patch',
+            data: payload,
+        })
+    },
+    listExternalTokens(params?: Record<string, any>) {
+        return ApiService.fetchDataWithAxios<ExternalTokenDto[]>({
+            url: '/accounts/admin/external-tokens/',
+            method: 'get',
+            params,
+        })
+    },
 }
-
 
 export default AdminService

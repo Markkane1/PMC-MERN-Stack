@@ -7,6 +7,11 @@ import { UserProfileModel } from '../../../infrastructure/database/models/accoun
 import { UserModel } from '../../../infrastructure/database/models/accounts/User'
 import { GroupModel } from '../../../infrastructure/database/models/accounts/Group'
 import { PermissionModel } from '../../../infrastructure/database/models/accounts/Permission'
+import { ApiLogModel } from '../../../infrastructure/database/models/common/ApiLog'
+import { AuditLogModel } from '../../../infrastructure/database/models/common/AuditLog'
+import { AccessLogModel } from '../../../infrastructure/database/models/common/AccessLog'
+import { ExternalServiceTokenModel } from '../../../infrastructure/database/models/common/ExternalServiceToken'
+import { ServiceConfigurationModel } from '../../../infrastructure/database/models/common/ServiceConfiguration'
 import type { AuthRequest } from '../../../interfaces/http/middlewares/auth'
 import type {
   UserRepository,
@@ -830,3 +835,157 @@ export const updateRoleDashboardConfig = asyncHandler(async (req: AuthRequest, r
   return res.json({ mappings })
 })
 
+
+
+function parsePaging(query: Record<string, any>) {
+  const limitRaw = Number(query.limit || 50)
+  const pageRaw = Number(query.page || 1)
+  const limit = Math.min(Math.max(limitRaw, 1), 500)
+  const page = Math.max(pageRaw, 1)
+  const skip = (page - 1) * limit
+  return { limit, page, skip }
+}
+
+function parseDateRange(query: Record<string, any>) {
+  const from = query.from ? new Date(String(query.from)) : null
+  const to = query.to ? new Date(String(query.to)) : null
+  const range: Record<string, Date> = {}
+  if (from && !Number.isNaN(from.getTime())) range.$gte = from
+  if (to && !Number.isNaN(to.getTime())) range.$lte = to
+  return Object.keys(range).length ? range : null
+}
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+export const listApiLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const query = req.query as Record<string, any>
+  const filter: Record<string, any> = {}
+  if (query.service) filter.serviceName = String(query.service)
+  if (query.endpoint) filter.endpoint = new RegExp(escapeRegExp(String(query.endpoint)), 'i')
+  if (query.status) filter.statusCode = Number(query.status)
+  const range = parseDateRange(query)
+  if (range) filter.createdAt = range
+
+  const { limit, page, skip } = parsePaging(query)
+  const [items, total] = await Promise.all([
+    ApiLogModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    ApiLogModel.countDocuments(filter),
+  ])
+
+  return res.json({ items, total, page, limit })
+})
+
+export const listAuditLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const query = req.query as Record<string, any>
+  const filter: Record<string, any> = {}
+  if (query.user) filter.username = new RegExp(escapeRegExp(String(query.user)), 'i')
+  if (query.action) filter.action = String(query.action)
+  if (query.model) filter.modelName = String(query.model)
+  const range = parseDateRange(query)
+  if (range) filter.timestamp = range
+
+  const { limit, page, skip } = parsePaging(query)
+  const [items, total] = await Promise.all([
+    AuditLogModel.find(filter).sort({ timestamp: -1, createdAt: -1 }).skip(skip).limit(limit).lean(),
+    AuditLogModel.countDocuments(filter),
+  ])
+
+  return res.json({ items, total, page, limit })
+})
+
+export const listAccessLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const query = req.query as Record<string, any>
+  const filter: Record<string, any> = {}
+  if (query.user) filter.username = new RegExp(escapeRegExp(String(query.user)), 'i')
+  if (query.model) filter.modelName = String(query.model)
+  if (query.method) filter.method = String(query.method).toUpperCase()
+  if (query.endpoint) filter.endpoint = new RegExp(escapeRegExp(String(query.endpoint)), 'i')
+  const range = parseDateRange(query)
+  if (range) filter.timestamp = range
+
+  const { limit, page, skip } = parsePaging(query)
+  const [items, total] = await Promise.all([
+    AccessLogModel.find(filter).sort({ timestamp: -1, createdAt: -1 }).skip(skip).limit(limit).lean(),
+    AccessLogModel.countDocuments(filter),
+  ])
+
+  return res.json({ items, total, page, limit })
+})
+
+export const listServiceConfigurations = asyncHandler(async (_req: AuthRequest, res: Response) => {
+  const items = await ServiceConfigurationModel.find({}).sort({ serviceName: 1 }).lean()
+  return res.json(items)
+})
+
+export const createServiceConfiguration = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const payload = req.body || {}
+  if (!payload.serviceName) {
+    return res.status(400).json({ message: 'serviceName is required.' })
+  }
+
+  const created = await ServiceConfigurationModel.create({
+    serviceName: payload.serviceName,
+    baseUrl: payload.baseUrl || undefined,
+    authEndpoint: payload.authEndpoint || undefined,
+    generatePsidEndpoint: payload.generatePsidEndpoint || undefined,
+    transactionStatusEndpoint: payload.transactionStatusEndpoint || undefined,
+    clientId: payload.clientId || undefined,
+    clientSecret: payload.clientSecret || undefined,
+  })
+
+  return res.status(201).json(created)
+})
+
+export const updateServiceConfiguration = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { id } = req.params
+  const payload = req.body || {}
+  const updated = await ServiceConfigurationModel.findByIdAndUpdate(
+    id,
+    {
+      $set: {
+        serviceName: payload.serviceName,
+        baseUrl: payload.baseUrl || undefined,
+        authEndpoint: payload.authEndpoint || undefined,
+        generatePsidEndpoint: payload.generatePsidEndpoint || undefined,
+        transactionStatusEndpoint: payload.transactionStatusEndpoint || undefined,
+        clientId: payload.clientId || undefined,
+        clientSecret: payload.clientSecret || undefined,
+      },
+    },
+    { new: true }
+  )
+
+  if (!updated) {
+    return res.status(404).json({ message: 'Service configuration not found.' })
+  }
+
+  return res.json(updated)
+})
+
+export const listExternalTokens = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const query = req.query as Record<string, any>
+  const filter: Record<string, any> = {}
+  if (query.service) filter.serviceName = String(query.service)
+  const items = await ExternalServiceTokenModel.find(filter).sort({ createdAt: -1 }).limit(200).lean()
+  const normalized = items.map((item: any) => {
+    const createdAt = item.createdAt ? new Date(item.createdAt) : null
+    let expiresAt = item.expiresAt ? new Date(item.expiresAt) : null
+    if (expiresAt && Number.isNaN(expiresAt.getTime())) {
+      expiresAt = null
+    }
+    if (createdAt && expiresAt && expiresAt.getTime() < createdAt.getTime()) {
+      expiresAt = new Date(createdAt.getTime() + 60 * 60 * 1000)
+    }
+    return {
+      id: item._id,
+      legacyId: item.legacyId,
+      serviceName: item.serviceName,
+      accessToken: item.accessToken,
+      expiresAt: expiresAt ? expiresAt.toISOString() : null,
+      createdAt: createdAt ? createdAt.toISOString() : null,
+    }
+  })
+  return res.json(normalized)
+})

@@ -1,5 +1,6 @@
 import { Response, Request } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
+import { logAccess } from '../../services/common/LogService'
 import type { AuthRequest } from '../../../interfaces/http/middlewares/auth'
 import {
   applicantRepositoryMongo,
@@ -112,6 +113,7 @@ async function filterByUserGroups(req: AuthRequest) {
 
 export const listApplicants = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { filter } = await filterByUserGroups(req)
+<<<<<<< HEAD
   
   // Parse pagination parameters (page and pageSize from query)
   const { page, pageSize } = parsePaginationParams(req.query)
@@ -166,6 +168,40 @@ export const getApplicant = asyncHandler(async (req: AuthRequest, res: Response)
   await cacheManager.set(cacheKey, responseData, { ttl: 600 })
 
   return res.json(responseData)
+=======
+  const page = Number(req.query.page || 1)
+  const limit = Number(req.query.page_size || req.query.limit || 200)
+  const applicants = await defaultDeps.applicantRepo.listPaged(filter, { page, limit, sort: { createdAt: -1 } })
+  const data = await Promise.all(applicants.map((a) => assembleApplicantDetail(a)))
+  const totalCount = await defaultDeps.applicantRepo.count(filter)
+  res.setHeader('X-Total-Count', String(totalCount))
+  await logAccess({
+    userId: req.user?._id ? String(req.user._id) : undefined,
+    username: req.user?.username,
+    modelName: 'ApplicantDetail',
+    objectId: 'LIST',
+    method: req.method,
+    ipAddress: req.ip,
+    endpoint: req.originalUrl,
+  })
+  res.json(data)
+})
+
+export const getApplicant = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const applicant = await defaultDeps.applicantRepo.findByNumericId(Number(req.params.id))
+  if (!applicant) return res.status(404).json({ message: 'Not found' })
+  const data = await assembleApplicantDetail(applicant)
+  await logAccess({
+    userId: req.user?._id ? String(req.user._id) : undefined,
+    username: req.user?.username,
+    modelName: 'ApplicantDetail',
+    objectId: String(req.params.id),
+    method: req.method,
+    ipAddress: req.ip,
+    endpoint: req.originalUrl,
+  })
+  return res.json(data)
+>>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
 })
 
 export const createApplicant = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -250,14 +286,40 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
     }
 
     const filter = clauses.length ? { $and: clauses } : {}
-    const applicants = await defaultDeps.applicantRepo.list(filter)
+    const page = Number(req.query.page || 1)
+    const limit = Number(req.query.page_size || req.query.limit || 200)
+    const applicants = await defaultDeps.applicantRepo.listPaged(filter, { page, limit, sort: { createdAt: -1 } })
     const data = await Promise.all(applicants.map((a) => assembleApplicantDetail(a)))
+    const totalCount = await defaultDeps.applicantRepo.count(filter)
+    res.setHeader('X-Total-Count', String(totalCount))
+    await logAccess({
+      userId: req.user?._id ? String(req.user._id) : undefined,
+      username: req.user?.username,
+      modelName: 'ApplicantDetail',
+      objectId: 'LIST_MAIN',
+      method: req.method,
+      ipAddress: req.ip,
+      endpoint: req.originalUrl,
+    })
     return res.json(data)
   }
 
   const { filter } = await filterByUserGroups(req)
-  const applicants = await defaultDeps.applicantRepo.list(filter)
+  const page = Number(req.query.page || 1)
+  const limit = Number(req.query.page_size || req.query.limit || 200)
+  const applicants = await defaultDeps.applicantRepo.listPaged(filter, { page, limit, sort: { createdAt: -1 } })
   const data = await Promise.all(applicants.map((a) => assembleApplicantDetail(a)))
+  const totalCount = await defaultDeps.applicantRepo.count(filter)
+  res.setHeader('X-Total-Count', String(totalCount))
+  await logAccess({
+    userId: req.user?._id ? String(req.user._id) : undefined,
+    username: req.user?.username,
+    modelName: 'ApplicantDetail',
+    objectId: 'LIST_MAIN_DO',
+    method: req.method,
+    ipAddress: req.ip,
+    endpoint: req.originalUrl,
+  })
   return res.json(data)
 })
 
@@ -289,8 +351,21 @@ export const listApplicantsMainDO = asyncHandler(async (req: AuthRequest, res: R
     clauses.push(legacyApplicationStatusFilter(req.query.application_status as string))
   }
 
-  const applicants = await defaultDeps.applicantRepo.list({ $and: clauses })
+  const page = Number(req.query.page || 1)
+  const limit = Number(req.query.page_size || req.query.limit || 200)
+  const applicants = await defaultDeps.applicantRepo.listPaged({ $and: clauses }, { page, limit, sort: { createdAt: -1 } })
   const data = await Promise.all(applicants.map((a) => assembleApplicantDetail(a)))
+  const totalCount = await defaultDeps.applicantRepo.count({ $and: clauses })
+  res.setHeader('X-Total-Count', String(totalCount))
+  await logAccess({
+    userId: req.user?._id ? String(req.user._id) : undefined,
+    username: req.user?.username,
+    modelName: 'ApplicantDetail',
+    objectId: 'LIST_MAIN_DO',
+    method: req.method,
+    ipAddress: req.ip,
+    endpoint: req.originalUrl,
+  })
   return res.json(data)
 })
 
@@ -311,3 +386,4 @@ function mapApplicantPayload(body: any) {
     assignedGroup: body.assigned_group ?? body.assignedGroup,
   }
 }
+

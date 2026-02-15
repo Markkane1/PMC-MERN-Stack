@@ -71,6 +71,11 @@ const Home = () => {
     const [selectedRowId, setSelectedRowId] = useState(null)
     const [statistics, setStatistics] = useState({})
     const [loading, setLoading] = useState(false)
+    const [rowCount, setRowCount] = useState(0)
+    const [pagination, setPagination] = useState({
+        pageIndex: 0,
+        pageSize: 25,
+    })
 
     const groupTitles = {
         APPLICANT: 'Applicant',
@@ -254,9 +259,22 @@ const Home = () => {
                             headers: {
                                 'Content-Type': 'multipart/form-data',
                             },
+                            params: {
+                                page: pagination.pageIndex + 1,
+                                page_size: pagination.pageSize,
+                            },
                         },
                     )
                     const dataApplicants = response.data
+                    const totalHeader =
+                        response.headers?.['x-total-count'] ||
+                        response.headers?.['X-Total-Count']
+                    const total = totalHeader
+                        ? Number(totalHeader)
+                        : Array.isArray(dataApplicants)
+                          ? dataApplicants.length
+                          : 0
+                    setRowCount(Number.isFinite(total) ? total : 0)
 
                     if (
                         Array.isArray(dataApplicants) &&
@@ -279,13 +297,15 @@ const Home = () => {
                             setSelectedRowId(lastRow.id) // Set last row ID as selected
                         }
                     }
-                } else {
-                    throw new Error(
-                        'Application is offline. Cannot fetch applicant details.',
-                    )
-                }
+                    } else {
+                        setFlattenedData([])
+                        setColumns([])
+                        throw new Error(
+                            'Application is offline. Cannot fetch applicant details.',
+                        )
+                    }
 
-                if (navigator.onLine) {
+                    if (navigator.onLine) {
                     // Fetch statistics for groups
                     const statsResponse = await AxiosBase.get(
                         `/pmc/fetch-statistics-view-groups/`,
@@ -310,7 +330,7 @@ const Home = () => {
         }
 
         fetchData()
-    }, [userAuthorityList])
+    }, [userAuthorityList, pagination.pageIndex, pagination.pageSize])
 
     useEffect(() => {
         if (!userAuthorityList || userAuthorityList.length === 0) return
@@ -480,6 +500,13 @@ const Home = () => {
                         enableTopToolbar={true} // Disables the top-right controls entirely
                         // enableGlobalFilter={false} // Disables the global search/filter box
                         enablePagination={true} // Optionally disable pagination controls
+                        manualPagination
+                        rowCount={rowCount}
+                        onPaginationChange={setPagination}
+                        state={{
+                            pagination,
+                            isLoading: loading,
+                        }}
                         // enableSorting={false} // Optionally disable column sorting
                     />
                 </>

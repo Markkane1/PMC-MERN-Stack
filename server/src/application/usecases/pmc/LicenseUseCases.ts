@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import PDFDocument from 'pdfkit'
+import { logAccess } from '../../services/common/LogService'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import { createOrUpdateLicense } from '../../services/pmc/ApplicantService'
 import type { ApplicantRepository, BusinessProfileRepository, LicenseRepository, DistrictRepository, TehsilRepository } from '../../../domain/repositories/pmc'
@@ -113,6 +114,15 @@ export const generateLicensePdf = asyncHandler(async (req: Request, res: Respons
     date_of_issue: new Date().toISOString().slice(0, 10),
   }
 
+  await logAccess({
+    userId: req.user?._id ? String(req.user._id) : undefined,
+    username: req.user?.username,
+    modelName: 'License',
+    objectId: String(licenseNumber),
+    method: req.method,
+    ipAddress: req.ip,
+    endpoint: req.originalUrl,
+  })
   return buildLicensePdf(res, data)
 })
 
@@ -157,6 +167,15 @@ export const licensePdf = asyncHandler(async (req: Request, res: Response) => {
     date_of_issue: (license as any).dateOfIssue?.toISOString().slice(0, 10),
   }
 
+  await logAccess({
+    userId: req.user?._id ? String(req.user._id) : undefined,
+    username: req.user?.username,
+    modelName: 'License',
+    objectId: String(licenseNumber),
+    method: req.method,
+    ipAddress: req.ip,
+    endpoint: req.originalUrl,
+  })
   return buildLicensePdf(res, data)
 })
 
@@ -193,3 +212,4 @@ function serializeLicense(license: any) {
     created_at: license.createdAt,
   }
 }
+

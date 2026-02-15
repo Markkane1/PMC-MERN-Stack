@@ -27,7 +27,7 @@ This application handles sensitive government data. **IMPORTANT:** Before deploy
 ### 1) Install dependencies
 
 ```powershell
-cd "C:\Users\IS\Downloads\Compressed\PMC Mernstack"
+cd "PMC Mernstack"
 npm install
 npm install --prefix server
 npm install --prefix client

@@ -4,6 +4,7 @@ import crypto from 'crypto'
 import multer, { type FileFilterCallback } from 'multer'
 import { env } from '../../../infrastructure/config/env'
 
+<<<<<<< HEAD
 export const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 
 export const DOCUMENT_MIMETYPES = new Set([
@@ -54,6 +55,17 @@ export const IMAGE_PDF_EXTENSIONS = new Set([
   '.webp',
 ])
 
+=======
+const DEFAULT_MAX_FILE_SIZE = 10 * 1024 * 1024
+const ALLOWED_MIME_TYPES = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+])
+
+>>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
 function ensureDir(dirPath: string) {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true })
@@ -121,6 +133,7 @@ export function createUploader(subDir: string) {
     },
   })
 
+<<<<<<< HEAD
   return multer({
     storage,
     limits: {
@@ -130,5 +143,18 @@ export function createUploader(subDir: string) {
       fieldSize: 1024 * 1024,
     },
     fileFilter: createFileFilter(DOCUMENT_MIMETYPES, DOCUMENT_EXTENSIONS),
+=======
+  const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
+    if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
+      return cb(new Error('Unsupported file type'))
+    }
+    return cb(null, true)
+  }
+
+  return multer({
+    storage,
+    fileFilter,
+    limits: { fileSize: DEFAULT_MAX_FILE_SIZE },
+>>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
   })
 }

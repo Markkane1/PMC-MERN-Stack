@@ -33,6 +33,7 @@ import {
   listApplicantDocuments,
   uploadDistrictDocument,
   listDistrictDocuments,
+  downloadLatestApplicantDocument,
   downloadMedia,
 } from '../controllers/pmc/DocumentsController'
 import {
@@ -125,6 +126,12 @@ pmcRouter.post('/raw-materials/', authenticate, requirePermission(['pmc_api.add_
 // Documents
 pmcRouter.get('/applicant-documents/', authenticate, requirePermission(['pmc_api.view_applicantdocument']), listApplicantDocuments)
 pmcRouter.post('/applicant-documents/', authenticate, requirePermission(['pmc_api.add_applicantdocument']), ...uploadApplicantDocument)
+pmcRouter.get(
+  '/download_latest_document/',
+  authenticate,
+  requirePermission(['pmc_api.view_applicantdocument']),
+  downloadLatestApplicantDocument
+)
 
 pmcRouter.get('/district-documents/', authenticate, requirePermission(['pmc_api.view_districtplasticcommitteedocument']), listDistrictDocuments)
 pmcRouter.post('/district-documents/', authenticate, requirePermission(['pmc_api.add_districtplasticcommitteedocument']), ...uploadDistrictDocument)

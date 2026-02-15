@@ -300,6 +300,56 @@ const navigationConfig: NavigationTree[] = [
                 authority: ['Admin', 'Super'],
                 subMenu: [],
             },
+            {
+                key: 'auth.admin.api-logs',
+                path: '/auth/admin/api-logs',
+                title: 'API Logs',
+                translateKey: 'nav.admin.apiLogs',
+                icon: 'MdReceiptLong',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: ['Admin', 'Super'],
+                subMenu: [],
+            },
+            {
+                key: 'auth.admin.audit-logs',
+                path: '/auth/admin/audit-logs',
+                title: 'Audit Logs',
+                translateKey: 'nav.admin.auditLogs',
+                icon: 'MdHistory',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: ['Admin', 'Super'],
+                subMenu: [],
+            },
+            {
+                key: 'auth.admin.access-logs',
+                path: '/auth/admin/access-logs',
+                title: 'Access Logs',
+                translateKey: 'nav.admin.accessLogs',
+                icon: 'MdListAlt',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: ['Admin', 'Super'],
+                subMenu: [],
+            },
+            {
+                key: 'auth.admin.service-configs',
+                path: '/auth/admin/service-configs',
+                title: 'Service Config',
+                translateKey: 'nav.admin.serviceConfigs',
+                icon: 'MdSettings',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: ['Admin', 'Super'],
+                subMenu: [],
+            },
+            {
+                key: 'auth.admin.external-tokens',
+                path: '/auth/admin/external-tokens',
+                title: 'External Tokens',
+                translateKey: 'nav.admin.externalTokens',
+                icon: 'MdVpnKey',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: ['Admin', 'Super'],
+                subMenu: [],
+            },
         ],
     },
     {
@@ -315,3 +365,4 @@ const navigationConfig: NavigationTree[] = [
 ]
 
 export default navigationConfig
+

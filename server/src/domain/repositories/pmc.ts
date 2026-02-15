@@ -20,12 +20,19 @@ export interface ApplicantRepository {
   findOne(filter: Record<string, unknown>): Promise<ApplicantDetail | null>
   findOneWithCreator(filter: Record<string, unknown>): Promise<any | null>
   list(filter?: Record<string, unknown>): Promise<ApplicantDetail[]>
+<<<<<<< HEAD
   listPaginated(
     filter?: Record<string, unknown>,
     page?: number,
     pageSize?: number,
     sort?: Record<string, 1 | -1>
   ): Promise<{ data: ApplicantDetail[]; pagination: any }>
+=======
+  listPaged(
+    filter?: Record<string, unknown>,
+    options?: { page?: number; limit?: number; sort?: Record<string, 1 | -1> }
+  ): Promise<ApplicantDetail[]>
+>>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
   create(applicant: Partial<ApplicantDetail>): Promise<ApplicantDetail>
   updateByNumericId(numericId: number, updates: Partial<ApplicantDetail>): Promise<ApplicantDetail | null>
   updateOne(filter: Record<string, unknown>, updates: Record<string, unknown>): Promise<void>
@@ -102,6 +109,7 @@ export interface ApplicantDocumentRepository {
   listByApplicantId(applicantId: number): Promise<ApplicantDocument[]>
   list(): Promise<ApplicantDocument[]>
   create(payload: Record<string, unknown>): Promise<ApplicantDocument>
+  findLatestByApplicantAndDescription(applicantId: number, description: string): Promise<ApplicantDocument | null>
 }
 
 export interface ApplicantFieldResponseRepository {
@@ -124,10 +132,12 @@ export interface ApplicantFeeRepository {
 export interface PSIDTrackingRepository {
   listPaidByApplicantId(applicantId: number): Promise<PSIDTracking[]>
   findByConsumerNumber(consumerNumber: string): Promise<PSIDTracking | null>
+  findByConsumerAndDept(consumerNumber: string, deptTransactionId: string): Promise<PSIDTracking | null>
   countByApplicantId(applicantId: number): Promise<number>
   findLatestByApplicantId(applicantId: number): Promise<PSIDTracking | null>
   list(): Promise<PSIDTracking[]>
   create(payload: Record<string, unknown>): Promise<PSIDTracking>
+  updateById(id: string, updates: Record<string, unknown>): Promise<PSIDTracking | null>
 }
 
 export interface ProducerRepository {

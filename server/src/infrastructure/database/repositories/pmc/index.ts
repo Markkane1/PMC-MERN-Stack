@@ -272,6 +272,7 @@ export const applicantRepositoryMongo: ApplicantRepository = {
       .select('-__v')
     return docs.map(mapApplicant)
   },
+<<<<<<< HEAD
   async listPaginated(
     filter: Record<string, unknown> = {},
     page: number = 1,
@@ -300,6 +301,18 @@ export const applicantRepositoryMongo: ApplicantRepository = {
         hasPreviousPage: page > 1,
       },
     }
+=======
+  async listPaged(
+    filter: Record<string, unknown> = {},
+    options: { page?: number; limit?: number; sort?: Record<string, 1 | -1> } = {}
+  ) {
+    const page = Math.max(Number(options.page || 1), 1)
+    const limit = Math.min(Math.max(Number(options.limit || 200), 1), 1000)
+    const skip = (page - 1) * limit
+    const sort = options.sort || { createdAt: -1 }
+    const docs = await ApplicantDetailModel.find(filter).sort(sort).skip(skip).limit(limit).lean()
+    return docs.map(mapApplicant)
+>>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
   },
   async create(applicant: Partial<any>) {
     const created = await ApplicantDetailModel.create(applicant)
@@ -657,6 +670,19 @@ export const applicantDocumentRepositoryMongo: ApplicantDocumentRepository = {
     const created = await ApplicantDocumentModel.create(payload)
     return mapApplicantDocument(created.toObject())
   },
+  async findLatestByApplicantAndDescription(applicantId: number, description: string) {
+    const doc = await ApplicantDocumentModel.findOne({ applicantId, documentDescription: description })
+      .sort({ createdAt: -1 })
+      .lean()
+    if (doc) return mapApplicantDocument(doc)
+    const legacy = await ApplicantDocumentModel.findOne({
+      applicant_id: String(applicantId),
+      document_description: description,
+    })
+      .sort({ created_at: -1 })
+      .lean()
+    return legacy ? mapApplicantDocument(legacy) : null
+  },
 }
 
 export const applicantFieldResponseRepositoryMongo: ApplicantFieldResponseRepository = {
@@ -725,6 +751,17 @@ export const psidTrackingRepositoryMongo: PSIDTrackingRepository = {
     const legacy = await PSIDTrackingModel.findOne({ consumer_number: consumerNumber }).lean()
     return legacy ? mapPSIDTracking(legacy) : null
   },
+  async findByConsumerAndDept(consumerNumber: string, deptTransactionId: string) {
+    const doc = await PSIDTrackingModel.findOne({ consumerNumber, deptTransactionId }).sort({ createdAt: -1 }).lean()
+    if (doc) return mapPSIDTracking(doc)
+    const legacy = await PSIDTrackingModel.findOne({
+      consumer_number: consumerNumber,
+      dept_transaction_id: deptTransactionId,
+    })
+      .sort({ created_at: -1 })
+      .lean()
+    return legacy ? mapPSIDTracking(legacy) : null
+  },
   async countByApplicantId(applicantId: number) {
     return PSIDTrackingModel.countDocuments({ applicantId })
   },
@@ -742,41 +779,65 @@ export const psidTrackingRepositoryMongo: PSIDTrackingRepository = {
     const created = await PSIDTrackingModel.create(payload)
     return mapPSIDTracking(created.toObject())
   },
+  async updateById(id: string, updates: Record<string, unknown>) {
+    const doc = await PSIDTrackingModel.findByIdAndUpdate(id, updates, { new: true }).lean()
+    return doc ? mapPSIDTracking(doc) : null
+  },
 }
 
 export const producerRepositoryMongo: ProducerRepository = {
   async findByApplicantId(applicantId: number) {
-    return ProducerModel.findOne({ applicantId }).lean()
+    const doc = await ProducerModel.findOne({ applicantId }).lean()
+    if (doc) return doc
+    return ProducerModel.findOne({ applicant_id: String(applicantId) } as any).lean()
   },
   async listByApplicantIds(applicantIds: number[]) {
-    return ProducerModel.find({ applicantId: { $in: applicantIds } }).lean()
+    const docs = await ProducerModel.find({ applicantId: { $in: applicantIds } }).lean()
+    if (docs.length) return docs
+    const legacyIds = applicantIds.map(String)
+    return ProducerModel.find({ applicant_id: { $in: legacyIds } } as any).lean()
   },
 }
 
 export const consumerRepositoryMongo: ConsumerRepository = {
   async findByApplicantId(applicantId: number) {
-    return ConsumerModel.findOne({ applicantId }).lean()
+    const doc = await ConsumerModel.findOne({ applicantId }).lean()
+    if (doc) return doc
+    return ConsumerModel.findOne({ applicant_id: String(applicantId) } as any).lean()
   },
   async listByApplicantIds(applicantIds: number[]) {
-    return ConsumerModel.find({ applicantId: { $in: applicantIds } }).lean()
+    const docs = await ConsumerModel.find({ applicantId: { $in: applicantIds } }).lean()
+    if (docs.length) return docs
+    const legacyIds = applicantIds.map(String)
+    return ConsumerModel.find({ applicant_id: { $in: legacyIds } } as any).lean()
   },
 }
 
 export const collectorRepositoryMongo: CollectorRepository = {
   async findByApplicantId(applicantId: number) {
-    return CollectorModel.findOne({ applicantId }).lean()
+    const doc = await CollectorModel.findOne({ applicantId }).lean()
+    if (doc) return doc
+    return CollectorModel.findOne({ applicant_id: String(applicantId) } as any).lean()
   },
   async listByApplicantIds(applicantIds: number[]) {
-    return CollectorModel.find({ applicantId: { $in: applicantIds } }).lean()
+    const docs = await CollectorModel.find({ applicantId: { $in: applicantIds } }).lean()
+    if (docs.length) return docs
+    const legacyIds = applicantIds.map(String)
+    return CollectorModel.find({ applicant_id: { $in: legacyIds } } as any).lean()
   },
 }
 
 export const recyclerRepositoryMongo: RecyclerRepository = {
   async findByApplicantId(applicantId: number) {
-    return RecyclerModel.findOne({ applicantId }).lean()
+    const doc = await RecyclerModel.findOne({ applicantId }).lean()
+    if (doc) return doc
+    return RecyclerModel.findOne({ applicant_id: String(applicantId) } as any).lean()
   },
   async listByApplicantIds(applicantIds: number[]) {
-    return RecyclerModel.find({ applicantId: { $in: applicantIds } }).lean()
+    const docs = await RecyclerModel.find({ applicantId: { $in: applicantIds } }).lean()
+    if (docs.length) return docs
+    const legacyIds = applicantIds.map(String)
+    return RecyclerModel.find({ applicant_id: { $in: legacyIds } } as any).lean()
   },
 }
 

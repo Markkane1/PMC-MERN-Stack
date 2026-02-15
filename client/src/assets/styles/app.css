@@ -81,12 +81,16 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .logo-section {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1 1 auto;
+  min-width: 240px;
 }
 
 .header-logo {
@@ -108,6 +112,20 @@
 .banner-nav {
   display: flex;
   gap: 20px;
+  margin-left: auto;
+}
+
+.header-subtext {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111c2d;
+  line-height: 1.2;
+  flex: 2 1 320px;
+  min-width: 260px;
+}
+
+.header-subtext span {
+  display: inline-block;
 }
 
 .nav-link {

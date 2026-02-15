@@ -217,7 +217,7 @@ const Banner = () => {
                 >
                     {dialogContent}
                     {!dialogContent && (
-                        <p>
+                        <div>
                             <p className="mb-1">
                                 <strong>Tracking Number*</strong>
                             </p>
@@ -236,7 +236,7 @@ const Banner = () => {
                                 }
                                 onKeyDown={handleKeyDown}
                             />
-                        </p>
+                        </div>
                     )}
                 </ConfirmDialog>
 
