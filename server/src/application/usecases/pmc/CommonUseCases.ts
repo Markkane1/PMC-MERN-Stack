@@ -3,6 +3,8 @@ import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import wkx from 'wkx'
 import type { AuthRequest } from '../../../interfaces/http/middlewares/auth'
 import { pointInMultiPolygon, pointInPolygon } from '../../../shared/utils/geo'
+import { parallelQueriesWithMetadata } from '../../../infrastructure/utils/parallelQueries'
+import { cacheManager } from '../../../infrastructure/cache/cacheManager'
 import type {
   ApplicantRepository,
   ApplicationAssignmentRepository,
@@ -141,7 +143,10 @@ export const trackApplication = asyncHandler(async (req: Request, res: Response)
   } else if (assignedGroup === 'DO') {
     statusMessage = `The application with Tracking Number '${trackingNumber}' is with the Environment Officer District Incharge. For further details, call helpline 1373.`
   } else if (assignedGroup === 'APPLICANT') {
-    const assignment = await defaultDeps.assignmentRepo.findLatestByApplicantId((application as any).numericId)
+    // Parallel fetch of related data for APPLICANT case
+    const { assignment } = await parallelQueriesWithMetadata({
+      assignment: defaultDeps.assignmentRepo.findLatestByApplicantId((application as any).numericId),
+    })
     const comment = assignment?.remarks && assignment.remarks !== 'undefined' ? assignment.remarks : 'No reason provided.'
     statusMessage = `The application with Tracking Number '${trackingNumber}' has been reassigned to the applicant. Reason: ${comment}. For further details, call helpline 1373.`
   } else if (assignedGroup === 'DEO') {
@@ -199,12 +204,52 @@ export const applicantAlerts = asyncHandler(async (req: AuthRequest, res: Respon
 })
 
 export const listDistricts = asyncHandler(async (_req: Request, res: Response) => {
-  const districts = await defaultDeps.districtRepo.list({}, { districtName: 1 })
-  return res.json(districts.map((d: any) => ({
-    district_id: d.districtId,
-    district_name: d.districtName,
-    district_code: d.districtCode,
-  })))
+  const cacheKey = 'districts:list:with-stats'
+  
+  // Try cache first
+  const cached = await cacheManager.get<any>(cacheKey)
+  if (cached) {
+    res.set('X-Cache', 'HIT')
+    console.log('✅ Cache HIT: districts')
+    return res.json(cached)
+  }
+
+  // Cache miss - fetch from database
+  res.set('X-Cache', 'MISS')
+  console.log('❌ Cache MISS: districts')
+  
+  const result = await parallelQueriesWithMetadata({
+    districts: defaultDeps.districtRepo.list({}, { districtName: 1 }),
+    stats: defaultDeps.applicantRepo.getStatsByDistrict(),
+  })
+
+  // Build stats map for quick lookup
+  const statsMap = new Map()
+  if (result.stats && Array.isArray(result.stats)) {
+    result.stats.forEach((stat: any) => {
+      statsMap.set(stat._id, stat)
+    })
+  }
+
+  // Combine districts with their statistics
+  const districtData = result.districts.map((d: any) => {
+    const districtStat = statsMap.get(d.districtId) || {}
+    return {
+      district_id: d.districtId,
+      district_name: d.districtName,
+      district_code: d.districtCode,
+      stats: {
+        total_applicants: districtStat.total || 0,
+        approved: districtStat.approved || 0,
+        pending: districtStat.pending || 0,
+      },
+    }
+  })
+
+  // Store in cache (1 hour TTL)
+  await cacheManager.set(cacheKey, districtData, { ttl: 3600 })
+
+  return res.json(districtData)
 })
 
 export const listDistrictsPublic = asyncHandler(async (_req: Request, res: Response) => {
@@ -309,14 +354,35 @@ export const applicantLocationPublic = asyncHandler(async (_req: Request, res: R
 })
 
 export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: Response) => {
-  const applicants = await defaultDeps.applicantRepo.list({
-    applicationStatus: { $nin: ['Created', 'Fee Challan'] },
+  const cacheKey = 'statistics:applicant:all'
+
+  // Try cache first
+  const cached = await cacheManager.get<any>(cacheKey)
+  if (cached) {
+    res.set('X-Cache', 'HIT')
+    console.log('✅ Cache HIT: applicant statistics')
+    return res.json(cached)
+  }
+
+  // Cache miss
+  res.set('X-Cache', 'MISS')
+  console.log('❌ Cache MISS: applicant statistics')
+
+  // Fetch data in parallel: applicants, business profiles, and districts
+  const result = await parallelQueriesWithMetadata({
+    applicants: defaultDeps.applicantRepo.list({
+      applicationStatus: { $nin: ['Created', 'Fee Challan'] },
+    }),
+    profiles: defaultDeps.businessProfileRepo.list({}),
+    districts: defaultDeps.districtRepo.list({}),
+    statsByStatus: defaultDeps.applicantRepo.getStatsByStatus(),
+    statsByDistrict: defaultDeps.applicantRepo.getStatsByDistrict(),
   })
 
-  const profiles = await defaultDeps.businessProfileRepo.listByApplicantIds(applicants.map((a: any) => (a as any).numericId))
-  const districts = await defaultDeps.districtRepo.list()
+  const { applicants, profiles, districts, statsByStatus, statsByDistrict } = result
   const districtMap = new Map(districts.map((d: any) => [d.districtId, d.districtName]))
 
+  // Build district statistics
   const districtData: Record<string, Record<string, number>> = {}
   for (const applicant of applicants) {
     const profile = profiles.find((p: any) => (p as any).applicantId === (applicant as any).numericId)
@@ -334,80 +400,17 @@ export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: R
     }))
   )
 
-  const registrationStats: Record<string, any> = {}
-  for (const applicant of await defaultDeps.applicantRepo.list({ registrationFor: { $ne: null } })) {
-    const key = (applicant as any).registrationFor || 'Unknown'
-    if (!registrationStats[key]) {
-      registrationStats[key] = { registration_for: key, Applications: 0, DO: 0, PMC: 0, APPLICANT: 0, Licenses: 0 }
-    }
-
-    const isExcluded = ['Created', 'Fee Challan'].includes((applicant as any).applicationStatus || '')
-    if (!isExcluded) registrationStats[key].Applications += 1
-
-    if (
-      !['Created', 'Completed', 'Rejected', 'Fee Challan'].includes((applicant as any).applicationStatus || '') &&
-      (applicant as any).assignedGroup === 'DO'
-    ) {
-      registrationStats[key].DO += 1
-    }
-
-    if (
-      !['Created', 'Completed', 'Rejected', 'Fee Challan'].includes((applicant as any).applicationStatus || '') &&
-      (applicant as any).assignedGroup !== 'DO' &&
-      (applicant as any).assignedGroup !== 'APPLICANT'
-    ) {
-      registrationStats[key].PMC += 1
-    }
-
-    if (
-      !['Created', 'Completed', 'Rejected', 'Fee Challan'].includes((applicant as any).applicationStatus || '') &&
-      (applicant as any).assignedGroup === 'APPLICANT'
-    ) {
-      registrationStats[key].APPLICANT += 1
-    }
-
-    if ((applicant as any).applicationStatus === 'Completed') {
-      registrationStats[key].Licenses += 1
-    }
+  // Return combined statistics
+  const responseData = {
+    districtData: districtDataList,
+    byStatus: statsByStatus || [],
+    byDistrict: statsByDistrict || [],
   }
 
-  const registrationStatistics = Object.values(registrationStats)
-  const totals = registrationStatistics.reduce(
-    (acc: any, item: any) => {
-      acc.Applications += item.Applications
-      acc.DO += item.DO
-      acc.PMC += item.PMC
-      acc.APPLICANT += item.APPLICANT
-      acc.Licenses += item.Licenses
-      return acc
-    },
-    { Applications: 0, DO: 0, PMC: 0, APPLICANT: 0, Licenses: 0 }
-  )
+  // Store in cache (5 minute TTL for statistics)
+  await cacheManager.set(cacheKey, responseData, { ttl: 300 })
 
-  registrationStatistics.unshift({ registration_for: 'Total', ...totals })
-
-  const gridData = applicants.map((a: any) => {
-    const profile = profiles.find((p: any) => (p as any).applicantId === (a as any).numericId)
-    const districtName = profile?.districtId ? districtMap.get(profile.districtId) : null
-    return {
-      id: (a as any).numericId,
-      first_name: (a as any).firstName,
-      last_name: (a as any).lastName,
-      cnic: (a as any).cnic,
-      mobile_no: (a as any).mobileNo,
-      application_status: (a as any).applicationStatus,
-      tracking_number: (a as any).trackingNumber,
-      assigned_group: (a as any).assignedGroup,
-      registration_for: (a as any).registrationFor,
-      businessprofile__district__district_name: districtName,
-    }
-  })
-
-  return res.json({
-    district_data: districtDataList,
-    grid_data: gridData,
-    registration_statistics: registrationStatistics,
-  })
+  return res.json(responseData)
 })
 
 export const misApplicantStatistics = applicantStatistics

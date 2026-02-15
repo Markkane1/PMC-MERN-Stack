@@ -22,7 +22,11 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
 
   const token = header.replace('Bearer ', '').trim()
   try {
-    const payload = jwt.verify(token, env.jwtSecret) as { userId: string }
+    const payload = jwt.verify(token, env.jwtSecret) as { userId?: string; type?: string }
+    if (!payload?.userId || payload.type === 'refresh') {
+      return res.status(401).json({ message: 'Unauthorized' })
+    }
+
     const user = await defaultDeps.userRepo.findById(payload.userId)
     if (!user || user.isActive === false) {
       return res.status(401).json({ message: 'Unauthorized' })
@@ -51,13 +55,30 @@ export function requirePermission(permissions: string[]) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     const user = req.user
     const userPermissions: string[] = user?.permissions || []
-    const userGroups: string[] = user?.groups || []
-    if (userGroups.includes('Super') || userGroups.includes('Admin')) {
-      return next()
-    }
+
+    // SECURITY: Do not allow group-based bypass for permission checks
+    // Each endpoint must explicitly grant required permissions
     const allowed = userPermissions.some((p) => permissions.includes(p))
     if (!allowed) {
+      // Log failed permission attempt for audit
+      console.warn(`Permission denied for user ${user?._id} attempting ${permissions.join(', ')}`)
       return res.status(403).json({ message: 'Forbidden' })
+    }
+    return next()
+  }
+}
+
+// Separate middleware for role-based access to admin functions
+// This requires an explicit 'admin' permission in the permissions array
+export function requireAdminRole() {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    const user = req.user
+    const userPermissions: string[] = user?.permissions || []
+
+    // Explicitly check for admin permission
+    if (!userPermissions.includes('admin')) {
+      console.warn(`Admin access denied for user ${user?._id}`)
+      return res.status(403).json({ message: 'Admin access required' })
     }
     return next()
   }

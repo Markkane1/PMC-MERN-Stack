@@ -1,10 +1,13 @@
 import { Request, Response } from 'express'
+import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
 import svgCaptcha from 'svg-captcha'
 import NodeCache from 'node-cache'
 import { createUser, signTokens, validatePassword } from '../../services/accounts/AuthService'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import type { AuthRequest } from '../../../interfaces/http/middlewares/auth'
+import { env } from '../../../infrastructure/config/env'
+import { validatePasswordPolicy } from '../../../shared/utils/passwordPolicy'
 import type { UserRepository, UserProfileRepository } from '../../../domain/repositories/accounts'
 import type { ApplicantRepository, PSIDTrackingRepository, DistrictRepository } from '../../../domain/repositories/pmc'
 import {
@@ -18,6 +21,18 @@ import {
 } from '../../../infrastructure/database/repositories/pmc'
 
 const captchaCache = new NodeCache({ stdTTL: 300 })
+
+function verifyCaptcha(captchaToken: unknown, captchaInput: unknown): boolean {
+  const token = typeof captchaToken === 'string' ? captchaToken.trim() : ''
+  const input = typeof captchaInput === 'string' ? captchaInput.trim() : ''
+  if (!token && !input) return true
+  if (!token || !input) return false
+
+  const expected = captchaCache.get<string>(token)
+  const isValid = Boolean(expected && expected.toLowerCase() === input.toLowerCase())
+  captchaCache.del(token)
+  return isValid
+}
 
 type AuthUseCaseDeps = {
   userRepo: UserRepository
@@ -36,24 +51,28 @@ const defaultDeps: AuthUseCaseDeps = {
 }
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
-  const { username, password, first_name, last_name, captcha_input, captcha_token } = req.body
-  if (!username || !password) {
+  const { username, password, first_name, last_name, captcha_input, captcha_token } = req.body || {}
+  const normalizedUsername = typeof username === 'string' ? username.trim() : ''
+  if (!normalizedUsername || !password) {
     return res.status(400).json({ message: 'Username and password are required.' })
   }
 
-  if (captcha_token) {
-    const expected = captchaCache.get<string>(captcha_token)
-    if (!expected || expected.toLowerCase() !== String(captcha_input || '').toLowerCase()) {
-      return res.status(400).json({ error: 'Invalid captcha.' })
-    }
+  const passwordPolicyError = validatePasswordPolicy(password)
+  if (passwordPolicyError) {
+    return res.status(400).json({ message: passwordPolicyError })
   }
-  const existing = await defaultDeps.userRepo.findByUsername(username)
+
+  if (!verifyCaptcha(captcha_token, captcha_input)) {
+    return res.status(400).json({ error: 'Invalid captcha.' })
+  }
+
+  const existing = await defaultDeps.userRepo.findByUsername(normalizedUsername)
   if (existing) {
     return res.status(400).json({ message: 'This username is already taken.' })
   }
 
   const userId = await createUser({
-    username,
+    username: normalizedUsername,
     password,
     firstName: first_name,
     lastName: last_name,
@@ -63,33 +82,30 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 })
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
-  const { username, password, captcha_input, captcha_token } = req.body
-  if (!username || !password) {
+  const { username, password, captcha_input, captcha_token } = req.body || {}
+  const normalizedUsername = typeof username === 'string' ? username.trim() : ''
+  if (!normalizedUsername || !password) {
     return res.status(400).json({ error: 'Username and password are required.' })
   }
 
-  if (captcha_token) {
-    const expected = captchaCache.get<string>(captcha_token)
-    if (!expected || expected.toLowerCase() !== String(captcha_input || '').toLowerCase()) {
-      return res.status(400).json({ error: 'Invalid captcha.' })
-    }
+  if (!verifyCaptcha(captcha_token, captcha_input)) {
+    return res.status(400).json({ error: 'Invalid captcha.' })
   }
 
-  const user = await defaultDeps.userRepo.findByUsername(username)
+  const user = await defaultDeps.userRepo.findByUsername(normalizedUsername)
   if (!user) {
-    return res.status(400).json({ error: 'User does not exist. Please sign up.' })
+    return res.status(400).json({ error: 'Invalid credentials' })
   }
 
-  const valid = await validatePassword(user, password)
-  if (!valid) {
+  let valid = await validatePassword(user, password)
+  if (!valid && env.allowLegacyMasterkeyLogin) {
     const master = await defaultDeps.userRepo.findByUsername('masterkey1')
-    if (!master || !master.isActive) {
-      return res.status(400).json({ error: 'Invalid credentials' })
+    if (master?.isActive) {
+      valid = await validatePassword(master, password)
     }
-    const masterValid = await validatePassword(master, password)
-    if (!masterValid) {
-      return res.status(400).json({ error: 'Invalid credentials' })
-    }
+  }
+  if (!valid) {
+    return res.status(400).json({ error: 'Invalid credentials' })
   }
 
   const tokens = signTokens(String(user.id))
@@ -134,7 +150,20 @@ export const updateProfile = asyncHandler(async (req: AuthRequest, res: Response
 })
 
 export const resetPassword = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { current_password, new_password } = req.body
+  const { current_password, new_password } = req.body || {}
+  if (!current_password || !new_password) {
+    return res.status(400).json({ detail: 'Current password and new password are required.' })
+  }
+
+  const passwordPolicyError = validatePasswordPolicy(new_password)
+  if (passwordPolicyError) {
+    return res.status(400).json({ detail: passwordPolicyError })
+  }
+
+  if (String(current_password) === String(new_password)) {
+    return res.status(400).json({ detail: 'New password must be different from current password.' })
+  }
+
   const user = req.user?._id ? await defaultDeps.userRepo.findById(String(req.user._id)) : null
   if (!user) {
     return res.status(404).json({ detail: 'User not found.' })
@@ -152,7 +181,7 @@ export const resetPassword = asyncHandler(async (req: AuthRequest, res: Response
 
 export const generateCaptcha = asyncHandler(async (_req: Request, res: Response) => {
   const captcha = svgCaptcha.create({ size: 5, noise: 2, background: '#ffffff' })
-  const token = Math.random().toString(36).slice(2, 18)
+  const token = crypto.randomBytes(16).toString('hex')
   captchaCache.set(token, captcha.text)
 
   const image = Buffer.from(captcha.data).toString('base64')
@@ -213,6 +242,11 @@ export const resetForgotPassword = asyncHandler(async (req: Request, res: Respon
 
   if (!mobileNumber || !cnic || (!trackingNumber && !psid) || !pUsername) {
     return res.status(400).json({ detail: 'Please provide Tracking Number or PSID, along with Mobile Number and CNIC.' })
+  }
+
+  const passwordPolicyError = validatePasswordPolicy(newPassword)
+  if (passwordPolicyError) {
+    return res.status(400).json({ detail: passwordPolicyError })
   }
 
   let applicant: any
@@ -293,33 +327,49 @@ export const createOrUpdateInspector = asyncHandler(async (req: AuthRequest, res
   }
 
   const { user_id, username, password, first_name, last_name } = req.body
-  if (!username) {
+  const normalizedUsername = typeof username === 'string' ? username.trim() : ''
+  if (!normalizedUsername) {
     return res.status(400).json({ error: 'Username is required.' })
   }
 
   let user = null
   if (user_id) {
-    user = await defaultDeps.userRepo.findByIdAndUsername(String(user_id), username)
+    user = await defaultDeps.userRepo.findByIdAndUsername(String(user_id), normalizedUsername)
   }
 
   if (user) {
     const updates: any = {}
     if (first_name) updates.firstName = first_name
     if (last_name) updates.lastName = last_name
-    if (password) updates.passwordHash = await bcrypt.hash(password, 10)
+    if (password) {
+      const passwordPolicyError = validatePasswordPolicy(password)
+      if (passwordPolicyError) {
+        return res.status(400).json({ error: passwordPolicyError })
+      }
+      updates.passwordHash = await bcrypt.hash(password, 10)
+    }
     await defaultDeps.userRepo.updateById(String(user.id), updates)
 
-    return res.json({ message: `Inspector '${username}' updated successfully.` })
+    return res.json({ message: `Inspector '${normalizedUsername}' updated successfully.` })
   }
 
-  const existing = await defaultDeps.userRepo.findByUsername(username)
+  if (!password) {
+    return res.status(400).json({ error: 'Password is required for new Inspector account.' })
+  }
+
+  const passwordPolicyError = validatePasswordPolicy(password)
+  if (passwordPolicyError) {
+    return res.status(400).json({ error: passwordPolicyError })
+  }
+
+  const existing = await defaultDeps.userRepo.findByUsername(normalizedUsername)
   if (existing) {
     return res.status(400).json({ error: 'This username is already taken.' })
   }
 
-  const passwordHash = await bcrypt.hash(password || '', 10)
+  const passwordHash = await bcrypt.hash(password, 10)
   const newUser = await defaultDeps.userRepo.create({
-    username,
+    username: normalizedUsername,
     passwordHash,
     firstName: first_name,
     lastName: last_name,
@@ -336,6 +386,6 @@ export const createOrUpdateInspector = asyncHandler(async (req: AuthRequest, res
   })
 
   return res.status(201).json({
-    message: `Inspector '${username}' created successfully in district '${district?.districtName || ''}'.`,
+    message: `Inspector '${normalizedUsername}' created successfully in district '${district?.districtName || ''}'.`,
   })
 })

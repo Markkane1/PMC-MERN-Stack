@@ -5,7 +5,7 @@
   "description": "PMC backend re-implemented in MERN (Express + MongoDB).",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts", 
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint . --ext .ts",
@@ -19,7 +19,11 @@
     "migrate:auth:mern": "ts-node src/scripts/migrateAuthToMern.ts",
     "cleanup:bak": "ts-node src/scripts/cleanupBackupCollections.ts",
     "superadmin:static": "ts-node src/scripts/createStaticSuperAdmin.ts",
-    "ensure:applicant-perms": "ts-node src/scripts/ensureApplicantPermissions.ts"
+    "ensure:applicant-perms": "ts-node src/scripts/ensureApplicantPermissions.ts",
+    "db:index": "ts-node src/scripts/createIndexes.ts",
+    "load:test:baseline": "ts-node src/scripts/loadTest.baseline.ts",
+    "load:test:stress": "ts-node src/scripts/loadTest.stress.ts",
+    "load:test:sustained": "ts-node src/scripts/loadTest.sustained.ts"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -30,6 +34,7 @@
     "express": "^4.19.2",
     "express-rate-limit": "^7.4.1",
     "helmet": "^7.1.0",
+    "ioredis": "^5.9.3",
     "jsonwebtoken": "^9.0.2",
     "luxon": "^3.5.0",
     "mongodb": "^7.0.0",

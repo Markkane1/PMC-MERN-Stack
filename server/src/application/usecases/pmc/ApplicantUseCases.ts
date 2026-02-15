@@ -6,6 +6,8 @@ import {
   businessProfileRepositoryMongo,
   applicationSubmittedRepositoryMongo,
   districtRepositoryMongo,
+  applicantDocumentRepositoryMongo,
+  applicantFeeRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
 import type { ApplicantRepository, BusinessProfileRepository, ApplicationSubmittedRepository, DistrictRepository } from '../../../domain/repositories/pmc'
 import {
@@ -14,6 +16,9 @@ import {
   maybeCreateSubmitted,
   maybeUpdateTrackingNumber,
 } from '../../services/pmc/ApplicantService'
+import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
+import { parallelQueriesWithMetadata } from '../../../infrastructure/utils/parallelQueries'
+import { cacheManager } from '../../../infrastructure/cache/cacheManager'
 
 type ApplicantUseCaseDeps = {
   applicantRepo: ApplicantRepository
@@ -107,16 +112,60 @@ async function filterByUserGroups(req: AuthRequest) {
 
 export const listApplicants = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { filter } = await filterByUserGroups(req)
-  const applicants = await defaultDeps.applicantRepo.list(filter)
-  const data = await Promise.all(applicants.map((a) => assembleApplicantDetail(a)))
-  res.json(data)
+  
+  // Parse pagination parameters (page and pageSize from query)
+  const { page, pageSize } = parsePaginationParams(req.query)
+  
+  // Use paginated repository method
+  const result = await defaultDeps.applicantRepo.listPaginated(filter, page, pageSize)
+  
+  // Assemble details for paginated data
+  const data = await Promise.all(result.data.map((a) => assembleApplicantDetail(a)))
+  
+  // Return paginated response
+  res.json(paginateResponse(data, result.pagination))
 })
 
 export const getApplicant = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const applicant = await defaultDeps.applicantRepo.findByNumericId(Number(req.params.id))
-  if (!applicant) return res.status(404).json({ message: 'Not found' })
-  const data = await assembleApplicantDetail(applicant)
-  return res.json(data)
+  const applicantId = Number(req.params.id)
+  const cacheKey = `applicant:${applicantId}:detail`
+
+  // Try cache first
+  const cached = await cacheManager.get<any>(cacheKey)
+  if (cached) {
+    res.set('X-Cache', 'HIT')
+    console.log(`✅ Cache HIT: applicant ${applicantId}`)
+    return res.json(cached)
+  }
+
+  // Cache miss
+  res.set('X-Cache', 'MISS')
+  console.log(`❌ Cache MISS: applicant ${applicantId}`)
+
+  // Fetch applicant, documents, and fees in parallel
+  const result = await parallelQueriesWithMetadata({
+    applicant: defaultDeps.applicantRepo.findByNumericId(applicantId),
+    documents: applicantDocumentRepositoryMongo.listByApplicantId(applicantId),
+    fees: applicantFeeRepositoryMongo.listByApplicantId(applicantId),
+  })
+  
+  if (!result.applicant) {
+    return res.status(404).json({ message: 'Not found' })
+  }
+  
+  const data = await assembleApplicantDetail(result.applicant)
+  
+  // Include documents and fees in response
+  const responseData = {
+    ...data,
+    documents: result.documents || [],
+    fees: result.fees || [],
+  }
+
+  // Store in cache (10 minute TTL for user data)
+  await cacheManager.set(cacheKey, responseData, { ttl: 600 })
+
+  return res.json(responseData)
 })
 
 export const createApplicant = asyncHandler(async (req: AuthRequest, res: Response) => {

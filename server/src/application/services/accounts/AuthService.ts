@@ -72,7 +72,9 @@ export async function validatePassword(user: { passwordHash: string }, password:
 }
 
 export function signTokens(userId: string) {
-  const access = jwt.sign({ userId }, env.jwtSecret, { expiresIn: env.jwtExpiresIn } as jwt.SignOptions)
-  const refresh = jwt.sign({ userId, type: 'refresh' }, env.jwtSecret, { expiresIn: env.jwtExpiresIn } as jwt.SignOptions)
+  const access = jwt.sign({ userId, type: 'access' }, env.jwtSecret, { expiresIn: env.jwtExpiresIn } as jwt.SignOptions)
+  const refresh = jwt.sign({ userId, type: 'refresh' }, env.jwtRefreshSecret, {
+    expiresIn: env.jwtRefreshExpiresIn,
+  } as jwt.SignOptions)
   return { access, refresh }
 }

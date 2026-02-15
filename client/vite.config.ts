@@ -22,6 +22,45 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: 'build'
+    outDir: 'build',
+    // Week 3: Code splitting - manual chunks
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor libraries - load once, reuse across all chunks
+          'react': ['react', 'react-dom', 'react-router-dom'],
+          
+          // UI & data libraries
+          'ui': ['@tanstack/react-table', '@mui/material', '@mui/icons-material'],
+          
+          // Data visualization
+          'charts': ['react-apexcharts', 'apexcharts'],
+          
+          // Data fetching & caching
+          'data': ['swr', 'axios'],
+          
+          // Utilities
+          'utils': ['lodash', 'date-fns', 'classnames'],
+          
+          // Virtualization for large lists
+          'virtual': ['react-window'],
+          
+          // Icons & theming
+          'icons': ['react-icons'],
+        },
+        // Optimize chunk file sizes
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
+      }
+    },
+    // Increase chunk size warning threshold (default: 500KB)
+    chunkSizeWarningLimit: 600,
+    // Source maps in production for debugging
+    sourcemap: false,
+    // Minify with esbuild (fast)
+    minify: 'esbuild',
+    // Target modern browsers
+    target: 'ES2020',
   }
 })

@@ -1,11 +1,10 @@
-import path from 'path'
-import fs from 'fs'
 import multer from 'multer'
 import { Request, Response } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import PDFDocument from 'pdfkit'
 import ExcelJS from 'exceljs'
-import { env } from '../../../infrastructure/config/env'
+import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
+import { parallelQueriesWithMetadata } from '../../../infrastructure/utils/parallelQueries'
 import type { InspectionReportRepository, SingleUsePlasticsSnapshotRepository, DistrictRepository } from '../../../domain/repositories/pmc'
 import type { UserProfileRepository } from '../../../domain/repositories/accounts'
 import {
@@ -14,6 +13,14 @@ import {
   districtRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
 import { userProfileRepositoryMongo } from '../../../infrastructure/database/repositories/accounts'
+import {
+  IMAGE_PDF_EXTENSIONS,
+  IMAGE_PDF_MIMETYPES,
+  MAX_FILE_SIZE,
+  createFileFilter,
+  ensureUploadSubDir,
+  secureRandomFilename,
+} from '../../../interfaces/http/middlewares/upload'
 
 type AuthRequest = Request & { user?: any }
 
@@ -31,24 +38,27 @@ const defaultDeps: InspectionDeps = {
   userProfileRepo: userProfileRepositoryMongo,
 }
 
-function ensureDir(dirPath: string) {
-  if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true })
-}
-
 const storage = multer.diskStorage({
   destination: (_req, file, cb) => {
     const subDir = file.fieldname === 'affidavit' ? 'media/affidavits' : 'media/inspections'
-    const dest = path.join(env.uploadDir, subDir)
-    ensureDir(dest)
+    const dest = ensureUploadSubDir(subDir)
     cb(null, dest)
   },
   filename: (_req, file, cb) => {
-    const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')
-    cb(null, `${Date.now()}_${safeName}`)
+    cb(null, secureRandomFilename(file.originalname))
   },
 })
 
-const upload = multer({ storage })
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: MAX_FILE_SIZE,
+    files: 3,
+    fields: 100,
+    fieldSize: 1024 * 1024,
+  },
+  fileFilter: createFileFilter(IMAGE_PDF_MIMETYPES, IMAGE_PDF_EXTENSIONS),
+})
 
 function parseJsonField(value: any, fallback: any) {
   if (value === undefined || value === null) return fallback
@@ -63,6 +73,7 @@ function parseJsonField(value: any, fallback: any) {
 }
 
 export const listInspectionReports = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const { page, pageSize } = parsePaginationParams(req.query)
   const userProfile = req.user?._id ? await defaultDeps.userProfileRepo.findByUserId(String(req.user._id)) : null
 
   const filter: any = {}
@@ -70,10 +81,19 @@ export const listInspectionReports = asyncHandler(async (req: AuthRequest, res: 
     filter.districtId = userProfile.districtId
   }
 
-  const reports = await defaultDeps.reportRepo.list(filter)
-  const districts = await defaultDeps.districtRepo.list()
+  // Parallel fetch of reports and districts
+  const { reports, districts } = await parallelQueriesWithMetadata({
+    reports: defaultDeps.reportRepo.list(filter),
+    districts: defaultDeps.districtRepo.list(),
+  })
+
+  // Manual pagination
+  const skip = (page - 1) * pageSize
+  const paginated = reports.slice(skip, skip + pageSize)
+  
   const districtMap = new Map(districts.map((d: any) => [d.districtId, d.districtName]))
-  return res.json(reports.map((r: any) => serializeInspectionReport(r, districtMap)))
+  const data = paginated.map((r: any) => serializeInspectionReport(r, districtMap))
+  return res.json(paginateResponse(data, { page, pageSize, total: reports.length }))
 })
 
 export const createInspectionReport = [

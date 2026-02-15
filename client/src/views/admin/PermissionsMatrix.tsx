@@ -134,6 +134,16 @@ const PermissionsMatrix = () => {
         .length
     const selectedUser = users.find((user) => user.id === selectedUserId)
 
+    const getPasswordPolicyError = (value: string) => {
+        if (value.length < 8) return 'Password must be at least 8 characters.'
+        if (!/[a-z]/.test(value))
+            return 'Password must include a lowercase letter.'
+        if (!/[A-Z]/.test(value))
+            return 'Password must include an uppercase letter.'
+        if (!/\d/.test(value)) return 'Password must include a number.'
+        return null
+    }
+
     const toggleGroupPermission = (groupId: string, permissionKey: string) => {
         setGroups((prev) =>
             prev.map((group) => {
@@ -304,6 +314,11 @@ const PermissionsMatrix = () => {
 
     const handleCreateSuperadmin = async () => {
         if (!superForm.username || !superForm.password) return
+        const passwordPolicyError = getPasswordPolicyError(superForm.password)
+        if (passwordPolicyError) {
+            setError(passwordPolicyError)
+            return
+        }
         try {
             setLoading(true)
             const created = await AdminService.createSuperadmin({
@@ -340,6 +355,11 @@ const PermissionsMatrix = () => {
     const handleResetSuperadminPassword = async (superadmin: SuperadminDto) => {
         const nextPassword = window.prompt(`Reset password for ${superadmin.username}`)
         if (!nextPassword) return
+        const passwordPolicyError = getPasswordPolicyError(nextPassword)
+        if (passwordPolicyError) {
+            setError(passwordPolicyError)
+            return
+        }
         try {
             setLoading(true)
             await AdminService.updateSuperadmin(superadmin.id, {
@@ -368,6 +388,11 @@ const PermissionsMatrix = () => {
 
     const handleResetPassword = async () => {
         if (!selectedUserId || !passwordReset) return
+        const passwordPolicyError = getPasswordPolicyError(passwordReset)
+        if (passwordPolicyError) {
+            setError(passwordPolicyError)
+            return
+        }
         try {
             setLoading(true)
             await AdminService.resetUserPassword(selectedUserId, {

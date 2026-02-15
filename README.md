@@ -2,6 +2,22 @@
 
 This repo contains the MERN backend and React frontend for the PMC system.
 
+## 🔒 SECURITY NOTICE
+
+This application handles sensitive government data. **IMPORTANT:** Before deploying to production, you MUST:
+
+1. **Read** [SECURITY_AUDIT_REPORT.md](SECURITY_AUDIT_REPORT.md) for detailed security assessment
+2. **Review** [SECURITY_CHANGES_SUMMARY.md](SECURITY_CHANGES_SUMMARY.md) for fixes implemented
+3. **Follow** [SECURITY_HARDENING_GUIDE.md](SECURITY_HARDENING_GUIDE.md) for deployment steps
+
+**Critical Environment Variables Required:**
+- `JWT_SECRET` - MUST be set to a cryptographically random 32+ character string (never 'replace_me')
+- `MONGO_URI` - Must point to MongoDB Atlas or secure instance (never localhost in production)
+- `CORS_ORIGIN` - Must be exact domain (never use `*` wildcard in production)
+- `NODE_ENV` - Must be `production` for production deployments
+
+⚠️ **Security fixes implemented:** Rate limiting, file upload validation, helmet CSP, HTTPS enforcement, permission controls removed, environment validation.
+
 ## Structure
 - `server` - Express + MongoDB backend
 - `client` - React (Vite) frontend

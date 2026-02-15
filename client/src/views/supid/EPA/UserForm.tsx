@@ -47,6 +47,16 @@ const UserForm = ({ selectedUser, setSelectedUser }) => {
 
     const isEditMode = !!selectedUser?.id
 
+    const getPasswordPolicyError = (value: string) => {
+        if (value.length < 8) return 'Password must be at least 8 characters.'
+        if (!/[a-z]/.test(value))
+            return 'Password must include a lowercase letter.'
+        if (!/[A-Z]/.test(value))
+            return 'Password must include an uppercase letter.'
+        if (!/\d/.test(value)) return 'Password must include a number.'
+        return null
+    }
+
     useEffect(() => {
         reset({
             username: selectedUser?.username || '',
@@ -63,6 +73,21 @@ const UserForm = ({ selectedUser, setSelectedUser }) => {
         setServerError(null)
 
         try {
+            if (!isEditMode && !data.password) {
+                setServerError('Password is required for new users.')
+                setSubmitting(false)
+                return
+            }
+
+            if (data.password) {
+                const passwordPolicyError = getPasswordPolicyError(data.password)
+                if (passwordPolicyError) {
+                    setServerError(passwordPolicyError)
+                    setSubmitting(false)
+                    return
+                }
+            }
+
             const requestData = {
                 user_id: selectedUser ? selectedUser.id : null,
                 username: data.username,

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import bcrypt from 'bcryptjs'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
+import { validatePasswordPolicy } from '../../../shared/utils/passwordPolicy'
 import { SystemConfigModel } from '../../../infrastructure/database/models/common/SystemConfig'
 import { UserProfileModel } from '../../../infrastructure/database/models/accounts/UserProfile'
 import { UserModel } from '../../../infrastructure/database/models/accounts/User'
@@ -636,6 +637,11 @@ export const resetUserPassword = asyncHandler(async (req: AuthRequest, res: Resp
     return res.status(400).json({ message: 'new_password is required.' })
   }
 
+  const passwordPolicyError = validatePasswordPolicy(new_password)
+  if (passwordPolicyError) {
+    return res.status(400).json({ message: passwordPolicyError })
+  }
+
   const user = await defaultDeps.userRepo.findById(id)
   if (!user) {
     return res.status(404).json({ message: 'User not found.' })
@@ -685,6 +691,11 @@ export const createSuperadmin = asyncHandler(async (req: AuthRequest, res: Respo
   const { username, password, first_name, last_name } = req.body || {}
   if (!username || !password) {
     return res.status(400).json({ message: 'username and password are required.' })
+  }
+
+  const passwordPolicyError = validatePasswordPolicy(password)
+  if (passwordPolicyError) {
+    return res.status(400).json({ message: passwordPolicyError })
   }
 
   const existing = await defaultDeps.userRepo.findByUsername(String(username))
@@ -740,6 +751,10 @@ export const updateSuperadmin = asyncHandler(async (req: AuthRequest, res: Respo
     groups: Array.from(new Set([...(user.groups || []), 'Super', 'Admin'])),
   }
   if (password) {
+    const passwordPolicyError = validatePasswordPolicy(password)
+    if (passwordPolicyError) {
+      return res.status(400).json({ message: passwordPolicyError })
+    }
     updates.passwordHash = await bcrypt.hash(String(password), 10)
   }
 

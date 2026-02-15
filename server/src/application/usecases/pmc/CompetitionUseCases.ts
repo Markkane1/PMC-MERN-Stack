@@ -1,30 +1,38 @@
-import path from 'path'
-import fs from 'fs'
 import multer from 'multer'
 import PDFDocument from 'pdfkit'
 import { Request, Response } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
-import { env } from '../../../infrastructure/config/env'
 import type { CompetitionRegistrationRepository } from '../../../domain/repositories/pmc'
 import { competitionRegistrationRepositoryMongo } from '../../../infrastructure/database/repositories/pmc'
-
-function ensureDir(dirPath: string) {
-  if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true })
-}
+import {
+  IMAGE_PDF_EXTENSIONS,
+  IMAGE_PDF_MIMETYPES,
+  MAX_FILE_SIZE,
+  createFileFilter,
+  ensureUploadSubDir,
+  secureRandomFilename,
+} from '../../../interfaces/http/middlewares/upload'
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    const dest = path.join(env.uploadDir, 'media/competition')
-    ensureDir(dest)
+    const dest = ensureUploadSubDir('media/competition')
     cb(null, dest)
   },
   filename: (_req, file, cb) => {
-    const safeName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_')
-    cb(null, `${Date.now()}_${safeName}`)
+    cb(null, secureRandomFilename(file.originalname))
   },
 })
 
-const upload = multer({ storage })
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: MAX_FILE_SIZE,
+    files: 3,
+    fields: 50,
+    fieldSize: 1024 * 1024,
+  },
+  fileFilter: createFileFilter(IMAGE_PDF_MIMETYPES, IMAGE_PDF_EXTENSIONS),
+})
 
 type CompetitionDeps = {
   repo: CompetitionRegistrationRepository

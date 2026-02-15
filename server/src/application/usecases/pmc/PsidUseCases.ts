@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import crypto from 'crypto'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import type { ApplicantRepository, PSIDTrackingRepository } from '../../../domain/repositories/pmc'
 import { applicantRepositoryMongo, psidTrackingRepositoryMongo } from '../../../infrastructure/database/repositories/pmc'
@@ -37,7 +38,7 @@ export const generatePsid = asyncHandler(async (req: AuthRequest, res: Response)
     cnic: (applicant as any).cnic,
     districtId: null,
     amountBifurcation: {},
-    consumerNumber: `PSID-${Math.floor(Math.random() * 1000000)}`,
+    consumerNumber: `PSID-${crypto.randomInt(100000, 1000000)}`,
     status: 'Generated',
     createdBy: req.user?._id,
   })

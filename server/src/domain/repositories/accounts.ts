@@ -10,6 +10,7 @@ export interface UserRepository {
   create(user: Omit<User, 'id'>): Promise<User>
   updateById(id: string, updates: Partial<User>): Promise<User | null>
   updatePassword(id: string, passwordHash: string): Promise<void>
+  deleteById(id: string): Promise<void>
 }
 
 export interface UserProfileRepository {

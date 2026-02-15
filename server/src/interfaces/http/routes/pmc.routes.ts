@@ -1,6 +1,7 @@
 ﻿import { Router } from 'express'
 import { authenticate, requirePermission } from '../middlewares/auth'
 import { parseMultipart } from '../middlewares/multipart'
+import { cacheMiddleware } from '../middlewares/cache'
 import {
   listApplicants,
   getApplicant,
@@ -88,13 +89,13 @@ pmcRouter.patch('/business-profiles/:id/', authenticate, requirePermission(['pmc
 pmcRouter.delete('/business-profiles/:id/', authenticate, requirePermission(['pmc_api.delete_businessprofile']), businessProfileController.remove)
 
 // Reference data
-pmcRouter.get('/plastic-items/', authenticate, requirePermission(['pmc_api.view_plasticitem']), plasticItemsController.list)
+pmcRouter.get('/plastic-items/', authenticate, requirePermission(['pmc_api.view_plasticitem']), cacheMiddleware(3600), plasticItemsController.list)
 pmcRouter.post('/plastic-items/', authenticate, requirePermission(['pmc_api.add_plasticitem']), plasticItemsController.create)
 
-pmcRouter.get('/products/', authenticate, requirePermission(['pmc_api.view_product']), productsController.list)
+pmcRouter.get('/products/', authenticate, requirePermission(['pmc_api.view_product']), cacheMiddleware(3600), productsController.list)
 pmcRouter.post('/products/', authenticate, requirePermission(['pmc_api.add_product']), productsController.create)
 
-pmcRouter.get('/by-products/', authenticate, requirePermission(['pmc_api.view_byproduct']), byProductsController.list)
+pmcRouter.get('/by-products/', authenticate, requirePermission(['pmc_api.view_byproduct']), cacheMiddleware(3600), byProductsController.list)
 pmcRouter.post('/by-products/', authenticate, requirePermission(['pmc_api.add_byproduct']), byProductsController.create)
 
 // Producers/Consumers/Collectors/Recyclers
@@ -129,9 +130,9 @@ pmcRouter.get('/district-documents/', authenticate, requirePermission(['pmc_api.
 pmcRouter.post('/district-documents/', authenticate, requirePermission(['pmc_api.add_districtplasticcommitteedocument']), ...uploadDistrictDocument)
 
 // Districts/Tehsils
-pmcRouter.get('/districts/', authenticate, requirePermission(['pmc_api.view_district']), listDistricts)
-pmcRouter.get('/districts-public', listDistrictsPublic)
-pmcRouter.get('/tehsils/', authenticate, requirePermission(['pmc_api.view_tehsil']), listTehsils)
+pmcRouter.get('/districts/', authenticate, requirePermission(['pmc_api.view_district']), cacheMiddleware(3600), listDistricts)
+pmcRouter.get('/districts-public', cacheMiddleware(3600), listDistrictsPublic)
+pmcRouter.get('/tehsils/', authenticate, requirePermission(['pmc_api.view_tehsil']), cacheMiddleware(3600), listTehsils)
 
 // Applicant public views
 pmcRouter.get('/applicant-location-public/', applicantLocationPublic)
@@ -153,12 +154,12 @@ pmcRouter.post('/manual-fields/', authenticate, requirePermission(['pmc_api.add_
 pmcRouter.patch('/manual-fields/:id/', authenticate, requirePermission(['pmc_api.change_applicantmanualfields']), parseMultipart, applicantManualFieldsController.update)
 
 // Statistics
-pmcRouter.get('/fetch-statistics-view-groups/', authenticate, requirePermission(['pmc_api.view_applicantdetail']), listGroupStats)
-pmcRouter.get('/fetch-statistics-do-view-groups/', authenticate, requirePermission(['pmc_api.view_applicantdetail']), listGroupStatsDo)
+pmcRouter.get('/fetch-statistics-view-groups/', authenticate, requirePermission(['pmc_api.view_applicantdetail']), cacheMiddleware(1800), listGroupStats)
+pmcRouter.get('/fetch-statistics-do-view-groups/', authenticate, requirePermission(['pmc_api.view_applicantdetail']), cacheMiddleware(1800), listGroupStatsDo)
 
-pmcRouter.get('/applicant-statistics/', authenticate, requirePermission(['pmc_api.view_applicantdetail']), applicantStatistics)
-pmcRouter.get('/mis-applicant-statistics/', misApplicantStatistics)
-pmcRouter.get('/mis-district-plastic-stats/', districtPlasticStats)
+pmcRouter.get('/applicant-statistics/', authenticate, requirePermission(['pmc_api.view_applicantdetail']), cacheMiddleware(1800), applicantStatistics)
+pmcRouter.get('/mis-applicant-statistics/', cacheMiddleware(1800), misApplicantStatistics)
+pmcRouter.get('/mis-district-plastic-stats/', cacheMiddleware(1800), districtPlasticStats)
 
 pmcRouter.get('/DistrictByLatLon/', districtByLatLon)
 

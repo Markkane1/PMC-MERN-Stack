@@ -4,6 +4,7 @@ import { Request, Response } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import { createUploader } from '../../../interfaces/http/middlewares/upload'
 import { env } from '../../../infrastructure/config/env'
+import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
 import type { ApplicantDocumentRepository, DistrictPlasticCommitteeDocumentRepository, DistrictRepository } from '../../../domain/repositories/pmc'
 import type { UserRepository } from '../../../domain/repositories/accounts'
 import {
@@ -31,6 +32,13 @@ const defaultDeps: DocumentsDeps = {
 
 const applicantUploader = createUploader('media/documents')
 const districtUploader = createUploader('media/plastic_committee')
+const SAFE_PATH_SEGMENT = /^[a-zA-Z0-9._-]+$/
+
+function parsePositiveInt(value: unknown): number | null {
+  const parsed = Number(value)
+  if (!Number.isInteger(parsed) || parsed <= 0) return null
+  return parsed
+}
 
 function toDocumentUrl(docPath?: string) {
   if (!docPath) return docPath
@@ -48,7 +56,11 @@ export const uploadApplicantDocument = [
       return res.status(400).json({ message: 'document is required' })
     }
 
-    const applicantId = Number(req.body.applicant || req.body.applicant_id)
+    const applicantId = parsePositiveInt(req.body.applicant || req.body.applicant_id)
+    if (!applicantId) {
+      return res.status(400).json({ message: 'Valid applicant/applicant_id is required' })
+    }
+
     const documentDescription = req.body.document_description || req.body.documentDescription
     const documentPath = `media/documents/${req.file.filename}`
 
@@ -69,16 +81,19 @@ export const uploadApplicantDocument = [
   }),
 ]
 
-export const listApplicantDocuments = asyncHandler(async (_req: Request, res: Response) => {
-  const docs = await defaultDeps.applicantDocRepo.list()
-  const data = docs.map((doc: any) => ({
+export const listApplicantDocuments = asyncHandler(async (req: Request, res: Response) => {
+  const { page, pageSize } = parsePaginationParams(req.query)
+  const allDocs = await defaultDeps.applicantDocRepo.list()
+  const skip = (page - 1) * pageSize
+  const paginated = allDocs.slice(skip, skip + pageSize)
+  const data = paginated.map((doc: any) => ({
     id: (doc as any).numericId,
     applicant: (doc as any).applicantId,
     document_description: (doc as any).documentDescription,
     created_at: (doc as any).createdAt,
     document: toDocumentUrl((doc as any).documentPath),
   }))
-  return res.json(data)
+  return res.json(paginateResponse(data, { page, pageSize, total: allDocs.length }))
 })
 
 export const uploadDistrictDocument = [
@@ -88,10 +103,18 @@ export const uploadDistrictDocument = [
       return res.status(400).json({ message: 'document is required' })
     }
 
-    const districtId = Number(req.body.district || req.body.district_id)
+    const districtId = parsePositiveInt(req.body.district || req.body.district_id)
+    if (!districtId) {
+      return res.status(400).json({ message: 'Valid district/district_id is required' })
+    }
+
     const documentType = req.body.document_type || req.body.documentType
     const title = req.body.title
     const documentDate = req.body.document_date ? new Date(req.body.document_date) : undefined
+    if (documentDate && Number.isNaN(documentDate.getTime())) {
+      return res.status(400).json({ message: 'Invalid document_date' })
+    }
+
     const documentPath = `media/plastic_committee/${req.file.filename}`
 
     const doc = await defaultDeps.districtDocRepo.create({
@@ -145,9 +168,22 @@ export const listDistrictDocuments = asyncHandler(async (_req: Request, res: Res
 export const downloadMedia = asyncHandler(async (req: Request, res: Response) => {
   const { folder_name, folder_name2, file_name } = req.params
   const parts = [folder_name, folder_name2, file_name].filter(Boolean) as string[]
-  const filePath = path.join(env.uploadDir, ...parts)
+  if (!parts.length || parts.some((part) => !SAFE_PATH_SEGMENT.test(part))) {
+    return res.status(400).json({ message: 'Invalid file path' })
+  }
+
+  const uploadRoot = path.resolve(env.uploadDir)
+  const filePath = path.resolve(uploadRoot, ...parts)
+  if (filePath !== uploadRoot && !filePath.startsWith(`${uploadRoot}${path.sep}`)) {
+    return res.status(400).json({ message: 'Invalid file path' })
+  }
+
   if (!fs.existsSync(filePath)) {
     return res.status(404).json({ message: 'File not found' })
   }
-  return res.sendFile(path.resolve(filePath))
+  if (!fs.statSync(filePath).isFile()) {
+    return res.status(404).json({ message: 'File not found' })
+  }
+
+  return res.sendFile(filePath, { dotfiles: 'deny', lastModified: true, cacheControl: true })
 })

@@ -20,12 +20,21 @@ export interface ApplicantRepository {
   findOne(filter: Record<string, unknown>): Promise<ApplicantDetail | null>
   findOneWithCreator(filter: Record<string, unknown>): Promise<any | null>
   list(filter?: Record<string, unknown>): Promise<ApplicantDetail[]>
+  listPaginated(
+    filter?: Record<string, unknown>,
+    page?: number,
+    pageSize?: number,
+    sort?: Record<string, 1 | -1>
+  ): Promise<{ data: ApplicantDetail[]; pagination: any }>
   create(applicant: Partial<ApplicantDetail>): Promise<ApplicantDetail>
   updateByNumericId(numericId: number, updates: Partial<ApplicantDetail>): Promise<ApplicantDetail | null>
   updateOne(filter: Record<string, unknown>, updates: Record<string, unknown>): Promise<void>
   deleteByNumericId(numericId: number): Promise<void>
   count(filter?: Record<string, unknown>): Promise<number>
   aggregate(pipeline: any[]): Promise<any[]>
+  getStatsByStatus(): Promise<any[]>
+  getStatsByDistrict(): Promise<any[]>
+  getDashboardMetrics(filter?: Record<string, unknown>): Promise<any>
 }
 
 export interface BusinessProfileRepository {
@@ -38,12 +47,24 @@ export interface BusinessProfileRepository {
 
 export interface DistrictRepository {
   list(filter?: Record<string, unknown>, sort?: Record<string, 1 | -1>): Promise<any[]>
+  listPaginated(
+    filter?: Record<string, unknown>,
+    page?: number,
+    pageSize?: number,
+    sort?: Record<string, 1 | -1>
+  ): Promise<{ data: any[]; pagination: any }>
   findByDistrictId(districtId: number): Promise<any | null>
   findByShortName(shortName: string): Promise<any | null>
 }
 
 export interface TehsilRepository {
   list(filter?: Record<string, unknown>, sort?: Record<string, 1 | -1>): Promise<any[]>
+  listPaginated(
+    filter?: Record<string, unknown>,
+    page?: number,
+    pageSize?: number,
+    sort?: Record<string, 1 | -1>
+  ): Promise<{ data: any[]; pagination: any }>
   listByDistrictId(districtId?: number): Promise<any[]>
   findByTehsilId(tehsilId: number): Promise<any | null>
 }

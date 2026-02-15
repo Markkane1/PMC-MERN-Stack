@@ -33,6 +33,7 @@ type AuthRequest = Request & { user?: any }
 export const businessProfileController = createCrudController(businessProfileCrudRepo, {
   setCreatedBy: true,
   setUpdatedBy: true,
+  enablePagination: true,
   transform: (doc) => serializeBusinessProfile(doc),
 })
 
@@ -108,6 +109,7 @@ export const recyclersController = createCrudController(recyclerCrudRepo, {
 export const rawMaterialsController = createCrudController(rawMaterialCrudRepo)
 export const applicantFieldResponsesController = createCrudController(applicantFieldResponseCrudRepo, {
   setCreatedBy: true,
+  enablePagination: true,
   transform: (doc) => serializeApplicantFieldResponse(doc),
   mapPayload: (body) => ({
     applicantId: toNumber(body.applicant || body.applicant_id || body.applicantId),
@@ -119,6 +121,7 @@ export const applicantFieldResponsesController = createCrudController(applicantF
 export const applicantManualFieldsController = createCrudController(applicantManualFieldsCrudRepo, {
   setCreatedBy: true,
   setUpdatedBy: true,
+  enablePagination: true,
   transform: (doc) => serializeApplicantManualFields(doc),
   mapPayload: (body) => ({
     applicantId: toNumber(body.applicant || body.applicant_id || body.applicantId),
@@ -143,6 +146,7 @@ export const applicantManualFieldsController = createCrudController(applicantMan
 export const applicationAssignmentController = createCrudController(applicationAssignmentCrudRepo, {
   setCreatedBy: true,
   setUpdatedBy: true,
+  enablePagination: true,
   transform: (doc) => serializeAssignment(doc),
   mapPayload: (body) => ({
     applicantId: toNumber(body.applicant || body.applicant_id || body.applicantId),

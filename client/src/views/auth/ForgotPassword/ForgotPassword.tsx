@@ -24,6 +24,16 @@ export const ForgotPasswordBase = () => {
     const [message, setMessage] = useTimeOutMessage()
     const [loading, setLoading] = useState(false)
 
+    const getPasswordPolicyError = (value: string) => {
+        if (value.length < 8) return 'Password must be at least 8 characters.'
+        if (!/[a-z]/.test(value))
+            return 'Password must include a lowercase letter.'
+        if (!/[A-Z]/.test(value))
+            return 'Password must include an uppercase letter.'
+        if (!/\d/.test(value)) return 'Password must include a number.'
+        return null
+    }
+
     const handleKeyDown = (e) => {
         if (e.key === 'Backspace') {
             setTrackingNumber(formatTrackingNumber(trackingNumber, true))
@@ -109,6 +119,12 @@ export const ForgotPasswordBase = () => {
         } else if (step === 1) {
             if (newPassword !== confirmPassword) {
                 setMessage('Passwords do not match.')
+                return
+            }
+
+            const passwordPolicyError = getPasswordPolicyError(newPassword)
+            if (passwordPolicyError) {
+                setMessage(passwordPolicyError)
                 return
             }
 
