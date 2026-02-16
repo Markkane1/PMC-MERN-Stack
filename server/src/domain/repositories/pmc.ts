@@ -20,19 +20,12 @@ export interface ApplicantRepository {
   findOne(filter: Record<string, unknown>): Promise<ApplicantDetail | null>
   findOneWithCreator(filter: Record<string, unknown>): Promise<any | null>
   list(filter?: Record<string, unknown>): Promise<ApplicantDetail[]>
-<<<<<<< HEAD
   listPaginated(
     filter?: Record<string, unknown>,
     page?: number,
     pageSize?: number,
     sort?: Record<string, 1 | -1>
   ): Promise<{ data: ApplicantDetail[]; pagination: any }>
-=======
-  listPaged(
-    filter?: Record<string, unknown>,
-    options?: { page?: number; limit?: number; sort?: Record<string, 1 | -1> }
-  ): Promise<ApplicantDetail[]>
->>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
   create(applicant: Partial<ApplicantDetail>): Promise<ApplicantDetail>
   updateByNumericId(numericId: number, updates: Partial<ApplicantDetail>): Promise<ApplicantDetail | null>
   updateOne(filter: Record<string, unknown>, updates: Record<string, unknown>): Promise<void>
@@ -95,9 +88,38 @@ export interface SingleUsePlasticsSnapshotRepository {
   upsertAddItems(id: string, items: any[]): Promise<any>
 }
 
+export interface CompetitionRepository {
+  findAll(): Promise<any[]>
+  findById(id: string): Promise<any | null>
+  findActive(): Promise<any[]>
+  create(data: Record<string, unknown>): Promise<any>
+  update(id: string, data: Partial<Record<string, unknown>>): Promise<any | null>
+  updateStatus(id: string, status: string): Promise<any | null>
+  delete(id: string): Promise<boolean>
+  incrementEnrolledCount(id: string): Promise<void>
+}
+
 export interface CompetitionRegistrationRepository {
-  create(payload: Record<string, unknown>): Promise<any>
+  findAll(): Promise<any[]>
+  findByCompetition(competitionId: string): Promise<any[]>
+  findByApplicant(applicantId: number): Promise<any[]>
+  findById(id: string): Promise<any | null>
   findByRegistrationId(registrationId: string): Promise<any | null>
+  findByCompetitionAndApplicant(competitionId: string, applicantId: number): Promise<any | null>
+  create(data: Record<string, unknown>): Promise<any>
+  update(id: string, data: Partial<Record<string, unknown>>): Promise<any | null>
+  updateStatus(id: string, status: string): Promise<any | null>
+  delete(id: string): Promise<boolean>
+  scoreSubmission(id: string, score: number, scoredBy: string): Promise<any | null>
+}
+
+export interface CourierLabelRepository {
+  findAll(): Promise<any[]>
+  findByRegistration(registrationId: string): Promise<any | null>
+  findByTrackingNumber(trackingNumber: string): Promise<any | null>
+  create(data: Record<string, unknown>): Promise<any>
+  update(id: string, data: Partial<Record<string, unknown>>): Promise<any | null>
+  updateStatus(id: string, status: string): Promise<any | null>
 }
 
 export interface DistrictPlasticCommitteeDocumentRepository {
@@ -123,6 +145,8 @@ export interface ApplicantManualFieldsRepository {
 }
 
 export interface ApplicantFeeRepository {
+  findAll(): Promise<ApplicantFee[]>
+  list(): Promise<ApplicantFee[]>
   listByApplicantId(applicantId: number): Promise<ApplicantFee[]>
   sumFeeByApplicantId(applicantId: number): Promise<number>
   countByApplicantId(applicantId: number): Promise<number>
@@ -130,6 +154,7 @@ export interface ApplicantFeeRepository {
 }
 
 export interface PSIDTrackingRepository {
+  findAll(): Promise<PSIDTracking[]>
   listPaidByApplicantId(applicantId: number): Promise<PSIDTracking[]>
   findByConsumerNumber(consumerNumber: string): Promise<PSIDTracking | null>
   findByConsumerAndDept(consumerNumber: string, deptTransactionId: string): Promise<PSIDTracking | null>
@@ -171,4 +196,96 @@ export interface ApplicationAssignmentRepository {
   findLatestByApplicantId(applicantId: number): Promise<ApplicationAssignment | null>
   list(filter?: Record<string, unknown>): Promise<ApplicationAssignment[]>
   create(payload: Record<string, unknown>): Promise<ApplicationAssignment>
+}
+
+export interface AlertRepository {
+  findAll(): Promise<any[]>
+  findById(id: string): Promise<any | null>
+  findByApplicantId(applicantId: number, limit?: number, offset?: number): Promise<any[]>
+  findUnreadByApplicantId(applicantId: number): Promise<any[]>
+  countUnreadByApplicantId(applicantId: number): Promise<number>
+  findByType(type: string, limit?: number): Promise<any[]>
+  findByStatus(status: string, limit?: number): Promise<any[]>
+  findByTypeAndApplicant(type: string, applicantId: number): Promise<any[]>
+  create(alertData: Record<string, unknown>): Promise<any>
+  update(id: string, updates: Record<string, unknown>): Promise<any | null>
+  updateStatus(id: string, status: string): Promise<any | null>
+  markAsRead(id: string): Promise<any | null>
+  markMultipleAsRead(ids: string[]): Promise<number>
+  delete(id: string): Promise<boolean>
+  deleteByApplicantId(applicantId: number): Promise<number>
+  listByFilter(filter: Record<string, unknown>, limit?: number, offset?: number): Promise<any[]>
+  countByFilter(filter: Record<string, unknown>): Promise<number>
+}
+
+export interface AlertRecipientRepository {
+  findByApplicantId(applicantId: number): Promise<any | null>
+  findAll(): Promise<any[]>
+  create(recipientData: Record<string, unknown>): Promise<any>
+  update(applicantId: number, updates: Record<string, unknown>): Promise<any | null>
+  updatePreferences(applicantId: number, preferences: Record<string, unknown>): Promise<any | null>
+  delete(applicantId: number): Promise<boolean>
+  findActiveRecipients(): Promise<any[]>
+}
+
+export interface AlertTemplateRepository {
+  findAll(): Promise<any[]>
+  findById(id: string): Promise<any | null>
+  findByType(type: string): Promise<any | null>
+  create(templateData: Record<string, unknown>): Promise<any>
+  update(id: string, updates: Record<string, unknown>): Promise<any | null>
+  delete(id: string): Promise<boolean>
+  findActive(): Promise<any[]>
+}
+
+export interface AdvancedFieldDefinitionRepository {
+  findAll(): Promise<any[]>
+  findById(id: string): Promise<any | null>
+  findByFieldId(fieldId: string): Promise<any | null>
+  findBySection(sectionId: string): Promise<any[]>
+  findActive(): Promise<any[]>
+  create(fieldData: Record<string, unknown>): Promise<any>
+  update(id: string, updates: Record<string, unknown>): Promise<any | null>
+  updateStatus(id: string, status: string): Promise<any | null>
+  delete(id: string): Promise<boolean>
+  findWithDependencies(fieldIds: string[]): Promise<any[]>
+  listByOrder(sectionId?: string): Promise<any[]>
+}
+
+export interface AdvancedFieldResponseRepository {
+  findAll(): Promise<any[]>
+  findById(id: string): Promise<any | null>
+  findByApplicantId(applicantId: number): Promise<any[]>
+  findByApplicantAndSection(applicantId: number, sectionId: string): Promise<any | null>
+  create(responseData: Record<string, unknown>): Promise<any>
+  update(id: string, updates: Record<string, unknown>): Promise<any | null>
+  updateResponse(applicantId: number, sectionId: string, responses: any[]): Promise<any | null>
+  delete(id: string): Promise<boolean>
+  deleteByApplicantId(applicantId: number): Promise<number>
+  findComplete(applicantId: number): Promise<any[]>
+  findIncomplete(applicantId: number): Promise<any[]>
+  countByCompletion(applicantId: number): Promise<{ complete: number; incomplete: number }>
+  getCompletionStatus(applicantId: number): Promise<any>
+}
+
+export interface FieldResponseAuditLogRepository {
+  findAll(): Promise<any[]>
+  findById(id: string): Promise<any | null>
+  findByApplicantId(applicantId: number, limit?: number): Promise<any[]>
+  findByFieldId(fieldId: string, limit?: number): Promise<any[]>
+  findByApplicantAndField(applicantId: number, fieldId: string): Promise<any[]>
+  create(auditData: Record<string, unknown>): Promise<any>
+  delete(id: string): Promise<boolean>
+  deleteOldLogs(olderThanDays: number): Promise<number>
+}
+
+export interface FieldSectionRepository {
+  findAll(): Promise<any[]>
+  findById(id: string): Promise<any | null>
+  findBySectionId(sectionId: string): Promise<any | null>
+  findActive(): Promise<any[]>
+  create(sectionData: Record<string, unknown>): Promise<any>
+  update(id: string, updates: Record<string, unknown>): Promise<any | null>
+  delete(id: string): Promise<boolean>
+  listByOrder(): Promise<any[]>
 }

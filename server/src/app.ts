@@ -1,18 +1,11 @@
-<<<<<<< HEAD
-﻿import express, { type Request, Response, NextFunction } from 'express'
-=======
-import express from 'express'
->>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
+import express, { type Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import compression from 'compression'
 import morgan from 'morgan'
 import rateLimit from 'express-rate-limit'
-<<<<<<< HEAD
-=======
 import hpp from 'hpp'
 import mongoSanitize from 'express-mongo-sanitize'
->>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
 import { env } from './infrastructure/config/env'
 import { errorHandler } from './interfaces/http/middlewares/error'
 import { apiRouter } from './interfaces/http/routes'
@@ -126,22 +119,8 @@ export function createApp() {
     })
   )
 
-<<<<<<< HEAD
-=======
-  app.use(
-    cors({
-      origin: env.corsOrigin,
-      credentials: true,
-      exposedHeaders: ['X-Total-Count'],
-    })
-  )
-  app.use(helmet())
-  app.use(hpp())
-  app.use(mongoSanitize())
->>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
   app.use(compression())
 
-<<<<<<< HEAD
   // Week 4: HTTP Optimization Middleware Chain
   // ETag validation for 304 Not Modified responses
   app.use(etagMiddleware)
@@ -197,26 +176,6 @@ export function createApp() {
   app.post('/api/accounts/reset-forgot-password/', loginLimiter)
 
   // API routes
-=======
-  const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 300,
-    standardHeaders: true,
-    legacyHeaders: false,
-  })
-  const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 20,
-    standardHeaders: true,
-    legacyHeaders: false,
-  })
-
-  app.use('/api', apiLimiter)
-  app.use('/api/accounts/login', authLimiter)
-  app.use('/api/accounts/register', authLimiter)
-
->>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
-  app.use('/api', apiRouter)
 
   // Week 5: Monitoring routes (metrics, dashboard, health, etc.)
   app.use('/monitoring', monitoringRouter)

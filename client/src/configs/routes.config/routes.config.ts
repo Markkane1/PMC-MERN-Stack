@@ -49,6 +49,12 @@ export const protectedRoutes: Routes = [
         authority: [],
     },
     {
+        key: 'generate.receipt',
+        path: '/generate-receipt',
+        component: lazy(() => import('@/views/GenerateReceiptPage')),
+        authority: [],
+    },
+    {
         key: 'spuid.signup',
         path: '/spuid-signup',
         component: lazy(
@@ -206,6 +212,74 @@ export const protectedRoutes: Routes = [
             () => import('@/views/auth/competition/CompetitionFormPage'),
         ),
         authority: [],
+    },
+
+    // Payment Management
+    {
+        key: 'payment.dashboard',
+        path: '/payment',
+        component: lazy(() => import('@/views/PaymentDashboard')),
+        authority: [],
+    },
+    {
+        key: 'payment.dashboard.applicant',
+        path: '/payment/:applicantId',
+        component: lazy(() => import('@/views/PaymentDashboard')),
+        authority: [],
+    },
+
+    // Notifications
+    {
+        key: 'notifications',
+        path: '/notifications',
+        component: lazy(() => import('@/views/NotificationsPage')),
+        authority: [],
+    },
+
+    // Application Form
+    {
+        key: 'application.form',
+        path: '/application',
+        component: lazy(() => import('@/views/ApplicationFormPage')),
+        authority: [],
+    },
+    {
+        key: 'application.form.applicant',
+        path: '/application/:applicantId',
+        component: lazy(() => import('@/views/ApplicationFormPage')),
+        authority: [],
+    },
+
+    // Settings
+    {
+        key: 'settings',
+        path: '/settings',
+        component: lazy(() => import('@/views/SettingsPage')),
+        authority: [],
+    },
+
+    // Admin Reports & Export
+    {
+        key: 'auth.admin.reports',
+        path: '/auth/admin/reports',
+        component: lazy(() => import('@/views/admin/AdminReportsPage')),
+        authority: ['Admin', 'Super'],
+    },
+
+    // GIS Visualization
+    {
+        key: 'gis.visualization',
+        path: '/gis/visualization',
+        component: lazy(() => import('@/views/GISVisualizationPage')),
+        authority: ['TL', 'DO', 'DEO', 'DG', 'LSO', 'Admin', 'Inspector', 'Super'],
+    },
+
+    // Advanced Analytics
+    {
+        key: 'analytics.advanced',
+        path: '/analytics/dashboard',
+        component: lazy(() => import('@/views/AdvancedAnalyticsPage')),
+        authority: ['Analytics', 'Analytics1', 'Analytics2', 'Analytics3', 'Admin', 'DEO', 'DG', 'DO', 'LSM', 'LSO', 'TL', 'Super'],
     },
 
     // Error

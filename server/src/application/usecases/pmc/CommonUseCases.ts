@@ -354,7 +354,6 @@ export const applicantLocationPublic = asyncHandler(async (_req: Request, res: R
 })
 
 export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: Response) => {
-<<<<<<< HEAD
   const cacheKey = 'statistics:applicant:all'
 
   // Try cache first
@@ -378,14 +377,6 @@ export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: R
     districts: defaultDeps.districtRepo.list({}),
     statsByStatus: defaultDeps.applicantRepo.getStatsByStatus(),
     statsByDistrict: defaultDeps.applicantRepo.getStatsByDistrict(),
-=======
-  const excludedStatuses = ['Created', 'Fee Challan']
-  const applicants = await defaultDeps.applicantRepo.list({
-    $and: [
-      { $or: [{ applicationStatus: { $nin: excludedStatuses } }, { applicationStatus: { $exists: false } }] },
-      { $or: [{ application_status: { $nin: excludedStatuses } }, { application_status: { $exists: false } }] },
-    ],
->>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
   })
 
   const { applicants, profiles, districts, statsByStatus, statsByDistrict } = result
@@ -409,87 +400,17 @@ export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: R
     }))
   )
 
-<<<<<<< HEAD
   // Return combined statistics
   const responseData = {
     districtData: districtDataList,
     byStatus: statsByStatus || [],
     byDistrict: statsByDistrict || [],
-=======
-  const registrationStats: Record<string, any> = {}
-  const registrationApplicants = await defaultDeps.applicantRepo.list({
-    $or: [{ registrationFor: { $ne: null } }, { registration_for: { $ne: null } }],
-  })
-  for (const applicant of registrationApplicants) {
-    const key = (applicant as any).registrationFor || (applicant as any).registration_for || 'Unknown'
-    if (!registrationStats[key]) {
-      registrationStats[key] = { registration_for: key, Applications: 0, DO: 0, PMC: 0, APPLICANT: 0, Licenses: 0 }
-    }
-
-    const appStatus = (applicant as any).applicationStatus || (applicant as any).application_status || ''
-    const assignedGroup = (applicant as any).assignedGroup || (applicant as any).assigned_group
-    const isExcluded = excludedStatuses.includes(appStatus || '')
-    if (!isExcluded) registrationStats[key].Applications += 1
-
-    if (
-      !['Created', 'Completed', 'Rejected', 'Fee Challan'].includes(appStatus || '') &&
-      assignedGroup === 'DO'
-    ) {
-      registrationStats[key].DO += 1
-    }
-
-    if (
-      !['Created', 'Completed', 'Rejected', 'Fee Challan'].includes(appStatus || '') &&
-      assignedGroup !== 'DO' &&
-      assignedGroup !== 'APPLICANT'
-    ) {
-      registrationStats[key].PMC += 1
-    }
-
-    if (
-      !['Created', 'Completed', 'Rejected', 'Fee Challan'].includes(appStatus || '') &&
-      assignedGroup === 'APPLICANT'
-    ) {
-      registrationStats[key].APPLICANT += 1
-    }
-
-    if (appStatus === 'Completed') {
-      registrationStats[key].Licenses += 1
-    }
->>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
   }
 
   // Store in cache (5 minute TTL for statistics)
   await cacheManager.set(cacheKey, responseData, { ttl: 300 })
 
-<<<<<<< HEAD
   return res.json(responseData)
-=======
-  registrationStatistics.unshift({ registration_for: 'Total', ...totals })
-
-  const gridData = applicants.map((a: any) => {
-    const profile = profiles.find((p: any) => (p as any).applicantId === (a as any).numericId)
-    const districtName = profile?.districtId ? districtMap.get(profile.districtId) : null
-    return {
-      id: (a as any).numericId,
-      first_name: (a as any).firstName,
-      last_name: (a as any).lastName,
-      cnic: (a as any).cnic,
-      mobile_no: (a as any).mobileNo,
-      application_status: (a as any).applicationStatus || (a as any).application_status,
-      tracking_number: (a as any).trackingNumber || (a as any).tracking_number,
-      assigned_group: (a as any).assignedGroup || (a as any).assigned_group,
-      registration_for: (a as any).registrationFor || (a as any).registration_for,
-      businessprofile__district__district_name: districtName,
-    }
-  })
-
-  return res.json({
-    district_data: districtDataList,
-    grid_data: gridData,
-    registration_statistics: registrationStatistics,
-  })
->>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
 })
 
 export const misApplicantStatistics = applicantStatistics

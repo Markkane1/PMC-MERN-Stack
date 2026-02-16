@@ -51,7 +51,8 @@ import {
 } from '../controllers/pmc/CommonController'
 import { report, reportFee, exportApplicant, psidReport } from '../controllers/pmc/ReportController'
 import { generateLicensePdf, licensePdf, licenseByUser } from '../controllers/pmc/LicenseController'
-import { receiptPdf, chalanPdf } from '../controllers/pmc/PdfController'
+import { receiptPdf, chalanPdf, generateReceiptPdf, verifyChalanQr } from '../controllers/pmc/PdfController'
+import { getPaymentStatus, recordPayment, checkPsidPaymentStatus, getPaymentHistory, checkLicenseEligibility, verifyMultiplePayments, sendPaymentReminder, getPaymentSummary } from '../controllers/pmc/PaymentController'
 import { generatePsid, checkPsidStatus, paymentIntimation, plmisToken } from '../controllers/pmc/PsidController'
 import {
   listInspectionReports,
@@ -65,10 +66,14 @@ import {
   exportDistrictSummaryExcel,
   exportDistrictSummaryPdf,
 } from '../controllers/pmc/InspectionController'
-import { registerCompetition, generateLabel } from '../controllers/pmc/CompetitionController'
+import { registerCompetition, generateLabel, listCompetitions, getCompetition, getMyRegistrations, submitEntry, getCourierLabelPdf, scoreSubmission } from '../controllers/pmc/CompetitionController'
 import { districtsClubCounts, clubsGeojsonAll, clubsGeojsonAllViewset } from '../controllers/idm/IdmController'
 import { ping, verifyChalan, confiscationLookup } from '../controllers/pmc/UtilityController'
 import { listApplicants as listGroupStats, listApplicantsDo as listGroupStatsDo } from '../controllers/pmc/StatisticsController'
+import * as plmisUseCases from '../../../application/usecases/pmc/PLMISUseCases'
+import * as excelExportUseCases from '../../../application/usecases/pmc/ExcelExportUseCases'
+import * as alertUseCases from '../../../application/usecases/pmc/AlertUseCases'
+import * as advancedFieldUseCases from '../../../application/usecases/pmc/AdvancedFieldResponseUseCases'
 
 export const pmcRouter = Router()
 
@@ -194,6 +199,32 @@ pmcRouter.get('/license-by-user/', authenticate, requirePermission(['pmc_api.vie
 // PDFs
 pmcRouter.get('/receipt-pdf/', authenticate, receiptPdf)
 pmcRouter.get('/chalan-pdf/', authenticate, chalanPdf)
+pmcRouter.post('/receipt-pdf/', authenticate, generateReceiptPdf)
+pmcRouter.post('/chalan-pdf/', authenticate, chalanPdf)
+pmcRouter.post('/verify-chalan-qr/', authenticate, verifyChalanQr)
+
+// Payment Status
+pmcRouter.get('/payment-status/:applicantId', authenticate, getPaymentStatus)
+pmcRouter.post('/payment-status/:applicantId', authenticate, recordPayment)
+pmcRouter.get('/check-psid-payment/', authenticate, checkPsidPaymentStatus)
+pmcRouter.get('/payment-history/:applicantId', authenticate, getPaymentHistory)
+pmcRouter.get('/license-eligibility/:applicantId', authenticate, checkLicenseEligibility)
+pmcRouter.post('/verify-payments', authenticate, verifyMultiplePayments)
+pmcRouter.post('/payment-reminder/:applicantId', authenticate, sendPaymentReminder)
+pmcRouter.get('/payment-summary', authenticate, getPaymentSummary)
+
+// PLMIS Payment Integration
+pmcRouter.post('/plmis/initiate', authenticate, requirePermission(['pmc_api.add_psidtracking']), plmisUseCases.initiatePlmisPayment)
+pmcRouter.get('/plmis/status/:psidNumber', authenticate, plmisUseCases.checkPlmisPaymentStatus)
+pmcRouter.post('/plmis/verify', authenticate, requirePermission(['pmc_api.change_psidtracking']), plmisUseCases.verifyPlmisPayment)
+pmcRouter.get('/plmis/receipt/:psidNumber', authenticate, plmisUseCases.getPlmisReceipt)
+pmcRouter.post('/plmis/cancel/:psidNumber', authenticate, requirePermission(['pmc_api.change_psidtracking']), plmisUseCases.cancelPlmisPayment)
+pmcRouter.get('/plmis/statistics', authenticate, requirePermission(['pmc_api.view_psidtracking']), plmisUseCases.getPlmisStatistics)
+pmcRouter.get('/plmis/health', authenticate, plmisUseCases.validatePlmisHealth)
+
+// PLMIS Webhooks (Public endpoints for bank callbacks)
+pmcRouter.post('/plmis/webhook/payment-confirmed', plmisUseCases.plmisPaymentConfirmedWebhook)
+pmcRouter.post('/plmis/webhook/payment-failed', plmisUseCases.plmisPaymentFailedWebhook)
 
 // Inspection reports
 pmcRouter.get('/inspection-report/', authenticate, requirePermission(['pmc_api.view_inspectionreport']), listInspectionReports)
@@ -210,8 +241,19 @@ pmcRouter.get('/inspection-report/export-district-summary-pdf/', authenticate, r
 pmcRouter.get('/inspection-report-cached/all_other_single_use_plastics/', authenticate, requirePermission(['pmc_api.view_singleuseplasticssnapshot']), allOtherSingleUsePlastics)
 
 // Competition
+pmcRouter.get('/competition/', listCompetitions)
+pmcRouter.get('/competition/:id', getCompetition)
+pmcRouter.post('/competition/:competitionId/register/', registerCompetition)
 pmcRouter.post('/competition/register/', registerCompetition)
+pmcRouter.get('/competition/my/registrations', authenticate, getMyRegistrations)
+pmcRouter.post('/competition/:competitionId/registrations/:registrationId/submit', authenticate, submitEntry)
+pmcRouter.post('/competition/:id/submit', authenticate, submitEntry)
+pmcRouter.get('/competition/:competitionId/registrations/:registrationId/generate-label/', authenticate, generateLabel)
+pmcRouter.post('/competition/:competitionId/registrations/:registrationId/generate-label/', authenticate, generateLabel)
 pmcRouter.get('/competition/generate-label/', generateLabel)
+pmcRouter.get('/competition/courier-label/:registrationId', authenticate, getCourierLabelPdf)
+pmcRouter.post('/competition/:competitionId/registrations/:registrationId/score', authenticate, scoreSubmission)
+pmcRouter.post('/competition/:registrationId/score', authenticate, scoreSubmission)
 
 // IDM
 pmcRouter.get('/idm_districts-club-counts/', districtsClubCounts)
@@ -226,3 +268,45 @@ pmcRouter.get('/confiscation-lookup/', confiscationLookup)
 // Media downloads
 pmcRouter.get('/media/:folder_name/:file_name/', downloadMedia)
 pmcRouter.get('/media/:folder_name/:folder_name2/:file_name/', downloadMedia)
+
+// Excel Export
+pmcRouter.get('/export/applicants-payment', authenticate, requirePermission(['pmc_api.view_applicantdetail']), excelExportUseCases.exportApplicantsWithPayment)
+pmcRouter.get('/export/competitions', authenticate, requirePermission(['pmc_api.view_applicantdetail']), excelExportUseCases.exportCompetitionRegistrations)
+pmcRouter.get('/export/payments', authenticate, requirePermission(['pmc_api.view_applicantfee']), excelExportUseCases.exportPaymentTransactions)
+pmcRouter.get('/export/psid-tracking', authenticate, requirePermission(['pmc_api.view_psidtracking']), excelExportUseCases.exportPsidTracking)
+pmcRouter.get('/export/courier-labels', authenticate, requirePermission(['pmc_api.view_applicantdetail']), excelExportUseCases.exportCourierLabels)
+pmcRouter.get('/export/summary-report', authenticate, requirePermission(['pmc_api.view_applicantdetail']), excelExportUseCases.exportSummaryReport)
+
+// Alerts
+pmcRouter.get('/alerts', authenticate, alertUseCases.getApplicantAlerts)
+pmcRouter.get('/alerts/unread-count', authenticate, alertUseCases.getUnreadCount)
+pmcRouter.get('/alerts/:alertId', authenticate, alertUseCases.getAlertDetails)
+pmcRouter.put('/alerts/:alertId/read', authenticate, alertUseCases.markAlertAsRead)
+pmcRouter.put('/alerts/mark-read/batch', authenticate, alertUseCases.markMultipleAsRead)
+pmcRouter.delete('/alerts/:alertId', authenticate, alertUseCases.deleteAlert)
+pmcRouter.get('/alerts/preferences', authenticate, alertUseCases.getNotificationPreferences)
+pmcRouter.put('/alerts/preferences', authenticate, alertUseCases.updateNotificationPreferences)
+pmcRouter.post('/alerts/test', authenticate, alertUseCases.sendTestAlert)
+pmcRouter.get('/alerts/statistics', authenticate, alertUseCases.getAlertStatistics)
+
+// Admin Alerts
+pmcRouter.post('/admin/alerts/create', authenticate, requirePermission(['pmc_api.manage_alerts']), alertUseCases.adminCreateAlert)
+pmcRouter.get('/admin/alerts/all', authenticate, requirePermission(['pmc_api.manage_alerts']), alertUseCases.adminGetAllAlerts)
+
+// Advanced Field Responses
+pmcRouter.get('/fields/definitions', authenticate, advancedFieldUseCases.getFieldDefinitions)
+pmcRouter.get('/fields/definitions/:fieldId', authenticate, advancedFieldUseCases.getFieldDefinition)
+pmcRouter.post('/fields/validate', authenticate, advancedFieldUseCases.validateFieldValue)
+pmcRouter.post('/fields/responses', authenticate, advancedFieldUseCases.saveFieldResponses)
+pmcRouter.get('/fields/responses', authenticate, advancedFieldUseCases.getApplicantResponses)
+pmcRouter.get('/fields/completion-status', authenticate, advancedFieldUseCases.getCompletionStatus)
+pmcRouter.post('/fields/evaluate-conditions', authenticate, advancedFieldUseCases.evaluateConditions)
+pmcRouter.get('/fields/audit-log/:fieldId', authenticate, advancedFieldUseCases.getFieldAuditLog)
+pmcRouter.get('/fields/sections', authenticate, advancedFieldUseCases.getAllSections)
+pmcRouter.get('/fields/sections/:sectionId', authenticate, advancedFieldUseCases.getSectionWithFields)
+
+// Admin Advanced Fields
+pmcRouter.post('/admin/fields/definitions', authenticate, requirePermission(['pmc_api.manage_fields']), advancedFieldUseCases.adminCreateFieldDefinition)
+pmcRouter.put('/admin/fields/definitions/:fieldId', authenticate, requirePermission(['pmc_api.manage_fields']), advancedFieldUseCases.adminUpdateFieldDefinition)
+pmcRouter.delete('/admin/fields/definitions/:fieldId', authenticate, requirePermission(['pmc_api.manage_fields']), advancedFieldUseCases.adminDeleteFieldDefinition)
+pmcRouter.post('/admin/fields/bulk-update', authenticate, requirePermission(['pmc_api.manage_fields']), advancedFieldUseCases.adminBulkUpdateFields)

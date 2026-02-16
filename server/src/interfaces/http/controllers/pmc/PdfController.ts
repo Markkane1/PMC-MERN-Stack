@@ -1,1 +1,1 @@
-export { receiptPdf, chalanPdf } from '../../../../application/usecases/pmc/PdfUseCases'
+export { receiptPdf, chalanPdf, generateReceiptPdf, verifyChalanQr } from '../../../../application/usecases/pmc/PdfUseCases'

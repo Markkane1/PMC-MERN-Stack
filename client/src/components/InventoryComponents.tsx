@@ -69,7 +69,7 @@ export const PlasticItemForm: React.FC = () => {
   )
 }
 
-export const InventoryDashboard: React.FC = ({ businessId }: { businessId: string }) => {
+export const InventoryDashboard: React.FC<{ businessId: string }> = ({ businessId }) => {
   const [inventory, setInventory] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 

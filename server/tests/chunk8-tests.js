@@ -138,7 +138,7 @@ describe('DocumentService Tests', () => {
     const expiringDocuments = await getExpiringDocuments(businessId, 30) // Next 30 days
 
     expect(Array.isArray(expiringDocuments.data)).toBe(true)
-    expiringDocuments.data.forEach((doc: any) => {
+    expiringDocuments.data.forEach((doc) => {
       const daysUntilExpiry = Math.ceil(
         (new Date(doc.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
       )
@@ -243,8 +243,8 @@ describe('WorkflowService Tests', () => {
 
     expect(Array.isArray(alerts.data)).toBe(true)
     alerts.data
-      .filter((a: any) => a.level === 'CRITICAL')
-      .forEach((alert: any) => {
+      .filter((a) => a.level === 'CRITICAL')
+      .forEach((alert) => {
         expect(alert.actionRequired).toBe(true)
       })
   })
@@ -337,67 +337,67 @@ describe('Analytics Tests', () => {
 })
 
 // Test helper functions
-async function registerApplicant(data: any) {
+async function registerApplicant(data) {
   return { success: true, data: { applicantId: 'APP001', status: 'PENDING' } }
 }
 
-async function verifyApplicant(id: string, docs: any) {
+async function verifyApplicant(id, docs) {
   return { success: true, data: { status: 'VERIFIED' } }
 }
 
-async function getApplicantStatusHistory(id: string) {
+async function getApplicantStatusHistory(id) {
   return { data: [{ status: 'VERIFIED', timestamp: new Date() }] }
 }
 
-async function registerBusiness(data: any) {
+async function registerBusiness(data) {
   return { success: true, data: { businessId: 'BUS001', ...data } }
 }
 
-async function validateInventory(data: any) {
+async function validateInventory(data) {
   return data.recyclingRate > 100
     ? { success: false, message: 'recycling rate invalid' }
     : { success: true, data }
 }
 
-async function generateBusinessChecklist(id: string) {
+async function generateBusinessChecklist(id) {
   return { data: { items: [{}, {}, {}] } }
 }
 
-async function getComplianceScoreHistory(id: string) {
+async function getComplianceScoreHistory(id) {
   return { data: [{ score: 85 }, { score: 87 }, { score: 90 }] }
 }
 
-async function uploadDocument(data: any) {
+async function uploadDocument(data) {
   return data.filesize > 50 * 1024 * 1024
     ? { success: false, message: 'size limit exceeded' }
     : { success: true, data: { documentId: 'DOC001', status: 'PENDING_VERIFICATION' } }
 }
 
-async function getExpiringDocuments(id: string, days: number) {
+async function getExpiringDocuments(id, days) {
   return { data: [] }
 }
 
-async function addPlasticItem(data: any) {
+async function addPlasticItem(data) {
   return { success: true, data: { itemId: 'ITEM001', ...data } }
 }
 
-async function getInventoryStatus(id: string) {
+async function getInventoryStatus(id) {
   return { data: { totalItems: 5, categories: {} } }
 }
 
-async function createAssignment(data: any) {
+async function createAssignment(data) {
   return { success: true, data: { assignmentId: 'ASS001', status: 'PENDING' } }
 }
 
-async function recordInspection(data: any) {
+async function recordInspection(data) {
   return { success: true, data: { inspectionId: 'INS001', ...data } }
 }
 
-async function getBusinessAlerts(id: string) {
+async function getBusinessAlerts(id) {
   return { data: [] }
 }
 
-function calculateKPIs(data: any) {
+function calculateKPIs(data) {
   return {
     applicantGrowth: ((data.newApplicants / data.totalApplicants) * 100).toFixed(2),
     verificationRate: ((data.verified / data.totalApplications) * 100).toFixed(2),
@@ -405,7 +405,7 @@ function calculateKPIs(data: any) {
   }
 }
 
-function analyzeTrend(dataPoints: any[]) {
+function analyzeTrend(dataPoints) {
   const firstHalf = dataPoints.slice(0, Math.floor(dataPoints.length / 2))
   const secondHalf = dataPoints.slice(Math.floor(dataPoints.length / 2))
   const firstAvg = firstHalf.reduce((sum, dp) => sum + dp.value, 0) / firstHalf.length
@@ -417,7 +417,7 @@ function analyzeTrend(dataPoints: any[]) {
   }
 }
 
-function detectAnomalies(dataPoints: any[]) {
+function detectAnomalies(dataPoints) {
   const values = dataPoints.map(dp => dp.value)
   const mean = values.reduce((a, b) => a + b, 0) / values.length
   const stdDev = Math.sqrt(values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length)

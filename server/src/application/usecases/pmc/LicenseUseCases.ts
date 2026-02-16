@@ -77,7 +77,7 @@ function buildLicensePdf(res: Response, data: Record<string, any>) {
   doc.end()
 }
 
-export const generateLicensePdf = asyncHandler(async (req: Request, res: Response) => {
+export const generateLicensePdf = asyncHandler(async (req: AuthRequest, res: Response) => {
   const applicantId = req.query.applicant_id as string | undefined
   const trackingNumber = req.query.tracking_number as string | undefined
 
@@ -118,7 +118,7 @@ export const generateLicensePdf = asyncHandler(async (req: Request, res: Respons
     userId: req.user?._id ? String(req.user._id) : undefined,
     username: req.user?.username,
     modelName: 'License',
-    objectId: String(licenseNumber),
+    objectId: String(data.license_number),
     method: req.method,
     ipAddress: req.ip,
     endpoint: req.originalUrl,
@@ -126,7 +126,7 @@ export const generateLicensePdf = asyncHandler(async (req: Request, res: Respons
   return buildLicensePdf(res, data)
 })
 
-export const licensePdf = asyncHandler(async (req: Request, res: Response) => {
+export const licensePdf = asyncHandler(async (req: AuthRequest, res: Response) => {
   const licenseNumber = req.query.license_number as string | undefined
   const dateOfIssue = req.query.date_of_issue as string | undefined
 

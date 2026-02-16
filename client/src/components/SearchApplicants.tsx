@@ -87,7 +87,7 @@ export function SearchApplicants({
         <div className="search-empty">No applicants found</div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .search-applicants {
           position: relative;
           width: 100%;

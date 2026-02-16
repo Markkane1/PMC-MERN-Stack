@@ -60,7 +60,7 @@ export const AssignmentForm: React.FC = () => {
   )
 }
 
-export const AssignmentList: React.FC = ({ userId }: { userId: string }) => {
+export const AssignmentList: React.FC<{ userId: string }> = ({ userId }) => {
   const [assignments, setAssignments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -96,7 +96,7 @@ export const AssignmentList: React.FC = ({ userId }: { userId: string }) => {
   )
 }
 
-export const InspectionForm: React.FC = ({ applicantId }: { applicantId: string }) => {
+export const InspectionForm: React.FC<{ applicantId: string }> = ({ applicantId }) => {
   const [formData, setFormData] = useState({
     inspectionDate: new Date().toISOString().split('T')[0],
     inspectionType: 'SCHEDULED',
@@ -154,7 +154,7 @@ export const InspectionForm: React.FC = ({ applicantId }: { applicantId: string 
   )
 }
 
-export const WorkflowDashboard: React.FC = ({ userId }: { userId: string }) => {
+export const WorkflowDashboard: React.FC<{ userId: string }> = ({ userId }) => {
   const [dashboard, setDashboard] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 

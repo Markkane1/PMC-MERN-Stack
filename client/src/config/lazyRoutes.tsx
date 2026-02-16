@@ -14,7 +14,7 @@ export function RouteLoadingFallback() {
     <div className="route-loading">
       <div className="spinner"></div>
       <p>Loading page...</p>
-      <style jsx>{`
+      <style>{`
         .route-loading {
           display: flex;
           flex-direction: column;

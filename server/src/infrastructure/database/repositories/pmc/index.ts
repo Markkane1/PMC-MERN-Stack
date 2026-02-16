@@ -18,7 +18,15 @@ import type {
   InspectionReportRepository,
   SingleUsePlasticsSnapshotRepository,
   CompetitionRegistrationRepository,
+  CourierLabelRepository,
   DistrictPlasticCommitteeDocumentRepository,
+  AlertRepository,
+  AlertRecipientRepository,
+  AlertTemplateRepository,
+  AdvancedFieldDefinitionRepository,
+  AdvancedFieldResponseRepository,
+  FieldResponseAuditLogRepository,
+  FieldSectionRepository,
 } from '../../../../domain/repositories/pmc'
 import { ApplicantDetailModel } from '../../models/pmc/ApplicantDetail'
 import { BusinessProfileModel } from '../../models/pmc/BusinessProfile'
@@ -40,6 +48,14 @@ import { InspectionReportModel } from '../../models/pmc/InspectionReport'
 import { SingleUsePlasticsSnapshotModel } from '../../models/pmc/SingleUsePlasticsSnapshot'
 import { CompetitionRegistrationModel } from '../../models/pmc/CompetitionRegistration'
 import { DistrictPlasticCommitteeDocumentModel } from '../../models/pmc/DistrictPlasticCommitteeDocument'
+import { createCourierLabelRepository } from './CompetitionRepository'
+import { createAlertRepository, createAlertRecipientRepository, createAlertTemplateRepository } from './AlertRepository'
+import {
+  createAdvancedFieldDefinitionRepository,
+  createAdvancedFieldResponseRepository,
+  createFieldResponseAuditLogRepository,
+  createFieldSectionRepository,
+} from './AdvancedFieldResponseRepository'
 const mapDistrict = (doc: any) => {
   if (!doc) return doc
   const districtId = doc.districtId ?? doc.district_id ?? doc.id
@@ -272,7 +288,6 @@ export const applicantRepositoryMongo: ApplicantRepository = {
       .select('-__v')
     return docs.map(mapApplicant)
   },
-<<<<<<< HEAD
   async listPaginated(
     filter: Record<string, unknown> = {},
     page: number = 1,
@@ -301,18 +316,6 @@ export const applicantRepositoryMongo: ApplicantRepository = {
         hasPreviousPage: page > 1,
       },
     }
-=======
-  async listPaged(
-    filter: Record<string, unknown> = {},
-    options: { page?: number; limit?: number; sort?: Record<string, 1 | -1> } = {}
-  ) {
-    const page = Math.max(Number(options.page || 1), 1)
-    const limit = Math.min(Math.max(Number(options.limit || 200), 1), 1000)
-    const skip = (page - 1) * limit
-    const sort = options.sort || { createdAt: -1 }
-    const docs = await ApplicantDetailModel.find(filter).sort(sort).skip(skip).limit(limit).lean()
-    return docs.map(mapApplicant)
->>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
   },
   async create(applicant: Partial<any>) {
     const created = await ApplicantDetailModel.create(applicant)
@@ -596,14 +599,48 @@ export const singleUsePlasticsSnapshotRepositoryMongo: SingleUsePlasticsSnapshot
 }
 
 export const competitionRegistrationRepositoryMongo: CompetitionRegistrationRepository = {
-  async create(payload: Record<string, unknown>) {
-    const created = await CompetitionRegistrationModel.create(payload)
-    return created.toObject()
+  async findAll() {
+    return CompetitionRegistrationModel.find().sort({ registeredAt: -1 }).lean()
+  },
+  async findByCompetition(competitionId: string) {
+    return CompetitionRegistrationModel.find({ competitionId }).sort({ registeredAt: -1 }).lean()
+  },
+  async findByApplicant(applicantId: number) {
+    return CompetitionRegistrationModel.find({ applicantId }).lean()
+  },
+  async findById(id: string) {
+    return CompetitionRegistrationModel.findById(id).lean()
   },
   async findByRegistrationId(registrationId: string) {
     return CompetitionRegistrationModel.findOne({ registrationId }).lean()
   },
+  async findByCompetitionAndApplicant(competitionId: string, applicantId: number) {
+    return CompetitionRegistrationModel.findOne({ competitionId, applicantId }).lean()
+  },
+  async create(data: Record<string, unknown>) {
+    const created = await CompetitionRegistrationModel.create(data)
+    return created.toObject()
+  },
+  async update(id: string, data: Partial<Record<string, unknown>>) {
+    return CompetitionRegistrationModel.findByIdAndUpdate(id, data, { new: true }).lean()
+  },
+  async updateStatus(id: string, status: string) {
+    return CompetitionRegistrationModel.findByIdAndUpdate(id, { status }, { new: true }).lean()
+  },
+  async delete(id: string) {
+    const result = await CompetitionRegistrationModel.findByIdAndDelete(id)
+    return !!result
+  },
+  async scoreSubmission(id: string, score: number, scoredBy: string) {
+    return CompetitionRegistrationModel.findByIdAndUpdate(
+      id,
+      { score, scoredBy, scoredAt: new Date() },
+      { new: true }
+    ).lean()
+  },
 }
+
+export const courierLabelRepositoryMongo: CourierLabelRepository = createCourierLabelRepository()
 
 export const districtPlasticCommitteeDocumentRepositoryMongo: DistrictPlasticCommitteeDocumentRepository = {
   async create(payload: Record<string, unknown>) {
@@ -715,6 +752,14 @@ export const applicantManualFieldsRepositoryMongo: ApplicantManualFieldsReposito
 }
 
 export const applicantFeeRepositoryMongo: ApplicantFeeRepository = {
+  async findAll() {
+    const docs = await ApplicantFeeModel.find({}).lean()
+    return docs.map(mapApplicantFee)
+  },
+  async list() {
+    const docs = await ApplicantFeeModel.find({}).lean()
+    return docs.map(mapApplicantFee)
+  },
   async listByApplicantId(applicantId: number) {
     const docs = await ApplicantFeeModel.find({ applicantId }).sort({ createdAt: -1 }).lean()
     if (docs.length) return docs.map(mapApplicantFee)
@@ -739,6 +784,10 @@ export const applicantFeeRepositoryMongo: ApplicantFeeRepository = {
 }
 
 export const psidTrackingRepositoryMongo: PSIDTrackingRepository = {
+  async findAll() {
+    const docs = await PSIDTrackingModel.find().lean()
+    return docs.map(mapPSIDTracking)
+  },
   async listPaidByApplicantId(applicantId: number) {
     const docs = await PSIDTrackingModel.find({ applicantId, paymentStatus: 'PAID' }).lean()
     if (docs.length) return docs.map(mapPSIDTracking)
@@ -840,6 +889,20 @@ export const recyclerRepositoryMongo: RecyclerRepository = {
     return RecyclerModel.find({ applicant_id: { $in: legacyIds } } as any).lean()
   },
 }
+
+export const alertRepositoryMongo: AlertRepository = createAlertRepository()
+
+export const alertRecipientRepositoryMongo: AlertRecipientRepository = createAlertRecipientRepository()
+
+export const alertTemplateRepositoryMongo: AlertTemplateRepository = createAlertTemplateRepository()
+
+export const advancedFieldDefinitionRepositoryMongo: AdvancedFieldDefinitionRepository = createAdvancedFieldDefinitionRepository()
+
+export const advancedFieldResponseRepositoryMongo: AdvancedFieldResponseRepository = createAdvancedFieldResponseRepository()
+
+export const fieldResponseAuditLogRepositoryMongo: FieldResponseAuditLogRepository = createFieldResponseAuditLogRepository()
+
+export const fieldSectionRepositoryMongo: FieldSectionRepository = createFieldSectionRepository()
 
 export function buildApplicantServiceDeps() {
   return {

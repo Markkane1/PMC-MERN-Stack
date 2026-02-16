@@ -4,17 +4,13 @@ import { Request, Response } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import { createUploader } from '../../../interfaces/http/middlewares/upload'
 import { env } from '../../../infrastructure/config/env'
-<<<<<<< HEAD
 import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
-import type { ApplicantDocumentRepository, DistrictPlasticCommitteeDocumentRepository, DistrictRepository } from '../../../domain/repositories/pmc'
-=======
 import type {
   ApplicantDocumentRepository,
   ApplicantRepository,
   DistrictPlasticCommitteeDocumentRepository,
   DistrictRepository,
 } from '../../../domain/repositories/pmc'
->>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
 import type { UserRepository } from '../../../domain/repositories/accounts'
 import {
   applicantDocumentRepositoryMongo,
@@ -238,7 +234,6 @@ export const downloadLatestApplicantDocument = asyncHandler(async (req: AuthRequ
 export const downloadMedia = asyncHandler(async (req: Request, res: Response) => {
   const { folder_name, folder_name2, file_name } = req.params
   const parts = [folder_name, folder_name2, file_name].filter(Boolean) as string[]
-<<<<<<< HEAD
   if (!parts.length || parts.some((part) => !SAFE_PATH_SEGMENT.test(part))) {
     return res.status(400).json({ message: 'Invalid file path' })
   }
@@ -250,10 +245,6 @@ export const downloadMedia = asyncHandler(async (req: Request, res: Response) =>
   }
 
   if (!fs.existsSync(filePath)) {
-=======
-  const filePath = resolveSafePath(env.uploadDir, parts)
-  if (!filePath || !fs.existsSync(filePath)) {
->>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
     return res.status(404).json({ message: 'File not found' })
   }
   if (!fs.statSync(filePath).isFile()) {

@@ -1,9 +1,5 @@
 import { Request, Response } from 'express'
-<<<<<<< HEAD
 import crypto from 'crypto'
-=======
-import { logApiCall } from '../../services/common/LogService'
->>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import type {
   ApplicantRepository,
@@ -51,7 +47,6 @@ export const generatePsid = asyncHandler(async (req: AuthRequest, res: Response)
     return res.status(404).send(buildHtmlResponse('Error', '<p>Applicant not found</p>', 404))
   }
 
-<<<<<<< HEAD
   const psid = await defaultDeps.psidRepo.create({
     applicantId: (applicant as any).numericId,
     deptTransactionId: `TX-${Date.now()}`,
@@ -66,126 +61,9 @@ export const generatePsid = asyncHandler(async (req: AuthRequest, res: Response)
     consumerNumber: `PSID-${crypto.randomInt(100000, 1000000)}`,
     status: 'Generated',
     createdBy: req.user?._id,
-=======
-  if (req.user && !isSuperUser(req.user) && String((applicant as any).createdBy) !== String(req.user._id)) {
-    return res.status(403).send(buildHtmlResponse('Forbidden', '<p>You do not have access to this applicant.</p>', 403))
-  }
-
-  if (!['Created', 'Fee Challan'].includes((applicant as any).applicationStatus || 'Created')) {
-    return res.status(400).send(
-      buildHtmlResponse('Error', '<p>Applicant is not eligible for PSID generation.</p>', 400)
-    )
-  }
-
-  const latestPsid = await defaultDeps.psidRepo.findLatestByApplicantId(Number(applicantId))
-  if (latestPsid?.consumerNumber && latestPsid.expiryDate && new Date(latestPsid.expiryDate) >= new Date()) {
-    const html = buildPsidReceiptHtml(applicant, latestPsid)
-    return res.status(200).send(html)
-  }
-
-  const fees = await defaultDeps.feeRepo.listByApplicantId(Number(applicantId))
-  const lastFee = fees[0]
-  if (!lastFee || !lastFee.feeAmount) {
-    return res.status(400).send(
-      buildHtmlResponse('Error', '<p>No fee record found for this applicant.</p>', 400)
-    )
-  }
-
-  const businessProfile = await defaultDeps.businessProfileRepo.findByApplicantId(Number(applicantId))
-  const districtIdVal = businessProfile?.districtId
-  const district = districtIdVal ? await defaultDeps.districtRepo.findByDistrictId(districtIdVal) : null
-  const pitbDistrictId = district?.pitbDistrictId || 0
-
-  const config = await getServiceConfig('ePay')
-  if (!config?.generatePsidEndpoint || !config?.authEndpoint || !config?.clientId || !config?.clientSecret) {
-    return res.status(500).send(buildHtmlResponse('Error', '<p>ePay configuration is missing.</p>', 500))
-  }
-
-  const token = await getOrRefreshToken(config)
-
-  const graceDays = 15
-  const dueDate = new Date()
-  dueDate.setDate(dueDate.getDate() + graceDays)
-  const expiryDate = new Date(dueDate)
-  expiryDate.setHours(23, 59, 59, 0)
-
-  const consumerName = `${(applicant as any).firstName} ${(applicant as any).lastName || ''}`.trim()
-  const mobileNo = (applicant as any).mobileNo ? `0${String((applicant as any).mobileNo).replace(/^0+/, '')}` : ''
-  const cnic = ((applicant as any).cnic || '').replace(/-/g, '')
-  const email = (applicant as any).email || `${cnic || 'unknown'}@cnic.pk`
-  const deptTransactionId = String(Date.now())
-
-  const amountWithinDueDate = Number(lastFee.feeAmount || 0)
-  const payload = {
-    deptTransactionId,
-    dueDate: formatDate(dueDate),
-    expiryDate: formatDateTime(expiryDate),
-    amountWithinDueDate: String(amountWithinDueDate),
-    amountAfterDueDate: '',
-    consumerName,
-    mobileNo,
-    cnic,
-    districtID: String(pitbDistrictId),
-    email,
-    amountBifurcation: [
-      {
-        accountHeadName: 'Initial Environmental Examination and Environmental Impact Assessment Review Fee',
-        accountNumber: 'C03855',
-        amountToTransfer: String(amountWithinDueDate),
-      },
-    ],
-  }
-
-  const response = await postJson(config.generatePsidEndpoint, payload, {
-    Authorization: `Bearer ${token}`,
->>>>>>> 154f65844a53b9b14ce69dd577a9f79de8b3c6e5
   })
 
-  await logApiCall({
-    serviceName: config.serviceName,
-    endpoint: config.generatePsidEndpoint,
-    requestData: payload,
-    responseData: response.data as any,
-    statusCode: response.status,
-  })
-
-  if (response.status === 200 && response.data?.status === 'OK') {
-    const consumerNumber = response.data?.content?.[0]?.consumerNumber || ''
-    const psidRecord = await defaultDeps.psidRepo.create({
-      applicantId: (applicant as any).numericId,
-      deptTransactionId,
-      dueDate,
-      expiryDate,
-      amountWithinDueDate,
-      amountAfterDueDate: 0,
-      consumerName,
-      mobileNo,
-      cnic,
-      email,
-      districtId: pitbDistrictId,
-      amountBifurcation: payload.amountBifurcation,
-      consumerNumber,
-      status: 'OK',
-      message: response.data?.message || 'PSID generated successfully',
-      createdBy: req.user?._id,
-    })
-
-    await defaultDeps.applicantRepo.updateByNumericId((applicant as any).numericId, {
-      applicationStatus: 'Fee Challan',
-    })
-
-    return res.status(200).send(buildPsidReceiptHtml(applicant, psidRecord))
-  }
-
-  return res.status(400).send(
-    buildHtmlResponse(
-      'PSID Generation Failed',
-      `<p>ePay returned an error or invalid status.</p><pre>${escapeHtml(
-        JSON.stringify(response.data || {}, null, 2)
-      )}</pre>`,
-      400
-    )
-  )
+  return res.status(200).send(buildPsidReceiptHtml(applicant, psid))
 })
 
 export const checkPsidStatus = asyncHandler(async (req: Request, res: Response) => {
@@ -212,14 +90,6 @@ export const checkPsidStatus = asyncHandler(async (req: Request, res: Response) 
   const payload = { consumerNumber: psid.consumerNumber }
   const response = await postJson(config.transactionStatusEndpoint, payload, {
     Authorization: `Bearer ${token}`,
-  })
-
-  await logApiCall({
-    serviceName: config.serviceName,
-    endpoint: config.transactionStatusEndpoint,
-    requestData: payload,
-    responseData: response.data as any,
-    statusCode: response.status,
   })
 
   if (response.status === 200 && response.data?.status === 'OK') {
@@ -366,14 +236,6 @@ export const plmisToken = asyncHandler(async (_req: Request, res: Response) => {
     ],
   }
 
-  await logApiCall({
-    serviceName: config.serviceName,
-    endpoint: config.authEndpoint,
-    requestData: payload,
-    responseData: formatted as any,
-    statusCode: response.status,
-  })
-
   return res.status(response.status || 200).json(formatted)
 })
 
@@ -454,13 +316,6 @@ async function getOrRefreshToken(config: ServiceConfig) {
   }
 
   const response = await postJson(config.authEndpoint || '', payload)
-  await logApiCall({
-    serviceName: config.serviceName,
-    endpoint: config.authEndpoint || '',
-    requestData: payload,
-    responseData: response.data as any,
-    statusCode: response.status,
-  })
 
   const content = response.data?.content?.[0]
   const tokenInfo = content?.token || {}
@@ -593,13 +448,6 @@ function buildPsidStatusHtml(consumerNumber: string, status: string, content: an
 }
 
 function logAndRespond(req: Request, res: Response, payload: Record<string, unknown>, statusCode: number) {
-  logApiCall({
-    serviceName: 'payment_intimation_exposed',
-    endpoint: req.originalUrl || '/api/pmc/payment-intimation/',
-    requestData: (req as any).body as any,
-    responseData: payload as any,
-    statusCode,
-  })
   return res.status(statusCode).json(payload)
 }
 
