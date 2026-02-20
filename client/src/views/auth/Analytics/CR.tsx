@@ -1,10 +1,17 @@
 import React, { useState } from 'react'
 import axios from 'axios'
 
+type ConfiscationReceipt = {
+    total_confiscation: string | number
+    receipt_book_number: string
+    receipt_number: string
+    receipt_url: string
+}
+
 const ConfiscationReceiptLookup = () => {
     const [bookNo, setBookNo] = useState('')
     const [receiptNo, setReceiptNo] = useState('')
-    const [data, setData] = useState(null)
+    const [data, setData] = useState<ConfiscationReceipt | null>(null)
     const [error, setError] = useState('')
 
     const searchReceipt = async () => {

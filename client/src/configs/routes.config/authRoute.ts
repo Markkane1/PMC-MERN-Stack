@@ -1,4 +1,4 @@
-import { lazy } from 'react'
+﻿import { lazy } from 'react'
 import type { Routes } from '@/@types/routes'
 
 const authRoute: Routes = [

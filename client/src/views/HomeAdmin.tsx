@@ -33,24 +33,24 @@ const flattenObject = (obj) => {
         : 'N/A'
 
     // Calculate group assignment days
-    let groupAssignmentDays = 'N/A'
+    let groupAssignmentDays: any = 'N/A'
     if (latestGroupAssignment && latestGroupAssignment.updated_at) {
         const assignmentDate = new Date(latestGroupAssignment.updated_at)
         const currentDate = new Date()
-        const differenceInTime = currentDate - assignmentDate
+        const differenceInTime = currentDate.getTime() - assignmentDate.getTime()
         groupAssignmentDays = Math.floor(
             differenceInTime / (1000 * 60 * 60 * 24),
         ) // Convert milliseconds to days
     }
 
-    let duration = 'N/A'
+    let duration: any = 'N/A'
     if (
         obj.submittedapplication?.created_at &&
         obj.submittedapplication?.created_at
     ) {
         const assignmentDate = new Date(obj.submittedapplication?.created_at)
         const currentDate = new Date()
-        const differenceInTime = currentDate - assignmentDate
+        const differenceInTime = currentDate.getTime() - assignmentDate.getTime()
         duration = Math.floor(differenceInTime / (1000 * 60 * 60 * 24)) // Convert milliseconds to days
     }
 
@@ -107,12 +107,53 @@ const normalizeListData = (payload) => {
     return []
 }
 
+const GROUP_ALIASES: Record<string, string> = {
+    applicant: 'APPLICANT',
+    APPLICANT: 'APPLICANT',
+    'all applications': 'All-Applications',
+    'All Applications': 'All-Applications',
+    'All-Applications': 'All-Applications',
+    'challan downloaded': 'Challan-Downloaded',
+    'Challan Downloaded': 'Challan-Downloaded',
+    'Challan-Downloaded': 'Challan-Downloaded',
+    lso: 'LSO',
+    lso1: 'LSO1',
+    lso2: 'LSO2',
+    lso3: 'LSO3',
+    lsm: 'LSM',
+    lsm2: 'LSM2',
+    tl: 'TL',
+    deo: 'DEO',
+    dg: 'DG',
+    do: 'DO',
+    submitted: 'Submitted',
+    pmc: 'PMC',
+    'download license': 'Download License',
+}
+
+const normalizeGroupKey = (value: unknown): string => {
+    const raw = String(value ?? '').trim()
+    if (!raw) return ''
+    return GROUP_ALIASES[raw] || GROUP_ALIASES[raw.toLowerCase()] || raw
+}
+
+const normalizeStatistics = (statsPayload: Record<string, any>) => {
+    const normalized: Record<string, number> = {}
+    for (const [rawGroup, rawCount] of Object.entries(statsPayload || {})) {
+        const group = normalizeGroupKey(rawGroup)
+        if (!group) continue
+        normalized[group] = (normalized[group] || 0) + Number(rawCount || 0)
+    }
+    return normalized
+}
+
 const Home = () => {
     const [flattenedData, setFlattenedData] = useState([])
     const [columns, setColumns] = useState([])
     const [userGroups, setUserGroups] = useState([])
     const [statistics, setStatistics] = useState({})
     const [selectedTile, setSelectedTile] = useState(null) // State for the selected tile
+    const [hasAutoSelectedTile, setHasAutoSelectedTile] = useState(false)
     const [tableLoading, setTableLoading] = useState(false)
     const [metaLoading, setMetaLoading] = useState(false)
     const [rowCount, setRowCount] = useState(0)
@@ -122,6 +163,7 @@ const Home = () => {
     })
     const tableRequestControllerRef = useRef<AbortController | null>(null)
     const latestTableRequestRef = useRef(0)
+    const selectedTileRef = useRef<string | null>(null)
 
     // APPLICANT > LSO > LSM > DO > LSM2 > TL > DEO > Download License
 
@@ -141,14 +183,15 @@ const Home = () => {
     }
 
     const handleTileClick = async (group) => {
-        if (!group) {
+        const normalizedGroup = normalizeGroupKey(group)
+        if (!normalizedGroup) {
             setSelectedTile(null)
             setFlattenedData([])
             setColumns([])
             setRowCount(0)
             return
         }
-        const isNewGroup = selectedTile !== group
+        const isNewGroup = selectedTileRef.current !== normalizedGroup
         const targetPageIndex = isNewGroup ? 0 : pagination.pageIndex
         if (isNewGroup && pagination.pageIndex !== 0) {
             setPagination((prev) => ({ ...prev, pageIndex: 0 }))
@@ -162,12 +205,21 @@ const Home = () => {
         tableRequestControllerRef.current = controller
         try {
             setTableLoading(true)
-            setSelectedTile(group) // Update selected tile state
+            setSelectedTile(normalizedGroup) // Update selected tile state
+            setHasAutoSelectedTile(true)
 
             // Logic for LSO.1, LSO.2, LSO.3
-            if (group === 'LSO1' || group === 'LSO2' || group === 'LSO3') {
+            if (
+                normalizedGroup === 'LSO1' ||
+                normalizedGroup === 'LSO2' ||
+                normalizedGroup === 'LSO3'
+            ) {
                 const moduloValue =
-                    group === 'LSO1' ? 1 : group === 'LSO2' ? 2 : 0
+                    normalizedGroup === 'LSO1'
+                        ? 1
+                        : normalizedGroup === 'LSO2'
+                          ? 2
+                          : 0
 
                 if (navigator.onLine) {
                     const response = await AxiosBase.get(
@@ -216,12 +268,12 @@ const Home = () => {
                         {
                             params: {
                                 assigned_group:
-                                    group !== 'All-Applications' &&
-                                    group !== 'Challan-Downloaded'
-                                        ? group
+                                    normalizedGroup !== 'All-Applications' &&
+                                    normalizedGroup !== 'Challan-Downloaded'
+                                        ? normalizedGroup
                                         : undefined,
                                 application_status:
-                                    group === 'Challan-Downloaded'
+                                    normalizedGroup === 'Challan-Downloaded'
                                         ? 'Fee Challan'
                                         : undefined,
                                 page: targetPageIndex + 1,
@@ -271,6 +323,10 @@ const Home = () => {
             }
         }
     }
+
+    useEffect(() => {
+        selectedTileRef.current = selectedTile
+    }, [selectedTile])
 
     useEffect(() => {
         if (selectedTile) {
@@ -368,62 +424,49 @@ const Home = () => {
 
     const navigate = useNavigate()
     useEffect(() => {
+        const controller = new AbortController()
         const fetchData = async () => {
             setMetaLoading(true) // Show summary loading state
-            // try {
-            //     const response = await AxiosBase.get(`/pmc/ping/`, {
-            //         headers: {
-            //             'Content-Type': 'application/json',
-            //         },
-            //     });
-            // } catch (error) {
-            //     navigate('/error');
-            // }
-
             try {
-                let groupsResponse = []
-                try {
-                    if (navigator.onLine) {
-                        const response = await AxiosBase.get(
-                            `/pmc/user-groups/`,
-                            {
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                },
-                            },
-                        )
+                const [groupsResult, statsResult] = await Promise.allSettled([
+                    AxiosBase.get(`/pmc/user-groups/`, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        signal: controller.signal,
+                    }),
+                    AxiosBase.get(`/pmc/fetch-statistics-view-groups/`, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data',
+                        },
+                        signal: controller.signal,
+                    }),
+                ])
 
-                        groupsResponse = response.data || []
-                        setUserGroups(groupsResponse.map((group) => group.name))
-                    } else {
-                        throw new Error(
-                            'Application is offline. Cannot fetch data.',
-                        )
-                    }
-                } catch (error) {
-                    console.error('Error fetching user groups:', error)
-                    // Set user groups to an empty array if an error occurs
+                if (groupsResult.status === 'fulfilled') {
+                    const groupsResponse = groupsResult.value?.data || []
+                    setUserGroups(
+                        groupsResponse.map((group) =>
+                            normalizeGroupKey(group.name),
+                        ),
+                    )
+                } else {
+                    console.error('Error fetching user groups:', groupsResult.reason)
                     setUserGroups([])
                 }
-                console.log('groupsResponse', groupsResponse)
 
-                if (navigator.onLine) {
-                    // Fetch statistics for groups
-                    const statsResponse = await AxiosBase.get(
-                        `/pmc/fetch-statistics-view-groups/`,
-                        {
-                            headers: {
-                                'Content-Type': 'multipart/form-data',
-                            },
-                        },
-                    )
-                    setStatistics(statsResponse.data) // Save statistics to state
+                if (statsResult.status === 'fulfilled') {
+                    setStatistics(normalizeStatistics(statsResult.value?.data || {}))
                 } else {
-                    throw new Error(
-                        'Application is offline. Cannot fetch data.',
-                    )
+                    console.error('Error fetching statistics:', statsResult.reason)
                 }
             } catch (error) {
+                if (
+                    (error as any)?.code === 'ERR_CANCELED' ||
+                    (error as any)?.name === 'CanceledError'
+                ) {
+                    return
+                }
                 console.error('Error fetching data:', error)
             } finally {
                 setMetaLoading(false)
@@ -431,6 +474,9 @@ const Home = () => {
         }
 
         fetchData()
+        return () => {
+            controller.abort()
+        }
     }, []) // Run only once on component load
 
     useEffect(() => {
@@ -439,6 +485,50 @@ const Home = () => {
             navigate('/home')
         }
     }, [userGroups, navigate]) // Run only once on component load
+
+    useEffect(() => {
+        if (hasAutoSelectedTile || selectedTile) {
+            return
+        }
+        const preferredGroups = [
+            'Submitted',
+            'All-Applications',
+            'PMC',
+            'DO',
+            'DEO',
+            'DG',
+            'TL',
+            'LSM',
+            'LSM2',
+            'LSO',
+            'LSO1',
+            'LSO2',
+            'LSO3',
+            'Download License',
+            'Challan-Downloaded',
+            'APPLICANT',
+        ]
+        const groupsMatch = preferredGroups.find((group) =>
+            userGroups.includes(group),
+        )
+        const statsMatch =
+            preferredGroups.find(
+                (group) =>
+                    Object.prototype.hasOwnProperty.call(statistics, group) &&
+                    Number((statistics as Record<string, number>)[group] || 0) >
+                        0,
+            ) ||
+            preferredGroups.find((group) =>
+                Object.prototype.hasOwnProperty.call(statistics, group),
+            )
+        const fallbackGroup = Object.keys(statistics || {}).find(Boolean)
+        const matchingGroup =
+            groupsMatch || statsMatch || fallbackGroup || 'Submitted'
+        if (matchingGroup) {
+            setHasAutoSelectedTile(true)
+            handleTileClick(matchingGroup)
+        }
+    }, [userGroups, statistics, hasAutoSelectedTile, selectedTile])
 
     useEffect(() => {
         return () => {
@@ -480,14 +570,19 @@ const Home = () => {
                         style={{
                             cursor: 'pointer',
                             backgroundColor:
-                                selectedTile === group ? '#007BFF' : '#f8f9fa',
-                            color: selectedTile === group ? '#fff' : '#000',
+                                selectedTile === group ? '#1d4ed8' : '#f3f4f6',
+                            color: selectedTile === group ? '#fff' : '#0f172a',
+                            border:
+                                selectedTile === group
+                                    ? '1px solid #1d4ed8'
+                                    : '1px solid #cbd5e1',
+                            transition: 'all 150ms ease-in-out',
                         }} // Add cursor pointer for interactivity
                         onClick={() => handleTileClick(group)} // Call the handler with the group
                     >
-                        <h3>{groupTitles[group] || group}</h3>{' '}
+                        <h3>{String((groupTitles as any)[group] || group)}</h3>{' '}
                         {/* Use title or fallback to the group key */}
-                        <p>{count}</p>
+                        <p>{String(count)}</p>
                     </div>
                 ))}
             </div>
@@ -504,7 +599,7 @@ const Home = () => {
                             .filter(
                                 (group) =>
                                     group !== 'Download License' &&
-                                    group !== 'Applicant' &&
+                                    group !== 'APPLICANT' &&
                                     group !== 'LSM2',
                             )
                             .join(' - ')}{' '}
@@ -555,6 +650,27 @@ const Home = () => {
                 rowCount={rowCount}
                 onPaginationChange={setPagination}
                 state={{ pagination, isLoading: tableLoading }}
+                muiTableBodyRowProps={({ row }) => ({
+                    sx:
+                        row.original.is_assigned_back === 'Yes'
+                            ? { backgroundColor: 'rgba(239, 68, 68, 0.08)' }
+                            : undefined,
+                })}
+                muiTableBodyCellProps={({ row }) => ({
+                    sx: {
+                        color: '#111827',
+                        '& a, & a:visited, & a:hover, & a:active': {
+                            color:
+                                row.original.is_assigned_back === 'Yes'
+                                    ? '#b91c1c !important'
+                                    : '#111827 !important',
+                            textDecorationColor:
+                                row.original.is_assigned_back === 'Yes'
+                                    ? '#b91c1c'
+                                    : '#111827',
+                        },
+                    },
+                })}
                 // enableSorting={false} // Optionally disable column sorting
             />
         </div>
@@ -562,3 +678,7 @@ const Home = () => {
 }
 
 export default Home
+
+
+
+

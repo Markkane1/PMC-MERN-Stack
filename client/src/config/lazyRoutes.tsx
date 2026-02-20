@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Week 3: Lazy-Loaded Routes Configuration
  * Code splitting - each route loads only when accessed
  * Dramatically reduces initial bundle size and load time
@@ -53,67 +53,25 @@ export function RouteLoadingFallback() {
 }
 
 /**
- * Wrap component in lazy loading and Suspense
- */
-function lazyRoute<T extends React.ComponentType<any>>(
-  importFunc: () => Promise<{ default: T }>
-) {
-  const Component = lazy(importFunc)
-  return (
-    <Suspense fallback={<RouteLoadingFallback />}>
-      <Component />
-    </Suspense>
-  )
-}
-
-/**
  * Lazy-loaded main views
- * These will be code-split and loaded on-demand
+ * These are valid current modules in this codebase.
  */
-export const LazyDashboard = lazy(
-  () => import('@/views/Dashboard').then((m) => ({ default: m.Dashboard }))
-)
+export const LazyDashboard = lazy(() => import('@/views/Home'))
 
-export const LazyApplicantList = lazy(
-  () => import('@/views/ApplicantList').then((m) => ({ default: m.ApplicantList }))
-)
+export const LazyApplicantList = lazy(() => import('@/views/HomeSuper'))
 
-export const LazyApplicantDetail = lazy(
-  () => import('@/views/ApplicantDetail').then((m) => ({ default: m.ApplicantDetail }))
-)
+export const LazyApplicantDetail = lazy(async () => {
+  const module = await import('@/views/supid/ApplicantDetailForm/ApplicantDetailForm')
+  const ApplicantDetailForm = module.default
+  return {
+    default: () => <ApplicantDetailForm onFormSubmit={() => undefined} />,
+  }
+})
 
-export const LazyAnalytics = lazy(
-  () => import('@/views/AnalyticsView').then((m) => ({ default: m.AnalyticsView }))
-)
+export const LazyAnalytics = lazy(() => import('@/views/demo/AnalyticsView'))
 
-export const LazySettings = lazy(
-  () => import('@/views/Settings').then((m) => ({ default: m.Settings }))
-)
+export const LazySettings = lazy(() => import('@/views/SettingsPage'))
 
-/**
- * Sample route configuration with lazy loading
- * Use in your router setup:
- *
- * const routes = [
- *   {
- *     path: 'dashboard',
- *     element: (
- *       <Suspense fallback={<RouteLoadingFallback />}>
- *         <LazyDashboard />
- *       </Suspense>
- *     )
- *   },
- *   {
- *     path: 'applicants',
- *     element: (
- *       <Suspense fallback={<RouteLoadingFallback />}>
- *         <LazyApplicantList />
- *       </Suspense>
- *     )
- *   },
- *   // ... more routes
- * ]
- */
 export const lazyRoutes = [
   {
     path: 'dashboard',

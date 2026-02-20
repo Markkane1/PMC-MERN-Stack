@@ -1,20 +1,20 @@
-import type { Control, FieldErrors } from 'react-hook-form'
+type LooseRecord = Record<string, any>
 
-export type ApplicantDetailFields = {
-    firstName: string
-    lastName: string
-    applicantDesignation: string
-    gender: string
-    cnic: string
-    email: string
-    mobileOperator: string
-    phoneNumber: string
-    id: number
+export type ApplicantDetailFields = LooseRecord & {
+    firstName?: string
+    lastName?: string
+    applicantDesignation?: string
+    gender?: string
+    cnic?: string
+    email?: string
+    mobileOperator?: string
+    phoneNumber?: string
+    id?: number
 }
 
 export type ApplicantDetailFormSchema = ApplicantDetailFields
 
 export type FormSectionBaseProps = {
-    control: Control<ApplicantDetailFormSchema>
-    errors: FieldErrors<ApplicantDetailFormSchema>
+    control: any
+    errors: any
 }

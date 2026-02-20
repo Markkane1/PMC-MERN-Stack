@@ -1,13 +1,14 @@
 import React from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import type { CSSProperties } from 'react'
 
 const ErrorPage = () => {
     const navigate = useNavigate()
     const location = useLocation()
-    const errorDetails = location.state?.error // Retrieve error details from location state
+    const errorDetails = location.state?.error
 
     const handleGoHome = () => {
-        navigate('/home') // Redirect to home or any other relevant page
+        navigate('/home')
     }
 
     return (
@@ -15,7 +16,7 @@ const ErrorPage = () => {
             <div style={styles.content}>
                 <h1 style={styles.title}>Oops! Something Went Wrong</h1>
                 <p style={styles.message}>
-                    Weâ€™re experiencing some technical difficulties. Please try
+                    We’re experiencing some technical difficulties. Please try
                     refreshing the page or come back later.
                 </p>
                 <p style={styles.message}>
@@ -43,7 +44,7 @@ const ErrorPage = () => {
     )
 }
 
-const styles = {
+const styles: Record<string, CSSProperties> = {
     container: {
         display: 'flex',
         flexDirection: 'row',

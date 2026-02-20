@@ -13,19 +13,19 @@ import { MaterialReactTable } from 'material-react-table'
 import TablerIcon from '@/components/shared/TablerIcon'
 
 const ClubDirectory = () => {
-    const mapRef = useRef(null)
-    const [mapInstance, setMapInstance] = useState(null)
-    const [districtLayer, setDistrictLayer] = useState(null)
-        const [clubs, setClubs] = useState([])
-    const [selectedDistrict, setSelectedDistrict] = useState(null)
+    const mapRef = useRef<HTMLDivElement | null>(null)
+    const [mapInstance, setMapInstance] = useState<any>(null)
+    const [districtLayer, setDistrictLayer] = useState<any>(null)
+        const [clubs, setClubs] = useState<any[]>([])
+    const [selectedDistrict, setSelectedDistrict] = useState<any>(null)
     const [loading, setLoading] = useState(false)
-    const [districtStats, setDistrictStats] = useState([])
+    const [districtStats, setDistrictStats] = useState<any[]>([])
     const [showNotice, setShowNotice] = useState(true)
     
     // Initialize Map
     useEffect(() => {
         const map = new Map({
-            target: mapRef.current,
+            target: mapRef.current ?? undefined,
             layers: [new TileLayer({ source: new OSM() })],
             view: new View({ zoom: 7, center: [8127130, 3658593] }),
         })
@@ -37,7 +37,7 @@ const ClubDirectory = () => {
         setDistrictLayer(districtVecLayer)
         setMapInstance(map)
 
-        return () => map.setTarget(null)
+        return () => map.setTarget(undefined)
     }, [])
 
     // Fetch and display districts once
@@ -61,7 +61,7 @@ const ClubDirectory = () => {
                     padding: [50, 50, 50, 50],
                     duration: 500,
                 })
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching districts:', error)
             } finally {
                 setLoading(false)
@@ -75,7 +75,7 @@ const ClubDirectory = () => {
     useEffect(() => {
         if (!districtLayer) return
 
-        districtLayer.setStyle((feature) => {
+        districtLayer.setStyle((feature: any) => {
             const isSelected = feature.get('id') === selectedDistrict
             if (feature.get('club_count') === 0) return
             return new Style({
@@ -111,7 +111,7 @@ const ClubDirectory = () => {
     useEffect(() => {
         if (!mapInstance || !districtLayer) return
 
-        const handleMapClick = (event) => {
+        const handleMapClick = (event: any) => {
             const features = mapInstance.getFeaturesAtPixel(event.pixel)
             if (features.length > 0) {
                 const selectedFeature = features[0]
@@ -136,7 +136,7 @@ const ClubDirectory = () => {
         () =>
             selectedDistrict !== null && selectedDistrict !== undefined
                 ? clubs.filter(
-                      (c) =>
+                      (c: any) =>
                           String(c?.properties?.district_id) ===
                           String(selectedDistrict),
                   )
@@ -161,7 +161,7 @@ const ClubDirectory = () => {
         ]
     }, [districtStats, clubs])
 
-    const handleRowClick = (row) => {
+    const handleRowClick = (row: any) => {
         const coords = row?.original?.geometry?.coordinates
         if (!mapInstance || !coords || coords.length < 2) return
         const lon = Number(coords[0])
@@ -192,7 +192,7 @@ const ClubDirectory = () => {
             {
                 header: 'Map',
                 size: 50,
-                Cell: ({ row }) => {
+                Cell: ({ row }: any) => {
                     const { name, district } = row.original.properties
                     const mapLink = getGoogleMapsLink(name, district)
                     return (
@@ -203,7 +203,7 @@ const ClubDirectory = () => {
                             title="Open in Google Maps"
                             className="text-blue-500 hover:text-blue-700"
                         >
-                            <TablerIcon name="map-pin" size={20} />
+                            <TablerIcon name="map-pin"  />
                         </a>
                     )
                 },
@@ -246,8 +246,8 @@ const ClubDirectory = () => {
         },
     ]
     // console.log('topDistricts',topDistricts)
-    const getGoogleMapsLink = (schoolName, district) => {
-        const formatText = (text) =>
+    const getGoogleMapsLink = (schoolName: string, district: string) => {
+        const formatText = (text: any) =>
             text
                 ?.replace(/\d+/g, '') // Remove numbers
                 .replace(/\s+/g, '+') || '' // Replace spaces with +
@@ -309,12 +309,11 @@ const ClubDirectory = () => {
 
                 <div className="min-w-0 w-full h-[850px] overflow-auto">
                     <MaterialReactTable
-                        enableZebraStripes
-                        enableColumnResizing
+                                                enableColumnResizing
                         columns={columns}
                         data={filteredClubs}
-                        initialState={{ pagination: { pageSize: 15 } }}
-                        muiTableBodyRowProps={({ row }) => ({
+                        initialState={{ pagination: { pageIndex: 0, pageSize: 15 } }}
+                        muiTableBodyRowProps={({ row }: any) => ({
                             onClick: () => handleRowClick(row),
                             style: { cursor: 'pointer' }, // Make rows visually clickable
                             sx: {
@@ -363,3 +362,7 @@ const ClubDirectory = () => {
 }
 
 export default ClubDirectory
+
+
+
+

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import ExcelJS from 'exceljs'
+import mongoose from 'mongoose'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import type { ApplicantRepository, BusinessProfileRepository, ApplicantFeeRepository, PSIDTrackingRepository, DistrictRepository } from '../../../domain/repositories/pmc'
 import {
@@ -9,6 +10,7 @@ import {
   psidTrackingRepositoryMongo,
   districtRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
+import { cacheManager } from '../../../infrastructure/cache/cacheManager'
 
 type ReportDeps = {
   applicantRepo: ApplicantRepository
@@ -25,6 +27,15 @@ const defaultDeps: ReportDeps = {
   psidRepo: psidTrackingRepositoryMongo,
   districtRepo: districtRepositoryMongo,
 }
+
+type FeeTimelineRow = {
+  till: string
+  fee_received: number
+  fee_verified: number
+  fee_unverified: number
+}
+
+let feeTimelineInFlight: Promise<FeeTimelineRow[]> | null = null
 
 async function buildWorkbook() {
   const workbook = new ExcelJS.Workbook()
@@ -64,15 +75,115 @@ export const report = asyncHandler(async (_req: Request, res: Response) => {
 })
 
 export const reportFee = asyncHandler(async (_req: Request, res: Response) => {
-  const fees = await defaultDeps.feeRepo.aggregateBySettlement()
+  const startedAt = Date.now()
+  const cacheKey = 'reports:fee-timeline:v2'
+  const cached = await cacheManager.get<FeeTimelineRow[]>(cacheKey)
+  if (cached) {
+    res.setHeader('X-Report-Cache', 'HIT')
+    res.setHeader('X-Handler-Time-Ms', String(Date.now() - startedAt))
+    return res.json(cached)
+  }
+  res.setHeader('X-Report-Cache', 'MISS')
 
-  const response = {
-    settled: fees.find((f) => f._id === true)?.total || 0,
-    unsettled: fees.find((f) => f._id === false)?.total || 0,
-    total_fees: fees.reduce((sum, f) => sum + (f.total || 0), 0),
+  if (!feeTimelineInFlight) {
+    feeTimelineInFlight = (async () => {
+      const feeCollection = mongoose.connection.db?.collection('applicantfees')
+      let timeline: FeeTimelineRow[] = []
+
+      if (feeCollection) {
+        const grouped = await feeCollection
+          .aggregate([
+            {
+              $addFields: {
+                normalizedAmount: {
+                  $convert: {
+                    input: { $ifNull: ['$feeAmount', '$fee_amount'] },
+                    to: 'double',
+                    onError: 0,
+                    onNull: 0,
+                  },
+                },
+                normalizedSettled: { $ifNull: ['$isSettled', '$is_settled'] },
+                normalizedCreatedAt: {
+                  $convert: {
+                    input: { $ifNull: ['$createdAt', '$created_at'] },
+                    to: 'date',
+                    onError: null,
+                    onNull: null,
+                  },
+                },
+              },
+            },
+            { $match: { normalizedCreatedAt: { $ne: null } } },
+            {
+              $group: {
+                _id: {
+                  $dateToString: {
+                    format: '%Y-%m-%d',
+                    date: '$normalizedCreatedAt',
+                  },
+                },
+                fee_received: { $sum: '$normalizedAmount' },
+                fee_verified: {
+                  $sum: {
+                    $cond: [{ $eq: ['$normalizedSettled', true] }, '$normalizedAmount', 0],
+                  },
+                },
+                fee_unverified: {
+                  $sum: {
+                    $cond: [{ $eq: ['$normalizedSettled', true] }, 0, '$normalizedAmount'],
+                  },
+                },
+              },
+            },
+            { $sort: { _id: 1 } },
+          ])
+          .toArray()
+
+        let runningReceived = 0
+        let runningVerified = 0
+        let runningUnverified = 0
+        timeline = (grouped as any[]).map((row) => {
+          runningReceived += Number(row?.fee_received || 0)
+          runningVerified += Number(row?.fee_verified || 0)
+          runningUnverified += Number(row?.fee_unverified || 0)
+          return {
+            till: String(row?._id || ''),
+            fee_received: runningReceived,
+            fee_verified: runningVerified,
+            fee_unverified: runningUnverified,
+          }
+        })
+      }
+
+      if (!timeline.length) {
+        const fees = await defaultDeps.feeRepo.aggregateBySettlement()
+        const settled = fees.find((f) => f._id === true)?.total || 0
+        const unsettled = fees.find((f) => f._id === false)?.total || 0
+        const total = fees.reduce((sum, f) => sum + (f.total || 0), 0)
+        timeline = [
+          {
+            till: new Date().toISOString().slice(0, 10),
+            fee_received: total,
+            fee_verified: settled,
+            fee_unverified: unsettled,
+          },
+        ]
+      }
+
+      const payload = timeline.slice(-16)
+      await cacheManager.set(cacheKey, payload, { ttl: 300 })
+      return payload
+    })()
+      .finally(() => {
+        feeTimelineInFlight = null
+      })
   }
 
-  return res.json(response)
+  const payload = await feeTimelineInFlight
+  res.setHeader('X-Report-Coalesced', '1')
+  res.setHeader('X-Handler-Time-Ms', String(Date.now() - startedAt))
+  return res.json(payload)
 })
 
 export const exportApplicant = asyncHandler(async (_req: Request, res: Response) => {

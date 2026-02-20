@@ -63,10 +63,11 @@ const OpenLayersLocationPicker = ({
             const modify = new Modify({ source: vectorSource })
             olMap.addInteraction(modify)
             modify.on('modifyend', (event) => {
-                const newCoords = event.features
-                    .item(0)
-                    .getGeometry()
-                    .getCoordinates()
+                const geometry = event.features.item(0).getGeometry()
+                if (!(geometry instanceof Point)) {
+                    return
+                }
+                const newCoords = geometry.getCoordinates()
                 const newLonLat = toLonLat(newCoords)
                 setLocation({ lat: newLonLat[1], lng: newLonLat[0] })
                 onLocationSelect({ lat: newLonLat[1], lng: newLonLat[0] })
@@ -127,3 +128,4 @@ const OpenLayersLocationPicker = ({
 }
 
 export default OpenLayersLocationPicker
+

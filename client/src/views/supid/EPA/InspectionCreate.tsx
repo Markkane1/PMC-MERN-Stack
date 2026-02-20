@@ -53,7 +53,7 @@ const convertKeysToCamelCase = (data) => {
 const CustomerEdit = () => {
     const navigate = useNavigate()
     const location = useLocation()
-    const { reports, fetchReports, updateReport, addNewReport, syncReports } =
+    const { reports, fetchReports, updateReport, addNewReport } =
         useInspectionStore() // ✅ Zustand store
 
     const [discardConfirmationOpen, setDiscardConfirmationOpen] =
@@ -95,7 +95,8 @@ const CustomerEdit = () => {
         setIsSubmitting(true)
 
         // ✅ Prepare Data
-        const reportData = {
+        const syncStatus: 'patch' | 'post' = id ? 'patch' : 'post'
+        const reportData: any = {
             business_name: values.businessName,
             business_type: values.businessType,
             license_number: values.licenseNumber || '',
@@ -128,14 +129,14 @@ const CustomerEdit = () => {
             receipt_number: values.receiptNumber || null,
             payment_challan: values.paymentChallan || null,
 
-            syncStatus: id ? 'patch' : 'post', // ✅ Mark as "patch" or "post"
+            syncStatus, // ✅ Mark as "patch" or "post"
         }
 
         try {
             if (id) {
-                updateReport(id, reportData)
+                updateReport(id, reportData as any)
             } else {
-                addNewReport(reportData)
+                addNewReport(reportData as any)
             }
 
             console.log('✅ Report Updated in Store')
@@ -217,3 +218,4 @@ const CustomerEdit = () => {
 }
 
 export default CustomerEdit
+

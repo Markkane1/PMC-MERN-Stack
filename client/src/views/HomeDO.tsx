@@ -73,6 +73,46 @@ const normalizeListData = (payload) => {
     return []
 }
 
+const GROUP_ALIASES: Record<string, string> = {
+    applicant: 'APPLICANT',
+    APPLICANT: 'APPLICANT',
+    'all applications': 'All-Applications',
+    'All Applications': 'All-Applications',
+    'All-Applications': 'All-Applications',
+    'challan downloaded': 'Challan-Downloaded',
+    'Challan Downloaded': 'Challan-Downloaded',
+    'Challan-Downloaded': 'Challan-Downloaded',
+    lso: 'LSO',
+    lso1: 'LSO1',
+    lso2: 'LSO2',
+    lso3: 'LSO3',
+    lsm: 'LSM',
+    lsm2: 'LSM2',
+    tl: 'TL',
+    deo: 'DEO',
+    dg: 'DG',
+    do: 'DO',
+    submitted: 'Submitted',
+    pmc: 'PMC',
+    'download license': 'Download License',
+}
+
+const normalizeGroupKey = (value: unknown): string => {
+    const raw = String(value ?? '').trim()
+    if (!raw) return ''
+    return GROUP_ALIASES[raw] || GROUP_ALIASES[raw.toLowerCase()] || raw
+}
+
+const normalizeStatistics = (statsPayload: Record<string, any>) => {
+    const normalized: Record<string, number> = {}
+    for (const [rawGroup, rawCount] of Object.entries(statsPayload || {})) {
+        const group = normalizeGroupKey(rawGroup)
+        if (!group) continue
+        normalized[group] = (normalized[group] || 0) + Number(rawCount || 0)
+    }
+    return normalized
+}
+
 const Home = () => {
     const [flattenedData, setFlattenedData] = useState([])
     const [columns, setColumns] = useState([])
@@ -248,14 +288,15 @@ const Home = () => {
 
     const handleTileClick = useCallback(
         async (group) => {
-            if (!group) {
+            const normalizedGroup = normalizeGroupKey(group)
+            if (!normalizedGroup) {
                 setSelectedTile(null)
                 setFlattenedData([])
                 setColumns([])
                 setRowCount(0)
                 return
             }
-            const isNewGroup = selectedTileRef.current !== group
+            const isNewGroup = selectedTileRef.current !== normalizedGroup
             const targetPageIndex = isNewGroup ? 0 : pagination.pageIndex
             if (isNewGroup && pagination.pageIndex !== 0) {
                 setPagination((prev) => ({ ...prev, pageIndex: 0 }))
@@ -269,13 +310,21 @@ const Home = () => {
             tableRequestControllerRef.current = controller
             try {
                 setTableLoading(true)
-                setSelectedTile(group) // Update selected tile state
+                setSelectedTile(normalizedGroup) // Update selected tile state
                 setHasAutoSelectedTile(true)
 
                 // Logic for LSO.1, LSO.2, LSO.3
-                if (group === 'LSO1' || group === 'LSO2' || group === 'LSO3') {
+                if (
+                    normalizedGroup === 'LSO1' ||
+                    normalizedGroup === 'LSO2' ||
+                    normalizedGroup === 'LSO3'
+                ) {
                     const moduloValue =
-                        group === 'LSO1' ? 1 : group === 'LSO2' ? 2 : 0
+                        normalizedGroup === 'LSO1'
+                            ? 1
+                            : normalizedGroup === 'LSO2'
+                              ? 2
+                              : 0
 
                     const response = await AxiosBase.get(
                         '/pmc/applicant-detail-main-do-list/',
@@ -317,12 +366,12 @@ const Home = () => {
                         {
                             params: {
                                 assigned_group:
-                                    group !== 'All-Applications' &&
-                                    group !== 'Challan-Downloaded'
-                                        ? group
+                                    normalizedGroup !== 'All-Applications' &&
+                                    normalizedGroup !== 'Challan-Downloaded'
+                                        ? normalizedGroup
                                         : undefined,
                                 application_status:
-                                    group === 'Challan-Downloaded'
+                                    normalizedGroup === 'Challan-Downloaded'
                                         ? 'Fee Challan'
                                         : undefined,
                                 page: targetPageIndex + 1,
@@ -386,52 +435,49 @@ const Home = () => {
 
     const navigate = useNavigate()
     useEffect(() => {
+        const controller = new AbortController()
         const fetchData = async () => {
             setMetaLoading(true) // Show summary loading state
-            //     // try {
-            //     //     const response = await AxiosBase.get(`/pmc/ping/`, {
-            //     //         headers: {
-            //     //             'Content-Type': 'application/json',
-            //     //         },
-            //     //     });
-            //     // } catch (error) {
-            //     //     const errorDetails = {
-            //     //         status: error.response?.status,
-            //     //         data: error.response?.data,
-            //     //         message: error.message,
-            //     //     };
-
-            //         navigate('/error', { state: { error: errorDetails } });
-
-            //     }
-
             try {
-                let groupsResponse = []
-                try {
-                    const response = await AxiosBase.get(`/pmc/user-groups/`, {
+                const [groupsResult, statsResult] = await Promise.allSettled([
+                    AxiosBase.get(`/pmc/user-groups/`, {
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                    })
-                    groupsResponse = response.data || []
-                    setUserGroups(groupsResponse.map((group) => group.name))
-                } catch (error) {
-                    console.error('Error fetching user groups:', error)
-                    // Set user groups to an empty array if an error occurs
-                    setUserGroups([])
-                }
-                console.log('groupsResponse', groupsResponse)
-                // Fetch statistics for groups
-                const statsResponse = await AxiosBase.get(
-                    `/pmc/fetch-statistics-do-view-groups/`,
-                    {
+                        signal: controller.signal,
+                    }),
+                    AxiosBase.get(`/pmc/fetch-statistics-do-view-groups/`, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
                         },
-                    },
-                )
-                setStatistics(statsResponse.data) // Save statistics to state
+                        signal: controller.signal,
+                    }),
+                ])
+
+                if (groupsResult.status === 'fulfilled') {
+                    const groupsResponse = groupsResult.value?.data || []
+                    setUserGroups(
+                        groupsResponse.map((group) =>
+                            normalizeGroupKey(group.name),
+                        ),
+                    )
+                } else {
+                    console.error('Error fetching user groups:', groupsResult.reason)
+                    setUserGroups([])
+                }
+
+                if (statsResult.status === 'fulfilled') {
+                    setStatistics(normalizeStatistics(statsResult.value?.data || {}))
+                } else {
+                    console.error('Error fetching statistics:', statsResult.reason)
+                }
             } catch (error) {
+                if (
+                    (error as any)?.code === 'ERR_CANCELED' ||
+                    (error as any)?.name === 'CanceledError'
+                ) {
+                    return
+                }
                 console.error('Error fetching data:', error)
             } finally {
                 setMetaLoading(false)
@@ -439,7 +485,10 @@ const Home = () => {
         }
 
         fetchData()
-    }, [extractColumns]) // Run only once on component load
+        return () => {
+            controller.abort()
+        }
+    }, []) // Run only once on component load
 
     useEffect(() => {
         console.log('userGroups:', userGroups)
@@ -545,14 +594,19 @@ const Home = () => {
                         style={{
                             cursor: 'pointer',
                             backgroundColor:
-                                selectedTile === group ? '#007BFF' : '#f8f9fa',
-                            color: selectedTile === group ? '#fff' : '#000',
+                                selectedTile === group ? '#1d4ed8' : '#f3f4f6',
+                            color: selectedTile === group ? '#fff' : '#0f172a',
+                            border:
+                                selectedTile === group
+                                    ? '1px solid #1d4ed8'
+                                    : '1px solid #cbd5e1',
+                            transition: 'all 150ms ease-in-out',
                         }} // Add cursor pointer for interactivity
                         onClick={() => handleTileClick(group)} // Call the handler with the group
                     >
-                        <h3>{groupTitles[group] || group}</h3>{' '}
+                        <h3>{String((groupTitles as any)[group] || group)}</h3>{' '}
                         {/* Use title or fallback to the group key */}
-                        <p>{count}</p>
+                        <p>{String(count)}</p>
                     </div>
                 ))}
             </div>
@@ -585,7 +639,7 @@ const Home = () => {
                             .filter(
                                 (group) =>
                                     group !== 'Download License' &&
-                                    group !== 'Applicant' &&
+                                    group !== 'APPLICANT' &&
                                     group !== 'LSM2',
                             )
                             .join(' - ')}{' '}
@@ -636,9 +690,34 @@ const Home = () => {
                 rowCount={rowCount}
                 onPaginationChange={setPagination}
                 state={{ pagination, isLoading: tableLoading }}
+                muiTableBodyRowProps={({ row }) => ({
+                    sx:
+                        row.original.is_assigned_back === 'Yes'
+                            ? { backgroundColor: 'rgba(239, 68, 68, 0.08)' }
+                            : undefined,
+                })}
+                muiTableBodyCellProps={({ row }) => ({
+                    sx: {
+                        color: '#111827',
+                        '& a, & a:visited, & a:hover, & a:active': {
+                            color:
+                                row.original.is_assigned_back === 'Yes'
+                                    ? '#b91c1c !important'
+                                    : '#111827 !important',
+                            textDecorationColor:
+                                row.original.is_assigned_back === 'Yes'
+                                    ? '#b91c1c'
+                                    : '#111827',
+                        },
+                    },
+                })}
             />
         </div>
     )
 }
 
 export default Home
+
+
+
+

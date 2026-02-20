@@ -91,10 +91,10 @@ interface AllStackholdersChartDataTypes {
 
 export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
     loginUrl = '/sign-in',
-}) => {
-    const [tilesData, setTilesData] = useState([])
-    const [dataApplicants, setDataApplicants] = useState([])
-    const [chartData, setChartData] = useState(null)
+}: any) => {
+    const [tilesData, setTilesData] = useState<any[]>([])
+    const [dataApplicants, setDataApplicants] = useState<any[]>([])
+    const [chartData, setChartData] = useState<any>(null)
 
     const [filterDistrictCategory, setFilterDistrictCategory] =
         useState<string>('')
@@ -194,7 +194,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                         ['Created', 'Fee Challan'].includes(status || '')
                     const isInFlightExcluded = (status: string) =>
                         ['Created', 'Completed', 'Rejected', 'Fee Challan'].includes(status || '')
-                    rows.forEach((row) => {
+                    rows.forEach((row: any) => {
                         const registrationFor =
                             row.registration_for || row.registrationFor || 'Unknown'
                         const status = row.application_status || row.applicationStatus || ''
@@ -250,7 +250,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                     : []
                 const hasNonZero = normalizedStats.some((stat: any) =>
                     ['Applications', 'DO', 'PMC', 'APPLICANT', 'Licenses'].some(
-                        (key) => readNumber(readStat(stat, key)) > 0
+                        (key: any) => readNumber(readStat(stat, key)) > 0
                     )
                 )
                 const statsSource =
@@ -301,28 +301,28 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                     new Set(
                         district_data
                             .map(
-                                (item) =>
+                                (item: any) =>
                                     item.businessprofile__district__district_name?.trim() ||
                                     'Unknown',
                             )
-                            .filter((name) => name !== 'Unknown'),
+                            .filter((name: any) => name !== 'Unknown'),
                     ),
                 )
 
                 const categories = Array.from(
                     new Set(
                         district_data
-                            .map((item) => item.registration_for || 'Unknown')
-                            .filter((category) => category !== 'Unknown'),
+                            .map((item: any) => item.registration_for || 'Unknown')
+                            .filter((category: any) => category !== 'Unknown'),
                     ),
                 )
 
                 const series = [
                     {
                         name: 'Producer',
-                        data: districts.map((district) => {
+                        data: districts.map((district: any) => {
                             const record = district_data.find(
-                                (item) =>
+                                (item: any) =>
                                     item.registration_for === 'Producer' &&
                                     item.businessprofile__district__district_name ===
                                         district,
@@ -332,9 +332,9 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                     },
                     {
                         name: 'Consumer',
-                        data: districts.map((district) => {
+                        data: districts.map((district: any) => {
                             const record = district_data.find(
-                                (item) =>
+                                (item: any) =>
                                     item.registration_for === 'Consumer' &&
                                     item.businessprofile__district__district_name ===
                                         district,
@@ -344,9 +344,9 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                     },
                     {
                         name: 'Collector',
-                        data: districts.map((district) => {
+                        data: districts.map((district: any) => {
                             const record = district_data.find(
-                                (item) =>
+                                (item: any) =>
                                     item.registration_for === 'Collector' &&
                                     item.businessprofile__district__district_name ===
                                         district,
@@ -356,9 +356,9 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                     },
                     {
                         name: 'Recycler',
-                        data: districts.map((district) => {
+                        data: districts.map((district: any) => {
                             const record = district_data.find(
-                                (item) =>
+                                (item: any) =>
                                     item.registration_for === 'Recycler' &&
                                     item.businessprofile__district__district_name ===
                                         district,
@@ -376,11 +376,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                             height: 550,
                             stacked: true,
                             events: {
-                                dataPointSelection: (
-                                    event,
-                                    chartContext,
-                                    config,
-                                ) => {
+                                dataPointSelection: (event: any, chartContext: any, config: any) => {
                                     const { seriesIndex, dataPointIndex } =
                                         config
                                     const seriesName = series[seriesIndex].name
@@ -404,7 +400,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
 
                 // Grid data
                 setDataApplicants(respons.data.grid_data)
-            } catch (error) {
+            } catch (error: any) {
                 const errorDetails = {
                     status: error.response?.status,
                     data: error.response?.data,
@@ -423,7 +419,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
             accessorKey: 'tracking_number',
             header: 'Tracking Number',
             size: 150,
-            Cell: ({ cell, row }) => {
+            Cell: ({ cell, row }: any) => {
                 const id = row.original.id
                 const url = `/spuid-review/${id}` // Adjust URL as needed
                 return (
@@ -445,7 +441,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
         {
             accessorKey: 'first_name',
             header: 'First Name',
-            Cell: ({ cell, row }) => {
+            Cell: ({ cell, row }: any) => {
                 const id = row.original.id
                 const url = `/spuid-review/${id}` // Adjust URL as needed
                 return (
@@ -467,7 +463,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
         {
             accessorKey: 'last_name',
             header: 'Last Name',
-            Cell: ({ cell, row }) => {
+            Cell: ({ cell, row }: any) => {
                 const id = row.original.id
                 const url = `/spuid-review/${id}` // Adjust URL as needed
                 return (
@@ -489,7 +485,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
         {
             accessorKey: 'cnic',
             header: 'CNIC',
-            Cell: ({ cell, row }) => {
+            Cell: ({ cell, row }: any) => {
                 const id = row.original.id
                 const url = `/spuid-review/${id}` // Adjust URL as needed
                 return (
@@ -511,7 +507,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
         {
             accessorKey: 'mobile_no',
             header: 'Mobile No',
-            Cell: ({ cell, row }) => {
+            Cell: ({ cell, row }: any) => {
                 const id = row.original.id
                 const url = `/spuid-review/${id}` // Adjust URL as needed
                 return (
@@ -533,7 +529,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
         {
             accessorKey: 'application_status',
             header: 'Status',
-            Cell: ({ cell, row }) => {
+            Cell: ({ cell, row }: any) => {
                 const id = row.original.id
                 const url = `/spuid-review/${id}` // Adjust URL as needed
                 return (
@@ -555,7 +551,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
         {
             accessorKey: 'assigned_group',
             header: 'Assigned Group',
-            Cell: ({ cell, row }) => {
+            Cell: ({ cell, row }: any) => {
                 const id = row.original.id
                 const url = `/spuid-review/${id}` // Adjust URL as needed
                 return (
@@ -577,7 +573,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
         {
             accessorKey: 'registration_for',
             header: 'Category',
-            Cell: ({ cell, row }) => {
+            Cell: ({ cell, row }: any) => {
                 const id = row.original.id
                 const url = `/spuid-review/${id}` // Adjust URL as needed
                 return (
@@ -613,7 +609,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                 height: 350,
                 stacked: true,
                 events: {
-                    dataPointSelection: (event, chartContext, config) => {
+                    dataPointSelection: (event: any, chartContext: any, config: any) => {
                         const { seriesIndex, dataPointIndex } = config
                         const seriesName =
                             AllStackholdersChartData.series[seriesIndex].name
@@ -658,7 +654,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                     'Recyclers',
                 ],
                 labels: {
-                    formatter: (val) => `${val}`,
+                    formatter: (val: any) => `${val}`,
                 },
             },
             yaxis: {
@@ -668,7 +664,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
             },
             tooltip: {
                 y: {
-                    formatter: (val) => `${val}`,
+                    formatter: (val: any) => `${val}`,
                 },
             },
             fill: {
@@ -720,7 +716,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                     <MaterialReactTable
                         columns={columns}
                         data={dataApplicants.filter(
-                            (applicant) =>
+                            (applicant: any) =>
                                 applicant.businessprofile__district__district_name ===
                                     filterDistrictCategory &&
                                 applicant.registration_for ===
@@ -747,7 +743,7 @@ interface KPIBlockProps {
     color: string
 }
 
-const KPIBlock: React.FC<KPIBlockProps> = ({ label, value, color }) => (
+const KPIBlock: React.FC<KPIBlockProps> = ({ label, value, color }: any) => (
     <div className={`kpi-block ${color}`}>
         <h3>{label}</h3>
         <p>{value}</p>
@@ -768,7 +764,7 @@ interface TileProps {
     icon: React.ReactNode
 }
 
-const Tile: React.FC<TileProps> = ({ title, data, color, icon }) => {
+const Tile: React.FC<TileProps> = ({ title, data, color, icon }: any) => {
     return (
         <div className={`shadow-md rounded p-6 w-full ${color}`}>
             <div className="flex items-center mb-4">
@@ -776,7 +772,7 @@ const Tile: React.FC<TileProps> = ({ title, data, color, icon }) => {
                 <h2 className="text-2xl font-bold text-white ml-2">{title}</h2>
             </div>
             <div className="grid grid-cols-3 gap-4">
-                {data.map((item, index) => (
+                {data.map((item: any, index: any) => (
                     <div key={index} className="text-center" title={item.title}>
                         {' '}
                         {/* Use item.title for the tooltip */}
@@ -792,3 +788,7 @@ const Tile: React.FC<TileProps> = ({ title, data, color, icon }) => {
 }
 
 export default KPIDashboard // Export only the base component
+
+
+
+

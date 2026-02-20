@@ -168,7 +168,7 @@ const BusinessEntityForm = (props: CustomerFormProps) => {
         reset,
         formState: { errors },
         control,
-    } = useForm<BusinessEntityFormSchema>({
+    } = useForm<any>({
         defaultValues: {
             ...{
                 banAccount: false,
@@ -224,3 +224,4 @@ const BusinessEntityForm = (props: CustomerFormProps) => {
 }
 
 export default BusinessEntityForm
+

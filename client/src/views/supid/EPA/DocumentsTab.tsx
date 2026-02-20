@@ -23,6 +23,8 @@ const documentSchema = z.object({
     document_date: z.string().min(1, { message: 'Document Date is required!' }),
 })
 
+type DocumentFormValues = z.infer<typeof documentSchema>
+
 const DocumentsTab = () => {
     const [documents, setDocuments] = useState([])
     const [loading, setLoading] = useState(false)
@@ -37,12 +39,13 @@ const DocumentsTab = () => {
         setValue,
         reset,
         formState: { errors, isSubmitting },
-    } = useForm({
+    } = useForm<DocumentFormValues>({
         resolver: zodResolver(documentSchema),
         defaultValues: {
             title: '',
             documentType: 'Notification',
-            file: null,
+            file: undefined,
+            document_date: '',
         },
     })
 
@@ -145,7 +148,7 @@ const DocumentsTab = () => {
                     <FormItem
                         label="Document Title"
                         invalid={!!errors.title}
-                        errorMessage={errors.title?.message}
+                        errorMessage={errors.title?.message as string}
                     >
                         <Controller
                             name="title"
@@ -163,7 +166,7 @@ const DocumentsTab = () => {
                     <FormItem
                         label="Document Type"
                         invalid={!!errors.documentType}
-                        errorMessage={errors.documentType?.message}
+                        errorMessage={errors.documentType?.message as string}
                     >
                         <Controller
                             name="documentType"
@@ -195,7 +198,7 @@ const DocumentsTab = () => {
                     <FormItem
                         label="Document Date"
                         invalid={!!errors.document_date}
-                        errorMessage={errors.document_date?.message}
+                        errorMessage={errors.document_date?.message as string}
                     >
                         <Controller
                             name="document_date"
@@ -210,7 +213,7 @@ const DocumentsTab = () => {
                     <FormItem
                         label="Upload File"
                         invalid={!!errors.file}
-                        errorMessage={errors.file?.message}
+                        errorMessage={errors.file?.message as string}
                     >
                         <Controller
                             name="file"
@@ -219,9 +222,11 @@ const DocumentsTab = () => {
                                 <Input
                                     type="file"
                                     accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx"
-                                    onChange={(e) =>
-                                        field.onChange(e.target.files[0])
-                                    }
+                                    onChange={(e) => {
+                                        const input =
+                                            e.target as HTMLInputElement
+                                        field.onChange(input.files?.[0])
+                                    }}
                                 />
                             )}
                         />
@@ -231,31 +236,19 @@ const DocumentsTab = () => {
                     <FormItem
                         className={'mt-7'}
                         invalid={!!errors.file}
-                        errorMessage={errors.file?.message}
+                        errorMessage={errors.file?.message as string}
                     >
-                        <Controller
-                            name="button"
-                            control={control}
-                            render={({ field }) => (
-                                <Button
-                                    disabled={isSubmitting}
-                                    className="flex items-center"
-                                >
-                                    {isSubmitting ? (
-                                        <TablerIcon
-                                            name="loader"
-                                            className="mr-2 animate-spin"
-                                        />
-                                    ) : (
-                                        <TablerIcon
-                                            name="upload"
-                                            className="mr-2"
-                                        />
-                                    )}
-                                    {isSubmitting ? 'Uploading...' : 'Upload'}
-                                </Button>
+                        <Button disabled={isSubmitting} className="flex items-center">
+                            {isSubmitting ? (
+                                <TablerIcon
+                                    name="loader"
+                                    className="mr-2 animate-spin"
+                                />
+                            ) : (
+                                <TablerIcon name="upload" className="mr-2" />
                             )}
-                        />
+                            {isSubmitting ? 'Uploading...' : 'Upload'}
+                        </Button>
                     </FormItem>
                 </div>
             </Form>
@@ -297,3 +290,4 @@ const DocumentsTab = () => {
 }
 
 export default DocumentsTab
+

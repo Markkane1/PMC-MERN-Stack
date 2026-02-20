@@ -1376,7 +1376,7 @@ const CustomerEdit = () => {
                                     variant="solid"
                                     type="button"
                                     loading={isSubmiting}
-                                    disabled={step === 0 ? true : false}
+                                    disabled={false}
                                     onClick={
                                         applicantDetail.applicationStatus ===
                                             'Created' || isWritable
@@ -1450,7 +1450,7 @@ const CustomerEdit = () => {
                                     variant="solid"
                                     type="button"
                                     loading={isSubmiting}
-                                    disabled={step === 0 ? true : false}
+                                    disabled={false}
                                     onClick={
                                         applicantDetail.applicationStatus ===
                                             'Created' || isWritable
@@ -1523,7 +1523,7 @@ const CustomerEdit = () => {
                                     variant="solid"
                                     type="button"
                                     loading={isSubmiting}
-                                    disabled={step === 0 ? true : false}
+                                    disabled={false}
                                     onClick={
                                         applicantDetail.applicationStatus ===
                                             'Created' || isWritable
@@ -1596,7 +1596,7 @@ const CustomerEdit = () => {
                                     variant="solid"
                                     type="button"
                                     loading={isSubmiting}
-                                    disabled={step === 0 ? true : false}
+                                    disabled={false}
                                     onClick={
                                         applicantDetail.applicationStatus ===
                                             'Created' || isWritable
@@ -1672,7 +1672,7 @@ const CustomerEdit = () => {
                                     variant="solid"
                                     type="button"
                                     loading={isSubmiting}
-                                    disabled={step === 0}
+                                    disabled={false}
                                     onClick={handleGoBack}
                                 >
                                     Back
@@ -1720,7 +1720,7 @@ const CustomerEdit = () => {
                                     variant="solid"
                                     type="button"
                                     loading={isSubmiting}
-                                    disabled={step === 0 ? true : false}
+                                    disabled={false}
                                     onClick={handleGoBack}
                                 >
                                     Back
@@ -1744,7 +1744,7 @@ const CustomerEdit = () => {
             {/* Thank You Popup */}
             <ConfirmDialog
                 isOpen={thankYouPopupOpen}
-                type={thankYouPopupType}
+                type={thankYouPopupType as any}
                 title="Notification"
                 onClose={closeThankYouPopup}
                 onRequestClose={closeThankYouPopup}
@@ -1785,3 +1785,4 @@ const CustomerEdit = () => {
 }
 
 export default CustomerEdit
+

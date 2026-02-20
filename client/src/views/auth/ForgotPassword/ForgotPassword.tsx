@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import Logo from '@/components/template/Logo'
 import Alert from '@/components/ui/Alert'
 import Button from '@/components/ui/Button'
@@ -11,6 +11,7 @@ import useTimeOutMessage from '@/utils/hooks/useTimeOutMessage'
 import ActionLink from '@/components/shared/ActionLink'
 import AxiosBase from '../../../services/axios/AxiosBase'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
 
 export const ForgotPasswordBase = () => {
     const [step, setStep] = useState(0)
@@ -34,13 +35,13 @@ export const ForgotPasswordBase = () => {
         return null
     }
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Backspace') {
             setTrackingNumber(formatTrackingNumber(trackingNumber, true))
         }
     }
 
-    const formatTrackingNumber = (value, isBackspace) => {
+    const formatTrackingNumber = (value: string, isBackspace: boolean) => {
         // Remove any invalid characters for each segment
         const rawValue = value.replace(/[^a-zA-Z0-9]/g, '') // Allow only alphanumeric characters
 
@@ -71,14 +72,14 @@ export const ForgotPasswordBase = () => {
         return formattedValue
     }
     // Handle PSID input
-    const handlePsidChange = (value) => {
+    const handlePsidChange = (value: string) => {
         // Allow only numeric input up to 17 characters
         const formattedValue = value.replace(/\D/g, '').slice(0, 17)
         setPsid(formattedValue)
     }
 
     // Handle mobile number input
-    const handleMobileNumberChange = (value) => {
+    const handleMobileNumberChange = (value: string) => {
         // Allow only numeric input, ensure it starts with '3', and limit to 10 digits
         const formattedValue = value.replace(/\D/g, '')
         if (
@@ -107,12 +108,17 @@ export const ForgotPasswordBase = () => {
                     cnic,
                 })
                 setUsername(response.data.username || 'Unknown')
-                setMessage(null)
+                setMessage('')
                 setStep(1)
             } catch (error) {
-                setMessage(
-                    error.response?.data?.detail || 'Error finding user.',
-                )
+                if (axios.isAxiosError(error)) {
+                    setMessage(
+                        (error.response?.data as { detail?: string })?.detail ||
+                            'Error finding user.',
+                    )
+                } else {
+                    setMessage('Error finding user.')
+                }
             } finally {
                 setLoading(false)
             }
@@ -140,9 +146,14 @@ export const ForgotPasswordBase = () => {
                 })
                 setMessage('Password reset successfully.')
             } catch (error) {
-                setMessage(
-                    error.response?.data?.detail || 'Error resetting password.',
-                )
+                if (axios.isAxiosError(error)) {
+                    setMessage(
+                        (error.response?.data as { detail?: string })?.detail ||
+                            'Error resetting password.',
+                    )
+                } else {
+                    setMessage('Error resetting password.')
+                }
             } finally {
                 setLoading(false)
             }
@@ -334,7 +345,7 @@ export const ForgotPasswordBase = () => {
                 <div className="mt-6 flex justify-between">
                     {step > 0 && (
                         <Button
-                            variant="outline"
+                            variant="default"
                             className="mr-2"
                             onClick={handlePreviousStep}
                         >

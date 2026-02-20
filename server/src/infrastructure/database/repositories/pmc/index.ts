@@ -297,17 +297,25 @@ export const applicantRepositoryMongo: ApplicantRepository = {
     filter: Record<string, unknown> = {},
     page: number = 1,
     pageSize: number = 20,
-    sort: Record<string, 1 | -1> = { createdAt: -1 }
+    sort: Record<string, 1 | -1> = { createdAt: -1 },
+    projection?: Record<string, 0 | 1>
   ) {
     const skip = (page - 1) * pageSize
+    const query = ApplicantDetailModel.find(filter)
+      .lean()
+      .maxTimeMS(30000)
+      .sort(sort)
+      .skip(skip)
+      .limit(pageSize)
+
+    if (projection && Object.keys(projection).length > 0) {
+      query.select(projection as any)
+    } else {
+      query.select('-__v')
+    }
+
     const [docs, total] = await Promise.all([
-      ApplicantDetailModel.find(filter)
-        .lean()
-        .select('-__v')
-        .maxTimeMS(30000)
-        .sort(sort)
-        .skip(skip)
-        .limit(pageSize),
+      query,
       ApplicantDetailModel.countDocuments(filter).maxTimeMS(30000),
     ])
     return {
@@ -678,6 +686,14 @@ export const applicationSubmittedRepositoryMongo: ApplicationSubmittedRepository
       .find({
         $or: [{ applicantId: { $in: applicantIds } }, { applicant_id: { $in: applicantIds.map(String) } }],
       })
+      .project({
+        applicantId: 1,
+        applicant_id: 1,
+        createdAt: 1,
+        created_at: 1,
+        updatedAt: 1,
+        updated_at: 1,
+      })
       .toArray()
     return docs.map(mapSubmitted)
   },
@@ -685,15 +701,67 @@ export const applicationSubmittedRepositoryMongo: ApplicationSubmittedRepository
 
 export const applicationAssignmentRepositoryMongo: ApplicationAssignmentRepository = {
   async listByApplicantIds(applicantIds: number[]) {
-    const docs = await ApplicationAssignmentModel.find({ applicantId: { $in: applicantIds } }).sort({ createdAt: -1 }).lean()
+    const docs = await ApplicationAssignmentModel.find({ applicantId: { $in: applicantIds } })
+      .sort({ createdAt: -1 })
+      .select({
+        applicantId: 1,
+        applicant_id: 1,
+        assignedGroup: 1,
+        assigned_group: 1,
+        remarks: 1,
+        createdAt: 1,
+        created_at: 1,
+        updatedAt: 1,
+        updated_at: 1,
+      })
+      .lean()
     if (docs.length) return docs.map(mapAssignment)
-    const legacy = await ApplicationAssignmentModel.find({ applicant_id: { $in: applicantIds.map(String) } }).sort({ created_at: -1 }).lean()
+    const legacy = await ApplicationAssignmentModel.find({ applicant_id: { $in: applicantIds.map(String) } })
+      .sort({ created_at: -1 })
+      .select({
+        applicantId: 1,
+        applicant_id: 1,
+        assignedGroup: 1,
+        assigned_group: 1,
+        remarks: 1,
+        createdAt: 1,
+        created_at: 1,
+        updatedAt: 1,
+        updated_at: 1,
+      })
+      .lean()
     return legacy.map(mapAssignment)
   },
   async findLatestByApplicantId(applicantId: number) {
-    const doc = await ApplicationAssignmentModel.findOne({ applicantId }).sort({ createdAt: -1 }).lean()
+    const doc = await ApplicationAssignmentModel.findOne({ applicantId })
+      .sort({ createdAt: -1 })
+      .select({
+        applicantId: 1,
+        applicant_id: 1,
+        assignedGroup: 1,
+        assigned_group: 1,
+        remarks: 1,
+        createdAt: 1,
+        created_at: 1,
+        updatedAt: 1,
+        updated_at: 1,
+      })
+      .lean()
     if (doc) return mapAssignment(doc)
-    const legacy = await ApplicationAssignmentModel.findOne({ applicant_id: String(applicantId) }).sort({ created_at: -1 }).lean()
+    const legacy = await ApplicationAssignmentModel.findOne({ applicant_id: String(applicantId) })
+      .sort({ created_at: -1 })
+      .select({
+        applicantId: 1,
+        applicant_id: 1,
+        assignedGroup: 1,
+        assigned_group: 1,
+        remarks: 1,
+        createdAt: 1,
+        created_at: 1,
+        updatedAt: 1,
+        updated_at: 1,
+      })
+      .lean()
     return legacy ? mapAssignment(legacy) : null
   },
   async list(filter: Record<string, unknown> = {}) {
@@ -775,17 +843,71 @@ export const applicantFeeRepositoryMongo: ApplicantFeeRepository = {
     return docs.map(mapApplicantFee)
   },
   async listByApplicantId(applicantId: number) {
-    const docs = await ApplicantFeeModel.find({ applicantId }).sort({ createdAt: -1 }).lean()
+    const docs = await ApplicantFeeModel.find({ applicantId })
+      .sort({ createdAt: -1 })
+      .select({
+        applicantId: 1,
+        applicant_id: 1,
+        feeAmount: 1,
+        fee_amount: 1,
+        isSettled: 1,
+        is_settled: 1,
+        reason: 1,
+        status: 1,
+        createdAt: 1,
+        created_at: 1,
+        updatedAt: 1,
+        updated_at: 1,
+      })
+      .lean()
     if (docs.length) return docs.map(mapApplicantFee)
-    const legacy = await ApplicantFeeModel.find({ applicant_id: String(applicantId) }).sort({ created_at: -1 }).lean()
+    const legacy = await ApplicantFeeModel.find({ applicant_id: String(applicantId) })
+      .sort({ created_at: -1 })
+      .select({
+        applicantId: 1,
+        applicant_id: 1,
+        feeAmount: 1,
+        fee_amount: 1,
+        isSettled: 1,
+        is_settled: 1,
+        reason: 1,
+        status: 1,
+        createdAt: 1,
+        created_at: 1,
+        updatedAt: 1,
+        updated_at: 1,
+      })
+      .lean()
     return legacy.map(mapApplicantFee)
   },
   async listByApplicantIds(applicantIds: number[]) {
     if (!applicantIds.length) return []
-    const docs = await ApplicantFeeModel.find({ applicantId: { $in: applicantIds } }).sort({ createdAt: -1 }).lean()
+    const docs = await ApplicantFeeModel.find({ applicantId: { $in: applicantIds } })
+      .sort({ createdAt: -1 })
+      .select({
+        applicantId: 1,
+        applicant_id: 1,
+        feeAmount: 1,
+        fee_amount: 1,
+        isSettled: 1,
+        is_settled: 1,
+        createdAt: 1,
+        created_at: 1,
+      })
+      .lean()
     if (docs.length) return docs.map(mapApplicantFee)
     const legacy = await ApplicantFeeModel.find({ applicant_id: { $in: applicantIds.map(String) } })
       .sort({ created_at: -1 })
+      .select({
+        applicantId: 1,
+        applicant_id: 1,
+        feeAmount: 1,
+        fee_amount: 1,
+        isSettled: 1,
+        is_settled: 1,
+        createdAt: 1,
+        created_at: 1,
+      })
       .lean()
     return legacy.map(mapApplicantFee)
   },

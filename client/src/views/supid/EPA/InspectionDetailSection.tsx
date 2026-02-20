@@ -17,6 +17,7 @@ type InspectionDetailSectionProps = {
     control: any
     errors: any
     readOnly?: boolean
+    defaultValues?: any
 }
 
 const businessTypeList = [
@@ -352,7 +353,9 @@ const InspectionDetailSection = ({
     const { latitude, longitude } = defaultValues
 
     const savedLocation =
-        latitude && longitude ? { lat: latitude, lng: longitude } : null
+        latitude && longitude
+            ? { lat: latitude, lng: longitude, district: '' }
+            : null
 
     useEffect(() => {
         const retryFetchingLocation = () => {
@@ -721,11 +724,13 @@ const InspectionDetailSection = ({
                                             type="file"
                                             accept=".pdf,.png,.jpg,.jpeg"
                                             disabled={readOnly}
-                                            onChange={(e) =>
+                                            onChange={(e) => {
+                                                const input =
+                                                    e.target as HTMLInputElement
                                                 field.onChange(
-                                                    e.target.files[0] || null,
+                                                    input.files?.[0] || null,
                                                 )
-                                            }
+                                            }}
                                         />
                                     )}
                                 />
@@ -945,12 +950,14 @@ const InspectionDetailSection = ({
                                                     type="file"
                                                     accept=".pdf,.png,.jpg,.jpeg"
                                                     disabled={readOnly}
-                                                    onChange={(e) =>
+                                                    onChange={(e) => {
+                                                        const input =
+                                                            e.target as HTMLInputElement
                                                         field.onChange(
-                                                            e.target.files[0] ||
+                                                            input.files?.[0] ||
                                                                 null,
                                                         )
-                                                    }
+                                                    }}
                                                 />
                                             )}
                                         />
@@ -995,11 +1002,13 @@ const InspectionDetailSection = ({
                                         <Input
                                             type="file"
                                             accept=".pdf,.png,.jpg,.jpeg" // Allow only specific file types
-                                            onChange={(e) =>
+                                            onChange={(e) => {
+                                                const input =
+                                                    e.target as HTMLInputElement
                                                 field.onChange(
-                                                    e.target.files[0] || null,
+                                                    input.files?.[0] || null,
                                                 )
-                                            } // Correctly set the file without using 'value'
+                                            }} // Correctly set the file without using 'value'
                                         />
                                     )}
                                 />
@@ -1140,3 +1149,4 @@ const InspectionDetailSection = ({
 }
 
 export default InspectionDetailSection
+

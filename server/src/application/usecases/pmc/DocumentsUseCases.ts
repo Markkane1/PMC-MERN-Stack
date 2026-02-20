@@ -6,6 +6,7 @@ import { createUploader } from '../../../interfaces/http/middlewares/upload'
 import { env } from '../../../infrastructure/config/env'
 import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
 import { ApplicantFeeModel } from '../../../infrastructure/database/models/pmc/ApplicantFee'
+import { invalidatePmcDashboardCaches } from '../../services/pmc/DashboardCacheService'
 import type {
   ApplicantDocumentRepository,
   ApplicantRepository,
@@ -124,6 +125,12 @@ export const uploadApplicantDocument = [
             `✓ Fee settlement: ${unsettledFees.length} fee(s) settled for applicant ${applicantId} due to fee verification document`
           )
         }
+
+        await invalidatePmcDashboardCaches({
+          applicantId,
+          includeFees: true,
+          includeSubmitted: false,
+        })
       } catch (error) {
         console.warn(`Fee settlement side-effect failed for applicant ${applicantId}:`, error)
         // Don't fail the request - this is a non-blocking side effect
@@ -296,3 +303,4 @@ export const downloadMedia = asyncHandler(async (req: Request, res: Response) =>
 
   return res.sendFile(filePath, { dotfiles: 'deny', lastModified: true, cacheControl: true })
 })
+

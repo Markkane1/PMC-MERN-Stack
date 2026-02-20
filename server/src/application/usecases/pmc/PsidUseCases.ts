@@ -15,6 +15,7 @@ import {
   districtRepositoryMongo,
   psidTrackingRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
+import { invalidatePmcDashboardCaches } from '../../services/pmc/DashboardCacheService'
 import { ExternalServiceTokenModel } from '../../../infrastructure/database/models/common/ExternalServiceToken'
 import { ServiceConfigurationModel } from '../../../infrastructure/database/models/common/ServiceConfiguration'
 
@@ -197,6 +198,12 @@ export const paymentIntimation = asyncHandler(async (req: Request, res: Response
   if (psidRecord.applicantId) {
     await defaultDeps.applicantRepo.updateByNumericId(Number(psidRecord.applicantId), {
       applicationStatus: 'Submitted',
+    })
+
+    await invalidatePmcDashboardCaches({
+      applicantId: Number(psidRecord.applicantId),
+      includeFees: true,
+      includeSubmitted: true,
     })
   }
 

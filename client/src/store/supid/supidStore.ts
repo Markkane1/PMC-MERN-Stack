@@ -386,18 +386,17 @@ const useFormStore = create<FormStore>((set, get) => ({
         })),
     // Reset all function
     resetAll: () => {
-        set((state) => {
-            state.resetApplicantDetail()
-            state.resetBusinessDetail()
-            state.resetBusinessDetailIndividual()
-            state.resetBusinessEntity()
-            state.resetCompletedSections()
-            state.resetLicenseDetail()
-            state.resetLicenseDetailProducer()
-            state.resetLicenseDetailConsumer()
-            state.resetLicenseDetailRecycler()
-            state.resetLicenseDetailCollector()
-        })
+        const state = get()
+        state.resetApplicantDetail()
+        state.resetBusinessDetail()
+        state.resetBusinessDetailIndividual()
+        state.resetBusinessEntity()
+        state.resetCompletedSections()
+        state.resetLicenseDetail()
+        state.resetLicenseDetailProducer()
+        state.resetLicenseDetailConsumer()
+        state.resetLicenseDetailRecycler()
+        state.resetLicenseDetailCollector()
     },
 
     getValuesFromStateBusinessEntity: () => {
@@ -448,3 +447,6 @@ const useFormStore = create<FormStore>((set, get) => ({
 }))
 
 export default useFormStore
+
+
+

@@ -334,7 +334,7 @@ const TabLayout = ({
     const [activeKey, setActiveKey] = useState(
         navigationTree.some((nav) => nav.key === routeParentKey)
             ? routeParentKey
-            : '' || navigationTree[0].key,
+            : navigationTree[0]?.key || '',
     )
 
     return (

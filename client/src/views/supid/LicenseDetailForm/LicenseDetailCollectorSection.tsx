@@ -42,7 +42,7 @@ const LicenseDetailCollectorSection = ({
     errors,
     readOnly = false,
 }: LicenseDetailSectionProps) => {
-    const { fields, append, remove } = useFieldArray({
+    const { fields, append, remove } = useFieldArray<any>({
         control: control || {}, // Provide a fallback if control is undefined
         name: 'selectedCategoriesCollector',
     })
@@ -58,7 +58,7 @@ const LicenseDetailCollectorSection = ({
             append({ category, address: '' })
         } else {
             const index = fields.findIndex(
-                (field) => field.category === category,
+                (field: any) => field.category === category,
             )
             if (index !== -1) remove(index)
         }
@@ -245,7 +245,8 @@ const LicenseDetailCollectorSection = ({
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
                         {categories.map((category) => {
                             const fieldIndex = fields.findIndex(
-                                (field) => field.category === category.value,
+                                (field: any) =>
+                                    field.category === category.value,
                             )
                             const isSelected = fieldIndex !== -1
 
@@ -276,7 +277,7 @@ const LicenseDetailCollectorSection = ({
                                                 name={`selectedCategoriesCollector.${fieldIndex}.address`}
                                                 control={control}
                                                 defaultValue={
-                                                    fields[fieldIndex]
+                                                    (fields[fieldIndex] as any)
                                                         ?.address || ''
                                                 }
                                                 render={({ field }) => (
@@ -300,3 +301,6 @@ const LicenseDetailCollectorSection = ({
 }
 
 export default LicenseDetailCollectorSection
+
+
+

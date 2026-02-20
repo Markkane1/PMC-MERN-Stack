@@ -225,8 +225,9 @@ const Home = () => {
                                 <span
                                     style={{
                                         cursor: 'pointer',
-                                        color: 'blue',
+                                        color: '#111827',
                                         textDecoration: 'underline',
+                                        textDecorationColor: '#111827',
                                     }}
                                     onClick={() => {
                                         window.location.href = canReview
@@ -367,9 +368,9 @@ const Home = () => {
             <div className="tiles-container">
                 {Object.entries(visibleStatistics).map(([group, count]) => (
                     <div key={group} className="tile">
-                        <h3>{groupTitles[group] || group}</h3>{' '}
+                        <h3>{String((groupTitles as any)[group] || group)}</h3>{' '}
                         {/* Use title or fallback to the group key */}
-                        <p>{count}</p>
+                        <p>{String(count)}</p>
                     </div>
                 ))}
             </div>
@@ -484,6 +485,11 @@ const Home = () => {
                             sx: {
                                 borderRight: '1px solid #ddd', // Column border
                                 padding: '10px',
+                                color: '#111827',
+                                '& a, & a:visited, & a:hover, & a:active': {
+                                    color: '#111827 !important',
+                                    textDecorationColor: '#111827',
+                                },
                             },
                         }}
                         muiTableBodyRowProps={{
@@ -494,7 +500,6 @@ const Home = () => {
                                 '&:hover': { backgroundColor: '#e0f7fa' }, // Hover effect
                             },
                         }}
-                        enableZebraStripes={true}
                         enableColumnResizing={true}
                         // columnResizeMode="onChange" // default
                         enableTopToolbar={true} // Disables the top-right controls entirely
@@ -516,3 +521,7 @@ const Home = () => {
 }
 
 export default Home
+
+
+
+

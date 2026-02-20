@@ -6,7 +6,6 @@ import { apiForgotPassword } from '@/services/AuthService'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import type { ZodType } from 'zod'
 import type { CommonProps } from '@/@types/common'
 
 interface ForgotPasswordFormProps extends CommonProps {
@@ -19,7 +18,7 @@ type ForgotPasswordFormSchema = {
     email: string
 }
 
-const validationSchema: ZodType<ForgotPasswordFormSchema> = z.object({
+const validationSchema = z.object({
     email: z.string().email().min(5),
 })
 

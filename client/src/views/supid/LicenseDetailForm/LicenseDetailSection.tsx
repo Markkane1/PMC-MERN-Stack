@@ -155,3 +155,4 @@ const LicenseDetailSection = ({
 }
 
 export default LicenseDetailSection
+

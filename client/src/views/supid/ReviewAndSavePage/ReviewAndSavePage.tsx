@@ -1,7 +1,10 @@
 import useFormStore from '../../../store/supid/supidStore'
 import BottomStickyBar from '@/components/template/BottomStickyBar'
+import type { CommonProps } from '@/@types/common'
 
-type CustomerFormProps = {} & CommonProps
+type CustomerFormProps = CommonProps & {
+    onFormSubmit?: (...args: any[]) => void
+}
 
 const ReviewAndSavePage = (props: CustomerFormProps) => {
     const {
@@ -125,3 +128,4 @@ const ReviewAndSavePage = (props: CustomerFormProps) => {
 }
 
 export default ReviewAndSavePage
+

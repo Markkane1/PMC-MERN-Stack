@@ -265,7 +265,6 @@ const InspectionReportsList = () => {
                                 '&:hover': { backgroundColor: '#e0f7fa' }, // Hover effect
                             },
                         }}
-                        enableZebraStripes={true}
                     />
                 </div>
             )}
@@ -274,3 +273,4 @@ const InspectionReportsList = () => {
 }
 
 export default InspectionReportsList
+

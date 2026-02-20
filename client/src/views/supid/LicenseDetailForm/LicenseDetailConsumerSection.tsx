@@ -447,3 +447,6 @@ const LicenseDetailConsumerSection = ({
 }
 
 export default LicenseDetailConsumerSection
+
+
+

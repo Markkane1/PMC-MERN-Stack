@@ -107,6 +107,12 @@ const AdminService = {
             method: 'get',
         })
     },
+    resetPermissions() {
+        return ApiService.fetchDataWithAxios({
+            url: '/accounts/admin/permissions/reset/',
+            method: 'post',
+        })
+    },
     listGroups() {
         return ApiService.fetchDataWithAxios<GroupDto[]>({
             url: '/accounts/admin/groups/',

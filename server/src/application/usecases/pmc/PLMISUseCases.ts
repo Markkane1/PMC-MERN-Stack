@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import { plmisService } from '../../services/pmc/PLMISService'
 import { applicantRepositoryMongo, psidTrackingRepositoryMongo } from '../../../infrastructure/database/repositories/pmc'
+import { invalidatePmcDashboardCaches } from '../../services/pmc/DashboardCacheService'
 
 type AuthRequest = Request & { user?: any }
 
@@ -293,9 +294,15 @@ export const plmisPaymentConfirmedWebhook = asyncHandler(
         })
 
         if ((existing as any).applicantId) {
+          const applicantId = Number((existing as any).applicantId)
           await applicantRepositoryMongo.updateByNumericId(Number((existing as any).applicantId), {
             applicationStatus: 'Submitted',
             assignedGroup: 'Download License',
+          })
+          await invalidatePmcDashboardCaches({
+            applicantId,
+            includeFees: true,
+            includeSubmitted: true,
           })
           applicantUpdated = true
         }

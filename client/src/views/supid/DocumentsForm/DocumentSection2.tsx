@@ -398,7 +398,7 @@ const LicenseDetailProducerSection = ({
                                             !applicantDetail.is_downloaded_fee_challan
                                         } // Apply the read-only prop
                                         onChange={(e) => {
-                                            const file = e.target.files?.[0]
+                                            const file = (e.target as HTMLInputElement).files?.[0]
                                             if (file) {
                                                 if (
                                                     file.type.startsWith(
@@ -567,3 +567,6 @@ const LicenseDetailProducerSection = ({
 }
 
 export default LicenseDetailProducerSection
+
+
+

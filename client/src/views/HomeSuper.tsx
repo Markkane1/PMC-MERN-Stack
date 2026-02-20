@@ -70,24 +70,24 @@ const flattenObject = (obj) => {
         : 'N/A'
 
     // Calculate group assignment days
-    let groupAssignmentDays = 'N/A'
+    let groupAssignmentDays: any = 'N/A'
     if (latestGroupAssignment && latestGroupAssignment.updated_at) {
         const assignmentDate = new Date(latestGroupAssignment.updated_at)
         const currentDate = new Date()
-        const differenceInTime = currentDate - assignmentDate
+        const differenceInTime = currentDate.getTime() - assignmentDate.getTime()
         groupAssignmentDays = Math.floor(
             differenceInTime / (1000 * 60 * 60 * 24),
         ) // Convert milliseconds to days
     }
 
-    let duration = 'N/A'
+    let duration: any = 'N/A'
     if (
         obj.submittedapplication?.created_at &&
         obj.submittedapplication?.created_at
     ) {
         const assignmentDate = new Date(obj.submittedapplication?.created_at)
         const currentDate = new Date()
-        const differenceInTime = currentDate - assignmentDate
+        const differenceInTime = currentDate.getTime() - assignmentDate.getTime()
         duration = Math.floor(differenceInTime / (1000 * 60 * 60 * 24)) // Convert milliseconds to days
     }
 
@@ -157,6 +157,66 @@ const normalizeListData = (payload) => {
     return []
 }
 
+const normalizeFeeStats = (payload) => {
+    if (Array.isArray(payload)) return payload
+    if (Array.isArray(payload?.results)) return payload.results
+    if (payload && typeof payload === 'object') {
+        const settled = Number(payload.settled || 0)
+        const unsettled = Number(payload.unsettled || 0)
+        const total = Number(payload.total_fees || settled + unsettled)
+        return [
+            {
+                till: new Date().toISOString().slice(0, 10),
+                fee_received: total,
+                fee_verified: settled,
+                fee_unverified: unsettled,
+            },
+        ]
+    }
+    return []
+}
+
+const GROUP_ALIASES: Record<string, string> = {
+    applicant: 'APPLICANT',
+    APPLICANT: 'APPLICANT',
+    'all applications': 'All-Applications',
+    'All Applications': 'All-Applications',
+    'All-Applications': 'All-Applications',
+    'challan downloaded': 'Challan-Downloaded',
+    'Challan Downloaded': 'Challan-Downloaded',
+    'Challan-Downloaded': 'Challan-Downloaded',
+    lso: 'LSO',
+    lso1: 'LSO1',
+    lso2: 'LSO2',
+    lso3: 'LSO3',
+    lsm: 'LSM',
+    lsm2: 'LSM2',
+    tl: 'TL',
+    deo: 'DEO',
+    dg: 'DG',
+    do: 'DO',
+    submitted: 'Submitted',
+    pmc: 'PMC',
+    'download license': 'Download License',
+}
+
+const normalizeGroupKey = (value: unknown): string => {
+    const raw = String(value ?? '').trim()
+    if (!raw) return ''
+    return GROUP_ALIASES[raw] || GROUP_ALIASES[raw.toLowerCase()] || raw
+}
+
+const normalizeStatistics = (statsPayload: Record<string, any>) => {
+    const normalized: Record<string, number> = {}
+    for (const [rawGroup, rawCount] of Object.entries(statsPayload || {})) {
+        const group = normalizeGroupKey(rawGroup)
+        if (!group) continue
+        normalized[group] =
+            (normalized[group] || 0) + Number(rawCount || 0)
+    }
+    return normalized
+}
+
 const Home = () => {
     const [flattenedData, setFlattenedData] = useState([])
     const [columns, setColumns] = useState([])
@@ -176,7 +236,8 @@ const Home = () => {
     const tableRequestControllerRef = useRef<AbortController | null>(null)
     const latestTableRequestRef = useRef(0)
     const selectedTileRef = useRef<string | null>(null)
-    const safeFeeStats = Array.isArray(feeStats) ? feeStats : []
+    const hasManualTileSelectionRef = useRef(false)
+    const safeFeeStats = useMemo(() => normalizeFeeStats(feeStats), [feeStats])
 
     // APPLICANT > LSO > LSM > DO > LSM2 > TL > DEO > Download License
 
@@ -321,14 +382,11 @@ const Home = () => {
                                         href={url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        style={{
-                                            color:
-                                                assignedBack === 'Yes'
-                                                    ? '#b91c1c'
-                                                    : '#1d4ed8',
-                                            textDecoration: 'underline',
-                                            fontWeight: 500,
-                                        }}
+                                        className={
+                                            assignedBack === 'Yes'
+                                                ? '!text-red-700 underline font-medium'
+                                                : '!text-slate-900 underline font-medium'
+                                        }
                                     >
                                         {cell.getValue() || '-'}
                                     </a>
@@ -352,14 +410,15 @@ const Home = () => {
 
     const handleTileClick = useCallback(
         async (group) => {
-            if (!group) {
+            const normalizedGroup = normalizeGroupKey(group)
+            if (!normalizedGroup) {
                 setSelectedTile(null)
                 setRowCount(0)
                 setFlattenedData([])
                 setColumns([])
                 return
             }
-            const isNewGroup = selectedTileRef.current !== group
+            const isNewGroup = selectedTileRef.current !== normalizedGroup
             const targetPageIndex = isNewGroup ? 0 : pagination.pageIndex
             if (isNewGroup && pagination.pageIndex !== 0) {
                 setPagination((prev) => ({ ...prev, pageIndex: 0 }))
@@ -373,13 +432,21 @@ const Home = () => {
             tableRequestControllerRef.current = controller
             try {
                 setTableLoading(true)
-                setSelectedTile(group)
+                setSelectedTile(normalizedGroup)
                 setHasAutoSelectedTile(true)
 
                 // Logic for LSO.1, LSO.2, LSO.3
-                if (group === 'LSO1' || group === 'LSO2' || group === 'LSO3') {
+                if (
+                    normalizedGroup === 'LSO1' ||
+                    normalizedGroup === 'LSO2' ||
+                    normalizedGroup === 'LSO3'
+                ) {
                     const moduloValue =
-                        group === 'LSO1' ? 1 : group === 'LSO2' ? 2 : 0
+                        normalizedGroup === 'LSO1'
+                            ? 1
+                            : normalizedGroup === 'LSO2'
+                              ? 2
+                              : 0
 
                     const response = await AxiosBase.get(
                         '/pmc/applicant-detail-main-list/',
@@ -422,12 +489,12 @@ const Home = () => {
                         {
                             params: {
                                 assigned_group:
-                                    group !== 'All-Applications' &&
-                                    group !== 'Challan-Downloaded'
-                                        ? group
+                                    normalizedGroup !== 'All-Applications' &&
+                                    normalizedGroup !== 'Challan-Downloaded'
+                                        ? normalizedGroup
                                         : undefined,
                                 application_status:
-                                    group === 'Challan-Downloaded'
+                                    normalizedGroup === 'Challan-Downloaded'
                                         ? 'Fee Challan'
                                         : undefined,
                                 page: targetPageIndex + 1,
@@ -492,7 +559,7 @@ const Home = () => {
             setFeeLoading(true)
             try {
                 const response = await AxiosBase.get(`/pmc/report-fee/`) // API Endpoint
-                setFeeStats(response.data) // Store in state
+                setFeeStats(normalizeFeeStats(response.data)) // Store normalized payload
             } catch (error) {
                 console.error('Error fetching fee statistics:', error)
             } finally {
@@ -504,46 +571,54 @@ const Home = () => {
     }, [])
 
     useEffect(() => {
+        const controller = new AbortController()
         const fetchData = async () => {
             setMetaLoading(true) // Show summary loading state
-            // try {
-            //     const response = await AxiosBase.get(`/pmc/ping/`, {
-            //         headers: {
-            //             'Content-Type': 'application/json',
-            //         },
-            //     });
-            // } catch (error) {
-            //     navigate('/error');
-            // }
-
             try {
-                let groupsResponse = []
-                try {
-                    const response = await AxiosBase.get(`/pmc/user-groups/`, {
+                const [groupsResult, statsResult] = await Promise.allSettled([
+                    AxiosBase.get(`/pmc/user-groups/`, {
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                    })
-                    groupsResponse = response.data || []
-                    setUserGroups(groupsResponse.map((group) => group.name))
-                } catch (error) {
-                    console.error('Error fetching user groups:', error)
-                    // Set user groups to an empty array if an error occurs
-                    setUserGroups([])
-                }
-                console.log('groupsResponse', groupsResponse)
-
-                // Fetch statistics for groups
-                const statsResponse = await AxiosBase.get(
-                    `/pmc/fetch-statistics-view-groups/`,
-                    {
+                        signal: controller.signal,
+                    }),
+                    AxiosBase.get(`/pmc/fetch-statistics-view-groups/`, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
                         },
-                    },
-                )
-                setStatistics(statsResponse.data) // Save statistics to state
+                        signal: controller.signal,
+                    }),
+                ])
+
+                if (groupsResult.status === 'fulfilled') {
+                    const groupsResponse = groupsResult.value?.data || []
+                    setUserGroups(
+                        groupsResponse.map((group) =>
+                            normalizeGroupKey(group.name),
+                        ),
+                    )
+                } else {
+                    console.error(
+                        'Error fetching user groups:',
+                        groupsResult.reason,
+                    )
+                    setUserGroups([])
+                }
+
+                if (statsResult.status === 'fulfilled') {
+                    setStatistics(
+                        normalizeStatistics(statsResult.value?.data || {}),
+                    )
+                } else {
+                    console.error('Error fetching statistics:', statsResult.reason)
+                }
             } catch (error) {
+                if (
+                    (error as any)?.code === 'ERR_CANCELED' ||
+                    (error as any)?.name === 'CanceledError'
+                ) {
+                    return
+                }
                 console.error('Error fetching data:', error)
             } finally {
                 setMetaLoading(false) // Hide summary loading state
@@ -551,6 +626,10 @@ const Home = () => {
         }
 
         fetchData()
+
+        return () => {
+            controller.abort()
+        }
     }, []) // Run only once on component load
 
     useEffect(() => {
@@ -570,6 +649,9 @@ const Home = () => {
 
     useEffect(() => {
         if (hasAutoSelectedTile || selectedTile) {
+            return
+        }
+        if (hasManualTileSelectionRef.current) {
             return
         }
         const isApplicantOnly =
@@ -636,6 +718,27 @@ const Home = () => {
         hasAutoSelectedTile,
     ])
 
+    useEffect(() => {
+        if (hasAutoSelectedTile || selectedTile || hasManualTileSelectionRef.current) {
+            return
+        }
+        // Kick off initial table load immediately instead of waiting for stats/user-groups.
+        const defaultGroup =
+            userAuthorityList.length === 1 && userAuthorityList[0] === 'APPLICANT'
+                ? 'APPLICANT'
+                : 'Submitted'
+        setHasAutoSelectedTile(true)
+        handleTileClick(defaultGroup)
+    }, [userAuthorityList, hasAutoSelectedTile, selectedTile, handleTileClick])
+
+    const handleManualTileClick = useCallback(
+        (group) => {
+            hasManualTileSelectionRef.current = true
+            handleTileClick(group)
+        },
+        [handleTileClick],
+    )
+
     const handleExport = async () => {
         try {
             const response = await AxiosBase.post(
@@ -669,14 +772,19 @@ const Home = () => {
                         style={{
                             cursor: 'pointer',
                             backgroundColor:
-                                selectedTile === group ? '#007BFF' : '#f8f9fa',
-                            color: selectedTile === group ? '#fff' : '#000',
+                                selectedTile === group ? '#1d4ed8' : '#f3f4f6',
+                            color: selectedTile === group ? '#fff' : '#0f172a',
+                            border:
+                                selectedTile === group
+                                    ? '1px solid #1d4ed8'
+                                    : '1px solid #cbd5e1',
+                            transition: 'all 150ms ease-in-out',
                         }} // Add cursor pointer for interactivity
-                        onClick={() => handleTileClick(group)} // Call the handler with the group
+                        onClick={() => handleManualTileClick(group)} // Call the handler with the group
                     >
-                        <h3>{groupTitles[group] || group}</h3>{' '}
+                        <h3>{String((groupTitles as any)[group] || group)}</h3>{' '}
                         {/* Use title or fallback to the group key */}
-                        <p>{count}</p>
+                        <p>{String(count)}</p>
                     </div>
                 ))}
             </div>
@@ -706,7 +814,7 @@ const Home = () => {
                             <div className="mt-3 flex justify-around text-center">
                                 <p className="text-sm text-gray-600">
                                     Received: <br />
-                                    <span className="font-bold text-blue-600">
+                                    <span className="font-bold text-slate-700">
                                         {formatAmount(stat.fee_received)}
                                     </span>
                                 </p>
@@ -740,7 +848,7 @@ const Home = () => {
                             .filter(
                                 (group) =>
                                     group !== 'Download License' &&
-                                    group !== 'Applicant' &&
+                                    group !== 'APPLICANT' &&
                                     group !== 'LSM2',
                             )
                             .join(' - ')}{' '}
@@ -801,6 +909,21 @@ const Home = () => {
                             ? { backgroundColor: 'rgba(239, 68, 68, 0.08)' }
                             : undefined,
                 })}
+                muiTableBodyCellProps={({ row }) => ({
+                    sx: {
+                        color: '#111827',
+                        '& a, & a:visited, & a:hover, & a:active': {
+                            color:
+                                row.original.is_assigned_back === 'Yes'
+                                    ? '#b91c1c !important'
+                                    : '#111827 !important',
+                            textDecorationColor:
+                                row.original.is_assigned_back === 'Yes'
+                                    ? '#b91c1c'
+                                    : '#111827',
+                        },
+                    },
+                })}
                 // enableSorting={false} // Optionally disable column sorting
             />
         </div>
@@ -808,3 +931,7 @@ const Home = () => {
 }
 
 export default Home
+
+
+
+

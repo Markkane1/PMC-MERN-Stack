@@ -208,9 +208,10 @@ const LicenseDetailProducerSection = ({
                                 type="file"
                                 accept=".pdf,.png,.jpg,.jpeg" // Allow only specific file types
                                 disabled={readOnly} // Apply the read-only prop
-                                onChange={(e) =>
-                                    field.onChange(e.target.files[0] || null)
-                                } // Correctly set the file without using 'value'
+                                onChange={(e) => {
+                                    const input = e.target as HTMLInputElement
+                                    field.onChange(input.files?.[0] || null)
+                                }} // Correctly set the file without using 'value'
                             />
                         )}
                     />
@@ -234,9 +235,10 @@ const LicenseDetailProducerSection = ({
                                 type="file"
                                 accept=".pdf,.png,.jpg,.jpeg" // Allow only specific file types
                                 disabled={readOnly} // Apply the read-only prop
-                                onChange={(e) =>
-                                    field.onChange(e.target.files[0] || null)
-                                } // Correctly set the file without using 'value'
+                                onChange={(e) => {
+                                    const input = e.target as HTMLInputElement
+                                    field.onChange(input.files?.[0] || null)
+                                }} // Correctly set the file without using 'value'
                             />
                         )}
                     />
@@ -281,3 +283,6 @@ const LicenseDetailProducerSection = ({
 }
 
 export default LicenseDetailProducerSection
+
+
+

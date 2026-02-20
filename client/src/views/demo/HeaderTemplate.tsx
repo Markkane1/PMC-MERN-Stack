@@ -1,9 +1,14 @@
-import React, { useState } from 'react'
+import React from 'react'
 import 'ol/ol.css'
 import { Link } from 'react-router-dom'
 import { Divider } from '@mui/material'
 
-const HeaderTemplate = ({ headerText = <></>, children }) => {
+type HeaderTemplateProps = {
+    headerText?: React.ReactNode
+    children?: React.ReactNode
+}
+
+const HeaderTemplate = ({ headerText = <></>, children }: HeaderTemplateProps) => {
     // Render
     return (
         <div className="banner-container2 grid">
@@ -71,3 +76,4 @@ const HeaderTemplate = ({ headerText = <></>, children }) => {
 }
 
 export default HeaderTemplate
+

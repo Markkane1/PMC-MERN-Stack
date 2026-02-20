@@ -1,4 +1,4 @@
-import React from 'react'
+﻿import React from 'react'
 import { useForm } from 'react-hook-form'
 import { Form } from '../../../components/ui/Form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -9,6 +9,7 @@ import CompetitionDetailSection from './CompetitionDetailSection'
 import Button from '@/components/ui/Button'
 import TablerIcon from '@/components/shared/TablerIcon'
 import AxiosBase from '../../../services/axios/AxiosBase'
+import type { CompetitionFormSchema } from './types'
 
 const schema = z.object({
     fullName: z.string().min(1, { message: 'Required' }),
@@ -51,6 +52,8 @@ const schema = z.object({
         .optional(),
 })
 
+type CompetitionFormValues = CompetitionFormSchema
+
 const CompetitionFormPage = () => {
     const {
         handleSubmit,
@@ -58,13 +61,12 @@ const CompetitionFormPage = () => {
         formState: { errors },
         reset,
         watch,
-    } = useForm({
+    } = useForm<CompetitionFormValues>({
         resolver: zodResolver(schema),
         defaultValues: {
             fullName: '',
             institute: '',
             grade: '',
-            category: '',
             competitionType: '',
             mobile: '',
         },
@@ -87,7 +89,7 @@ const CompetitionFormPage = () => {
               : ''
     }
 
-    const onSubmit = async (data) => {
+    const onSubmit = async (data: CompetitionFormValues) => {
         const formData = new FormData()
 
         formData.append('full_name', data.fullName)
@@ -118,7 +120,7 @@ const CompetitionFormPage = () => {
 
             if (result.success) {
                 alert(
-                    `Registration Successful! Your ID is ${result.registration_id}\n\n📦 The courier label will now be downloaded.\nPlease print it and paste it on your courier package before dispatching your competition submission to the Plastic Management Cell.`,
+                    `Registration Successful! Your ID is ${result.registration_id}\n\nðŸ“¦ The courier label will now be downloaded.\nPlease print it and paste it on your courier package before dispatching your competition submission to the Plastic Management Cell.`,
                 )
 
                 // Fetch PDF as blob
@@ -143,17 +145,13 @@ const CompetitionFormPage = () => {
                 document.body.removeChild(link)
                 window.URL.revokeObjectURL(url) // Clean up
 
-                // ✅ Reset form to clear fields
+                // âœ… Reset form to clear fields
                 reset({
                     fullName: '',
                     institute: '',
                     grade: '',
-                    category: '',
                     competitionType: '',
                     mobile: '',
-                    studentCardFront: undefined,
-                    studentCardBack: undefined,
-                    photoObject: undefined,
                 })
             } else {
                 alert('Something went wrong. Please try again.')

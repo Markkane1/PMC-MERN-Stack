@@ -15,7 +15,7 @@ type CompoundedComponent = ForwardRefExoticComponent<
     Menu: typeof DropdownSub
 }
 
-const Dropdown = _Dropdown as CompoundedComponent
+const Dropdown = _Dropdown as unknown as CompoundedComponent
 
 Dropdown.Item = DropdownItem
 Dropdown.Menu = DropdownSub

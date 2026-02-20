@@ -21,7 +21,7 @@ if (import.meta.env.PROD) {
     if ('serviceWorker' in navigator && 'SyncManager' in window) {
         navigator.serviceWorker.ready
             .then((swRegistration) => {
-                return swRegistration.sync.register('sync-posts')
+                return (swRegistration as any).sync.register('sync-posts')
             })
             .catch((err) =>
                 console.error('[❌ Sync registration failed]:', err),

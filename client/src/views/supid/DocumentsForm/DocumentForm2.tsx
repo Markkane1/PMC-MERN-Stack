@@ -247,7 +247,7 @@ const DocumentForm = (props: CustomerFormProps) => {
         formState: { errors },
         register,
         control,
-    } = useForm<LicenseDetailFormSchema>({
+    } = useForm<any>({
         defaultValues: {
             ...{
                 banAccount: false,
@@ -295,3 +295,4 @@ const DocumentForm = (props: CustomerFormProps) => {
 }
 
 export default DocumentForm
+

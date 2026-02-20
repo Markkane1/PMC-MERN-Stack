@@ -1,4 +1,4 @@
-import { ElementType, ReactElement, forwardRef, useId } from 'react'
+﻿import { ElementType, ReactElement, forwardRef, useId } from 'react'
 
 import { MasonryProps, PolymorphicRef } from './types'
 import useMasonry from './useMasonry'
@@ -6,11 +6,11 @@ import { MasonryItemContext } from './context'
 
 type MasonryComponent = <C extends ElementType = 'div'>(
     props: MasonryProps<C>,
-) => ReactElement<C>
+) => ReactElement | null
 
 const MasonryBase = <T extends ElementType = 'div'>(
     props: MasonryProps<T>,
-    forwaredRef: PolymorphicRef<T>,
+    forwardedRef: PolymorphicRef<T>,
 ) => {
     const {
         gap,
@@ -27,7 +27,7 @@ const MasonryBase = <T extends ElementType = 'div'>(
         <Component
             data-masonry-id={`Masonry-${uniq}`}
             {...rest}
-            ref={forwaredRef}
+            ref={forwardedRef}
             style={{ display: 'flex', gap, ...rest.style }}
         >
             {columnsChildren.map((column, index) => {
@@ -64,4 +64,4 @@ const MasonryBase = <T extends ElementType = 'div'>(
     )
 }
 
-export const Masonry = forwardRef(MasonryBase) as MasonryComponent
+export const Masonry = forwardRef(MasonryBase as any) as unknown as MasonryComponent

@@ -29,6 +29,7 @@ type NotificationList = {
     locationLabel: string
     status: string
     readed: boolean
+    link?: string
 }
 
 const notificationHeight = 'h-[280px]'
@@ -66,7 +67,7 @@ const _Notification = ({ className }: { className?: string }) => {
             setLoading(false)
             if (resp.length > 0) {
                 setNotificationList(
-                    resp.map((item) => ({
+                    resp.map((item: any) => ({
                         id: String(item.id),
                         target: item.tracking_number, // We'll show tracking number in "target"
                         description: item.remarks, // We'll show remarks in "description"

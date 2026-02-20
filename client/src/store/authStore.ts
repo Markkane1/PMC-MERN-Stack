@@ -85,7 +85,7 @@ export const useSessionUser = create<AuthState & AuthAction>()(
                                 )
                                 const profileGroups =
                                     profileResp.data?.groups || []
-                                groups = profileGroups.map((name) => ({
+                                groups = profileGroups.map((name: string) => ({
                                     name,
                                 }))
                             } catch (_err) {
@@ -106,7 +106,10 @@ export const useSessionUser = create<AuthState & AuthAction>()(
                                 ...state.user,
                                 authority:
                                     groups.length > 0
-                                        ? groups.map((group) => group.name)
+                                        ? groups.map(
+                                              (group: { name: string }) =>
+                                                  group.name,
+                                          )
                                         : [],
                                 district_id: districtInfo.district_id,
                                 district_name: districtInfo.district_name,

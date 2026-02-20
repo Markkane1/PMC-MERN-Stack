@@ -7,11 +7,16 @@ import isEmpty from 'lodash/isEmpty'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import type { ZodType } from 'zod'
 import type { CommonProps } from '@/@types/common'
-import type { InspectionReportSchema } from './types'
 
-const validationSchema: ZodType<InspectionReportSchema> = z
+type InspectionFormProps = CommonProps & {
+    onFormSubmit: (values: any) => void | Promise<void>
+    defaultValues?: any
+    readOnly?: boolean
+    newCustomer?: boolean
+}
+
+const validationSchema = z
     .object({
         businessName: z.string().min(1, { message: 'Business name required' }),
         businessType: z.string().min(1, { message: 'Business type required' }),
@@ -159,15 +164,16 @@ const InspectionForm = ({
     onFormSubmit,
     defaultValues = {},
     readOnly,
+    newCustomer: _newCustomer,
     children,
-}: CommonProps) => {
+}: InspectionFormProps) => {
     // console.log('defaultValues2', defaultValues);
     const {
         handleSubmit,
         reset,
         formState: { errors },
         control,
-    } = useForm<InspectionReportSchema>({
+    } = useForm<any>({
         defaultValues: {
             fineRecoveryBreakup: defaultValues?.fineRecoveryBreakup ?? [], // ✅ Ensures it's never null
         },
@@ -205,3 +211,4 @@ const InspectionForm = ({
 }
 
 export default InspectionForm
+

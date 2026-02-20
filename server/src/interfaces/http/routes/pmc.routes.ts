@@ -232,7 +232,7 @@ pmcRouter.get('/track-application/', trackApplication)
 
 // Reports
 pmcRouter.get('/report/', authenticate, requirePermission(['pmc_api.view_applicantdetail']), report)
-pmcRouter.get('/report-fee/', authenticate, requirePermission(['pmc_api.view_applicantfee']), reportFee)
+pmcRouter.get('/report-fee/', authenticate, requirePermission(['pmc_api.view_applicantfee', 'pmc_api.view_applicantdetail']), reportFee)
 pmcRouter.get('/export-applicant/', authenticate, requirePermission(['pmc_api.view_applicantdetail']), exportApplicant)
 pmcRouter.get('/psid-report/', authenticate, requirePermission(['pmc_api.view_psidtracking']), psidReport)
 

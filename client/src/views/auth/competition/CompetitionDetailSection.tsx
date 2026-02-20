@@ -1,4 +1,4 @@
-import Card from '../../../components/ui/Card'
+﻿import Card from '../../../components/ui/Card'
 import Input from '../../../components/ui/Input'
 import Select from '../../../components/ui/Select'
 import { FormItem } from '../../../components/ui/Form'
@@ -8,8 +8,9 @@ import InputMask from 'react-input-mask'
 
 type OverviewSectionProps = FormSectionBaseProps & {
     readOnly?: boolean
-    watch: (name: string) => unknown // 👈 add this
 }
+
+type Category = 'School' | 'University'
 
 const competitionList = [
     { label: 'Poster', value: 'poster' },
@@ -30,7 +31,7 @@ const gradeList = [
     'PhD',
 ].map((g) => ({ label: g, value: g }))
 
-const determineCategory = (grade: string) => {
+const determineCategory = (grade: string): Category | '' => {
     const universityGrades = ['BS', 'MS', 'MPhil', 'PhD']
     const schoolGrades = [
         '8th',
@@ -49,7 +50,7 @@ const determineCategory = (grade: string) => {
 
 const competitionAvailability = {
     School: ['poster', 'painting', '3d_model'],
-    University: ['poster', 'painting'], // ❌ No 3D Model for university
+    University: ['poster', 'painting'],
 }
 
 const getLabel = (value: string) => {
@@ -70,9 +71,11 @@ const CompetitionDetailSection = ({
     const category = determineCategory(grade)
 
     // Filter competition list based on category
-    const availableCompetitions = competitionList.filter((c) =>
-        competitionAvailability[category]?.includes(c.value),
-    )
+    const availableCompetitions = category
+        ? competitionList.filter((c) =>
+              competitionAvailability[category].includes(c.value),
+          )
+        : []
 
     return (
         <Card>
@@ -200,7 +203,10 @@ const CompetitionDetailSection = ({
                                 accept="image/*"
                                 capture="environment"
                                 onChange={(e) =>
-                                    field.onChange(e.target.files?.[0])
+                                    field.onChange(
+                                        (e.target as HTMLInputElement)
+                                            .files?.[0],
+                                    )
                                 }
                             />
                         )}
@@ -217,7 +223,10 @@ const CompetitionDetailSection = ({
                                 accept="image/*"
                                 capture="environment"
                                 onChange={(e) =>
-                                    field.onChange(e.target.files?.[0])
+                                    field.onChange(
+                                        (e.target as HTMLInputElement)
+                                            .files?.[0],
+                                    )
                                 }
                             />
                         )}
@@ -236,7 +245,10 @@ const CompetitionDetailSection = ({
                                 accept="image/*"
                                 capture="environment"
                                 onChange={(e) =>
-                                    field.onChange(e.target.files?.[0])
+                                    field.onChange(
+                                        (e.target as HTMLInputElement)
+                                            .files?.[0],
+                                    )
                                 }
                             />
                         )}

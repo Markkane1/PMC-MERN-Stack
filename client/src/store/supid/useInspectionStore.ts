@@ -25,6 +25,8 @@ interface InspectionReport {
     recoveryAmount?: number
     deSealedDate?: string
     affidavit?: File | null
+    confiscation_receipt?: File | null
+    payment_challan?: File | null
     syncStatus?: 'post' | 'patch' // Tracks offline edits
 }
 

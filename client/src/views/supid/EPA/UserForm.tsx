@@ -135,7 +135,6 @@ const UserForm = ({ selectedUser, setSelectedUser }) => {
                     >
                         <Controller
                             name="username"
-                            type="text"
                             control={control}
                             render={({ field }) => (
                                 <Input
@@ -156,7 +155,6 @@ const UserForm = ({ selectedUser, setSelectedUser }) => {
                     >
                         <Controller
                             name="first_name"
-                            type="text"
                             control={control}
                             render={({ field }) => (
                                 <Input {...field} placeholder="First Name" />
@@ -171,7 +169,6 @@ const UserForm = ({ selectedUser, setSelectedUser }) => {
                     >
                         <Controller
                             name="last_name"
-                            type="text"
                             control={control}
                             render={({ field }) => (
                                 <Input {...field} placeholder="Last Name" />
@@ -241,7 +238,7 @@ const UserForm = ({ selectedUser, setSelectedUser }) => {
                     <Button
                         block
                         type="button"
-                        variant="outline"
+                        variant="default"
                         onClick={handleReset}
                     >
                         Reset Form
@@ -253,3 +250,4 @@ const UserForm = ({ selectedUser, setSelectedUser }) => {
 }
 
 export default UserForm
+

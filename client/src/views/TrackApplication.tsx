@@ -1,33 +1,30 @@
-import React, { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
-import Alert from '@/components/ui/Alert' // For showing success/error messages
+import Alert from '@/components/ui/Alert'
 import AxiosBase from '../services/axios/AxiosBase'
-
-// Optional: if you want to auto-clear messages after a few seconds
+import axios from 'axios'
+import type { TypeAttributes } from '@/components/ui/@types/common'
 import useTimeOutMessage from '@/utils/hooks/useTimeOutMessage'
 
 const TrackApplication = () => {
     const [trackingNumber, setTrackingNumber] = useState('')
     const [loading, setLoading] = useState(false)
-    const [message, setMessage] = useTimeOutMessage() // or just use useState if you don't want auto-clear
-    const [messageType, setMessageType] = useState('info')
-    const [trackingResult, setTrackingResult] = useState(null)
+    const [message, setMessage] = useTimeOutMessage()
+    const [messageType, setMessageType] =
+        useState<TypeAttributes.Status>('info')
+    const [trackingResult, setTrackingResult] = useState<string | null>(null)
 
-    // This method is reused from your Banner for backspace handling
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Backspace') {
             setTrackingNumber(formatTrackingNumber(trackingNumber, true))
         }
     }
 
-    // This method is reused from your Banner for auto-formatting
-    const formatTrackingNumber = (value, isBackspace) => {
-        // Remove any invalid characters for each segment
-        const rawValue = value.replace(/[^a-zA-Z0-9]/g, '') // Allow only alphanumeric characters
+    const formatTrackingNumber = (value: string, isBackspace: boolean) => {
+        const rawValue = value.replace(/[^a-zA-Z0-9]/g, '')
 
-        // Split the rawValue into segments
         const segment1 = rawValue
             .slice(0, 3)
             .toUpperCase()
@@ -38,12 +35,10 @@ const TrackApplication = () => {
             .replace(/[^A-Z]/g, '')
         const segment3 = rawValue.slice(6).replace(/[^0-9]/g, '')
 
-        // If backspace is detected, allow the deletion without auto-adding new dashes
         if (isBackspace) {
             return [segment1, segment2, segment3].filter(Boolean).join('-')
         }
 
-        // Auto-format: Add dashes dynamically
         let formattedValue = ''
         if (segment1)
             formattedValue += segment1 + (segment1.length === 3 ? '-' : '')
@@ -54,7 +49,6 @@ const TrackApplication = () => {
         return formattedValue
     }
 
-    // The main API call to fetch tracking info
     const fetchTrackingInfo = async () => {
         if (!trackingNumber) {
             setMessage('Please enter a valid tracking number.')
@@ -63,7 +57,7 @@ const TrackApplication = () => {
         }
 
         setLoading(true)
-        setMessage(null)
+        setMessage('')
         setTrackingResult(null)
 
         try {
@@ -72,15 +66,18 @@ const TrackApplication = () => {
                 params: { tracking_number: trackingNumber },
             })
 
-            // If your API returns additional data, store it in `trackingResult`
             setTrackingResult(response.data.message || 'No additional details')
             setMessageType('success')
-            // setMessage('Tracking information found successfully!');
         } catch (error) {
             setTrackingResult(null)
-            setMessage(
-                error?.response?.data?.message || 'Error tracking application.',
-            )
+            if (axios.isAxiosError(error)) {
+                setMessage(
+                    (error.response?.data as { message?: string })?.message ||
+                        'Error tracking application.',
+                )
+            } else {
+                setMessage('Error tracking application.')
+            }
             setMessageType('danger')
         } finally {
             setLoading(false)
@@ -88,9 +85,8 @@ const TrackApplication = () => {
     }
 
     return (
-        <div className="flex items-center justify-center  min-h-fit">
+        <div className="flex items-center justify-center min-h-fit">
             <div className="w-full max-w-lg p-6 bg-white shadow-2xl rounded-lg">
-                {/* Heading / Logo */}
                 <div className="mb-6 text-center">
                     <h2 className="text-2xl font-bold mb-2">
                         Track Your Application
@@ -100,14 +96,12 @@ const TrackApplication = () => {
                     </p>
                 </div>
 
-                {/* Alert Messages */}
                 {message && (
                     <Alert showIcon className="mb-4" type={messageType}>
                         {message}
                     </Alert>
                 )}
 
-                {/* Tracking Number Input */}
                 <div className="mb-4">
                     <Input
                         value={trackingNumber}
@@ -122,7 +116,6 @@ const TrackApplication = () => {
                     />
                 </div>
 
-                {/* Buttons */}
                 <div className="flex justify-end">
                     <Button
                         loading={loading}
@@ -133,7 +126,6 @@ const TrackApplication = () => {
                     </Button>
                 </div>
 
-                {/* Results Section */}
                 {trackingResult && (
                     <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
                         <h3 className="font-bold mb-2">Tracking Details:</h3>
@@ -141,7 +133,6 @@ const TrackApplication = () => {
                     </div>
                 )}
 
-                {/* Back to Home */}
                 <div className="mt-6 text-center">
                     <Link to="/" className="text-blue-600 hover:underline">
                         Back to My Applications

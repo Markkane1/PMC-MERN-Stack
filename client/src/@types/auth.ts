@@ -1,8 +1,8 @@
 export type SignInCredential = {
     username: string
     password: string
-    captcha_input: string
-    captcha_token: string
+    captcha_input?: string
+    captcha_token?: string
 }
 
 export type SignInResponse = {
@@ -22,6 +22,8 @@ export type SignUpCredential = {
     username: string
     email: string
     password: string
+    captcha_input?: string
+    captcha_token?: string
 }
 
 export type ForgotPassword = {

@@ -3,6 +3,7 @@ import type {
   ApplicantFeeRepository,
   PSIDTrackingRepository,
 } from '../../../domain/repositories/pmc'
+import { invalidatePmcDashboardCaches } from './DashboardCacheService'
 
 /**
  * Payment Status Interface
@@ -152,6 +153,12 @@ export class PaymentVerificationService {
         { assignedGroup: 'Download License', applicationStatus: 'Submitted' }
       )
     }
+
+    await invalidatePmcDashboardCaches({
+      applicantId,
+      includeFees: true,
+      includeSubmitted: true,
+    })
 
     return status
   }

@@ -6,7 +6,6 @@ import { apiResetPassword } from '@/services/AuthService'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import type { ZodType } from 'zod'
 import type { CommonProps } from '@/@types/common'
 
 interface ResetPasswordFormProps extends CommonProps {
@@ -20,7 +19,7 @@ type ResetPasswordFormSchema = {
     confirmPassword: string
 }
 
-const validationSchema: ZodType<ResetPasswordFormSchema> = z
+const validationSchema = z
     .object({
         newPassword: z.string({ required_error: 'Please enter your password' }),
         confirmPassword: z.string({

@@ -15,6 +15,7 @@ import {
 } from '../../../infrastructure/database/repositories/pmc/resources'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import { maybeUpdateTrackingNumber, createOrUpdateLicense } from '../../services/pmc/ApplicantService'
+import { invalidatePmcDashboardCaches } from '../../services/pmc/DashboardCacheService'
 import {
   serializeBusinessProfile,
   serializeCollector,
@@ -318,7 +319,7 @@ export const applicantManualFieldsController = createCrudController(applicantMan
     adverseEnvironmentalImpacts: body.adverse_environmental_impacts ?? body.adverseEnvironmentalImpacts,
   }),
 })
-export const applicationAssignmentController = createCrudController(applicationAssignmentCrudRepo, {
+const applicationAssignmentBaseController = createCrudController(applicationAssignmentCrudRepo, {
   setCreatedBy: true,
   setUpdatedBy: true,
   enablePagination: true,
@@ -329,6 +330,29 @@ export const applicationAssignmentController = createCrudController(applicationA
     remarks: body.remarks,
   }),
 })
+
+export const applicationAssignmentController = {
+  ...applicationAssignmentBaseController,
+  update: asyncHandler(async (req: AuthRequest, res: Response) => {
+    const payload = {
+      applicantId: toNumber(req.body.applicant || req.body.applicant_id || req.body.applicantId),
+      assignedGroup: req.body.assigned_group ?? req.body.assignedGroup,
+      remarks: req.body.remarks,
+      updatedBy: req.user?._id,
+    }
+
+    const assignment = await applicationAssignmentCrudRepo.updateById(req.params.id, payload)
+    if (!assignment) return res.status(404).json({ message: 'Not found' })
+
+    await invalidatePmcDashboardCaches({
+      applicantId: (assignment as any).applicantId,
+      includeSubmitted: true,
+      includeFees: false,
+    })
+
+    return res.json(serializeAssignment(assignment))
+  }),
+}
 
 export const createApplicationAssignment = asyncHandler(async (req: AuthRequest, res) => {
   const payload = {
@@ -367,6 +391,12 @@ export const createApplicationAssignment = asyncHandler(async (req: AuthRequest,
       )
     }
   }
+
+  await invalidatePmcDashboardCaches({
+    applicantId: payload.applicantId,
+    includeSubmitted: true,
+    includeFees: false,
+  })
 
   return res.status(201).json(serializeAssignment(assignment))
 })

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { FormItem, Form } from '@/components/ui/Form'
 import PasswordInput from '@/components/shared/PasswordInput'
 import Button from '@/components/ui/Button'
@@ -6,6 +6,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import AxiosBase from '../../../../services/axios/AxiosBase'
+import axios from 'axios'
 
 type ResetPasswordFormProps = {
     disableSubmit?: boolean
@@ -59,7 +60,7 @@ const ResetPasswordForm = ({
         if (disableSubmit) return
 
         setSubmitting(true)
-        setMessage?.(null)
+        setMessage?.('')
 
         try {
             // Use AxiosBase for the API call
@@ -76,8 +77,17 @@ const ResetPasswordForm = ({
                 response.data.message || 'Password reset successfully.',
             )
         } catch (error) {
-            console.log(error.response.data.detail)
-            setMessage?.(error.response.data.detail || 'An error occurred.')
+            if (axios.isAxiosError(error)) {
+                console.log(
+                    (error.response?.data as { detail?: string })?.detail,
+                )
+                setMessage?.(
+                    (error.response?.data as { detail?: string })?.detail ||
+                        'An error occurred.',
+                )
+            } else {
+                setMessage?.('An error occurred.')
+            }
         } finally {
             setSubmitting(false)
         }

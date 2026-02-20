@@ -7,11 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
     "prettier": "npx prettier src --check",
     "prettier:fix": "npm run prettier -- --write",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "npm run lint -- --fix",
-    "format": "npm run prettier:fix && npm run lint:fix"
+    "format": "npm run prettier:fix && npm run lint:fix",
+    "debt:ts-nocheck": "node scripts/tsNocheckAudit.cjs",
+    "debt:ts-nocheck:json": "node scripts/tsNocheckAudit.cjs --json"
   },
   "dependencies": {
     "@floating-ui/react": "^0.26.23",
@@ -99,6 +102,7 @@
     "@types/google.maps": "^3.58.1",
     "@types/hast": "^3.0.4",
     "@types/js-cookie": "^3.0.6",
+    "@types/lodash": "^4.17.23",
     "@types/mdast": "^4.0.4",
     "@types/node": "^22.5.4",
     "@types/qrcode": "^1.5.6",
@@ -106,6 +110,7 @@
     "@types/react-csv": "^1.1.10",
     "@types/react-dom": "^18.3.0",
     "@types/react-highlight-words": "^0.20.0",
+    "@types/react-input-mask": "^3.0.6",
     "@types/react-modal": "^3.16.3",
     "@types/react-portal": "^4.0.7",
     "@types/react-scroll": "^1.8.10",

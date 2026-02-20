@@ -2,10 +2,10 @@
 import AxiosBase from '../../services/axios/AxiosBase'
 import Button from '@/components/ui/Button'
 import TablerIcon from '@/components/shared/TablerIcon'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-const CollapseMenuItemView2 = () => {
+const CollapseMenuItemView3 = () => {
     const [isSubmiting, setIsSubmiting] = useState(false)
     const navigate = useNavigate()
     const handleDownloadReport = async () => {
@@ -38,10 +38,14 @@ const CollapseMenuItemView2 = () => {
             setIsSubmiting(false)
         } catch (error) {
             console.error('Error downloading report:', error)
+            const err = error as {
+                response?: { status?: number; data?: unknown }
+                message?: string
+            }
             const errorDetails = {
-                status: error.response?.status,
-                data: error.response?.data,
-                message: error.message,
+                status: err.response?.status,
+                data: err.response?.data,
+                message: err.message,
             }
 
             navigate('/error', { state: { error: errorDetails } })
@@ -65,4 +69,5 @@ const CollapseMenuItemView2 = () => {
     )
 }
 
-export default CollapseMenuItemView2
+export default CollapseMenuItemView3
+

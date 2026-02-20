@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import { FormItem, Form } from '@/components/ui/Form'
@@ -6,11 +6,11 @@ import { useAuth } from '@/auth'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import type { ZodType } from 'zod'
 import type { CommonProps } from '@/@types/common'
 import { useSessionUser, useToken } from '@/store/authStore'
 import { useNavigate, useLocation } from 'react-router-dom' // Import useNavigate and useLocation
 import AxiosBase from '../../../../services/axios/AxiosBase'
+import axios from 'axios'
 
 interface SignUpFormProps extends CommonProps {
     disableSubmit?: boolean
@@ -18,7 +18,6 @@ interface SignUpFormProps extends CommonProps {
 }
 
 type SignUpFormSchema = {
-    username: string
     password: string
     email: string
     confirmPassword: string
@@ -26,7 +25,7 @@ type SignUpFormSchema = {
     captcha_token: string
 }
 
-const validationSchema: ZodType<SignUpFormSchema> = z
+const validationSchema = z
     .object({
         email: z.string({ required_error: 'Please enter your email' }),
         // userName: z.string({ required_error: 'Please enter your name' }),
@@ -62,11 +61,12 @@ const SignUpForm = (props: SignUpFormProps) => {
     const [captchaImage, setCaptchaImage] = useState('')
     const [captchaToken, setCaptchaToken] = useState('')
 
-
     const loadCaptcha = async () => {
         try {
             if (navigator.onLine) {
-                const response = await AxiosBase.get('/accounts/generate-captcha/')
+                const response = await AxiosBase.get(
+                    '/accounts/generate-captcha/',
+                )
                 const data = response.data
                 setCaptchaImage(data.captcha_image)
                 setCaptchaToken(data.captcha_token)
@@ -143,7 +143,12 @@ const SignUpForm = (props: SignUpFormProps) => {
                 } else {
                     setSessionSignedIn(false)
                     setToken('')
-                    const result2 = await signIn({ username: email, password })
+                    const result2 = await signIn({
+                        username: email,
+                        password,
+                        captcha_input,
+                        captcha_token,
+                    })
 
                     if (result2?.status === 'failed') {
                         throw new Error(result2.message)
@@ -153,14 +158,10 @@ const SignUpForm = (props: SignUpFormProps) => {
                     }
                 }
             } catch (error) {
-                console.log('its in error', error.response)
-                setMessage?.('test')
-                if (error.response) {
+                if (axios.isAxiosError(error) && error.response) {
                     // Axios Error: Extract detailed messages from response
                     const errorData = error.response.data
-                    console.log(errorData)
 
-                    
                     if (errorData?.error === 'Invalid captcha.') {
                         await loadCaptcha()
                         setValue('captcha_input', '')
@@ -176,7 +177,11 @@ if (errorData?.username) {
                     }
                 } else {
                     // General error
-                    setMessage?.(error.message || 'An unknown error occurred.')
+                    setMessage?.(
+                        error instanceof Error
+                            ? error.message
+                            : 'An unknown error occurred.',
+                    )
                 }
             } finally {
                 setSubmitting(false)

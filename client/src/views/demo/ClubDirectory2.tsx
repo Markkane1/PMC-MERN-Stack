@@ -20,20 +20,20 @@ import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 
 const ClubDirectory = () => {
-    const mapRef = useRef(null)
-    const [mapInstance, setMapInstance] = useState(null)
-    const [districtLayer, setDistrictLayer] = useState(null)
-    const [clubLayer, setClubLayer] = useState(null)
-    const [clubs, setClubs] = useState([])
-    const [selectedDistrict, setSelectedDistrict] = useState(null)
+    const mapRef = useRef<HTMLDivElement | null>(null)
+    const [mapInstance, setMapInstance] = useState<any>(null)
+    const [districtLayer, setDistrictLayer] = useState<any>(null)
+    const [clubLayer, setClubLayer] = useState<any>(null)
+    const [clubs, setClubs] = useState<any[]>([])
+    const [selectedDistrict, setSelectedDistrict] = useState<any>(null)
     const [loading, setLoading] = useState(false)
-    const [districtStats, setDistrictStats] = useState([])
-    const [selectedClub, setSelectedClub] = useState(null)
+    const [districtStats, setDistrictStats] = useState<any[]>([])
+    const [selectedClub, setSelectedClub] = useState<any>(null)
     const [showNotice, setShowNotice] = useState(true)
     // Initialize Map
     useEffect(() => {
         const map = new Map({
-            target: mapRef.current,
+            target: mapRef.current ?? undefined,
             layers: [new TileLayer({ source: new OSM() })],
             view: new View({ zoom: 7, center: [8127130, 3658593] }),
         })
@@ -48,7 +48,7 @@ const ClubDirectory = () => {
         setClubLayer(clubsVecLayer)
         setMapInstance(map)
 
-        return () => map.setTarget(null)
+        return () => map.setTarget(undefined)
     }, [])
 
     // Fetch and display districts once
@@ -72,7 +72,7 @@ const ClubDirectory = () => {
                     padding: [50, 50, 50, 50],
                     duration: 500,
                 })
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching districts:', error)
             } finally {
                 setLoading(false)
@@ -86,7 +86,7 @@ const ClubDirectory = () => {
     useEffect(() => {
         if (!districtLayer) return
 
-        districtLayer.setStyle((feature) => {
+        districtLayer.setStyle((feature: any) => {
             const isSelected = feature.get('id') === selectedDistrict
             if (feature.get('club_count') === 0) return
             return new Style({
@@ -127,7 +127,7 @@ const ClubDirectory = () => {
     //   const source = clubLayer.getSource();
     //   source.clear();
 
-    //   clubs.forEach((club) => {
+    //   clubs.forEach((club: any) => {
     //     const coords = fromLonLat(club.geometry.coordinates);
     //     const feature = new Feature({ geometry: new Point(coords) });
     //     feature.setStyle(new Style({
@@ -145,7 +145,7 @@ const ClubDirectory = () => {
     useEffect(() => {
         if (!mapInstance || !districtLayer) return
 
-        const handleMapClick = (event) => {
+        const handleMapClick = (event: any) => {
             const features = mapInstance.getFeaturesAtPixel(event.pixel)
             if (features.length > 0) {
                 const selectedFeature = features[0]
@@ -173,7 +173,7 @@ const ClubDirectory = () => {
         () =>
             selectedDistrict
                 ? clubs.filter(
-                      (c) => c.properties.district_id === selectedDistrict,
+                      (c: any) => c.properties.district_id === selectedDistrict,
                   )
                 : clubs,
         [selectedDistrict, clubs],
@@ -185,11 +185,11 @@ const ClubDirectory = () => {
                 accessorKey: 'properties.district',
                 header: 'District',
                 size: 150,
-                Cell: ({ cell }) => (
+                Cell: ({ cell }: any) => (
                     <a
                         href={`#`} // Modify the URL if needed
                         className="text-blue-500 hover:underline"
-                        onClick={(e) => {
+                        onClick={(e: any) => {
                             e.preventDefault()
                             setSelectedClub(cell.row.original.properties)
                         }}
@@ -202,11 +202,11 @@ const ClubDirectory = () => {
                 accessorKey: 'properties.name',
                 header: 'School Name',
                 size: 225,
-                Cell: ({ cell }) => (
+                Cell: ({ cell }: any) => (
                     <a
                         href={`#`} // Modify the URL if needed
                         className="text-blue-500 hover:underline"
-                        onClick={(e) => {
+                        onClick={(e: any) => {
                             e.preventDefault()
                             setSelectedClub(cell.row.original.properties)
                         }}
@@ -219,11 +219,11 @@ const ClubDirectory = () => {
                 accessorKey: 'properties.address',
                 header: 'Address',
                 size: 225,
-                Cell: ({ cell }) => (
+                Cell: ({ cell }: any) => (
                     <a
                         href={`#`} // Modify the URL if needed
                         className="text-blue-500 hover:underline"
-                        onClick={(e) => {
+                        onClick={(e: any) => {
                             e.preventDefault()
                             setSelectedClub(cell.row.original.properties)
                         }}
@@ -236,11 +236,11 @@ const ClubDirectory = () => {
                 accessorKey: 'properties.head_name',
                 header: 'Head Name',
                 size: 200,
-                Cell: ({ cell }) => (
+                Cell: ({ cell }: any) => (
                     <a
                         href={`#`} // Modify the URL if needed
                         className="text-blue-500 hover:underline"
-                        onClick={(e) => {
+                        onClick={(e: any) => {
                             e.preventDefault()
                             setSelectedClub(cell.row.original.properties)
                         }}
@@ -253,7 +253,7 @@ const ClubDirectory = () => {
             {
                 header: 'Map',
                 size: 50,
-                Cell: ({ row }) => {
+                Cell: ({ row }: any) => {
                     const { name, district } = row.original.properties
                     const mapLink = getGoogleMapsLink(name, district)
                     return (
@@ -263,11 +263,11 @@ const ClubDirectory = () => {
                             rel="noopener noreferrer"
                             title="Open in Google Maps"
                             className="text-blue-500 hover:text-blue-700"
-                            // onClick={(e) => {
+                            // onClick={(e: any) => {
                             // e.preventDefault();
                             // }}
                         >
-                            <TablerIcon name="map-pin" size={20} />
+                            <TablerIcon name="map-pin"  />
                         </a>
                     )
                 },
@@ -327,12 +327,12 @@ const ClubDirectory = () => {
         },
     ]
     // console.log('topDistricts',topDistricts)
-    const handleRowClick = (row) => {
+    const handleRowClick = (row: any) => {
         setSelectedClub(row.original.properties)
     }
 
-    const getGoogleMapsLink = (schoolName, district) => {
-        const formatText = (text) =>
+    const getGoogleMapsLink = (schoolName: string, district: string) => {
+        const formatText = (text: any) =>
             text
                 ?.replace(/\d+/g, '') // Remove numbers
                 .replace(/\s+/g, '+') || '' // Replace spaces with +
@@ -394,12 +394,11 @@ const ClubDirectory = () => {
 
                 <div style={{ flex: 1 }}>
                     <MaterialReactTable
-                        enableZebraStripes
-                        enableColumnResizing
+                                                enableColumnResizing
                         columns={columns}
                         data={filteredClubs}
-                        initialState={{ pagination: { pageSize: 15 } }}
-                        muiTableBodyRowProps={({ row }) => ({
+                        initialState={{ pagination: { pageIndex: 0, pageSize: 15 } }}
+                        muiTableBodyRowProps={({ row }: any) => ({
                             // onClick: () => handleRowClick(row),
                             style: { cursor: 'pointer' }, // Make rows visually clickable
                             sx: {
@@ -478,7 +477,7 @@ const ClubDirectory = () => {
                                         <div className="flex items-center space-x-2 border-t pt-3">
                                             <TablerIcon
                                                 name="file-type-pdf"
-                                                size={24}
+                                                
                                                 className="text-blue-500 cursor-pointer transition-transform transform hover:scale-110"
                                                 onClick={() =>
                                                     window.open(
@@ -503,7 +502,7 @@ const ClubDirectory = () => {
                                 <div className="flex items-center space-x-2 border-t pt-3 mt-3">
                                     <TablerIcon
                                         name="map-pin"
-                                        size={24}
+                                        
                                         className="text-green-600 cursor-pointer transition-transform transform hover:scale-110"
                                         onClick={() =>
                                             window.open(
@@ -547,3 +546,7 @@ const ClubDirectory = () => {
 }
 
 export default ClubDirectory
+
+
+
+

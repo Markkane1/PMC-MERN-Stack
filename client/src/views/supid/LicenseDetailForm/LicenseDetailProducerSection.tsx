@@ -619,3 +619,6 @@ const LicenseDetailProducerSection = ({
 }
 
 export default LicenseDetailProducerSection
+
+
+

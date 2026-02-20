@@ -37,11 +37,7 @@ const LicenseDetailRecyclerSection = ({
     errors,
     readOnly = false,
 }: BusinessDetailSectionIndividualProps) => {
-    const { fields, append, remove } = useFieldArray<{
-        category: string
-        wasteCollection: number
-        wasteDisposal: number
-    }>({
+    const { fields, append, remove } = useFieldArray<any>({
         control: control || {},
         name: 'selectedCategories',
     })
@@ -51,7 +47,7 @@ const LicenseDetailRecyclerSection = ({
             append({ category, wasteCollection: 0, wasteDisposal: 0 }) // Default values for numbers
         } else {
             const index = fields.findIndex(
-                (field) => field.category === category,
+                (field: any) => field.category === category,
             )
             if (index !== -1) remove(index)
         }
@@ -87,7 +83,7 @@ const LicenseDetailRecyclerSection = ({
                             <Checkbox
                                 value={category.value}
                                 checked={fields.some(
-                                    (field) =>
+                                    (field: any) =>
                                         field.category === category.value,
                                 )}
                                 readOnly={readOnly}
@@ -99,7 +95,8 @@ const LicenseDetailRecyclerSection = ({
                                 {category.label}
                             </Checkbox>
                             {fields.some(
-                                (field) => field.category === category.value,
+                                (field: any) =>
+                                    field.category === category.value,
                             ) && (
                                 <div className="flex gap-2 w-full">
                                     <div className="flex flex-col w-full">
@@ -109,7 +106,7 @@ const LicenseDetailRecyclerSection = ({
                                         </label>
                                         <Controller
                                             name={`selectedCategories.${fields.findIndex(
-                                                (field) =>
+                                                (field: any) =>
                                                     field.category ===
                                                     category.value,
                                             )}.wasteCollection`}
@@ -131,7 +128,7 @@ const LicenseDetailRecyclerSection = ({
                                         </label>
                                         <Controller
                                             name={`selectedCategories.${fields.findIndex(
-                                                (field) =>
+                                                (field: any) =>
                                                     field.category ===
                                                     category.value,
                                             )}.wasteDisposal`}
@@ -152,7 +149,7 @@ const LicenseDetailRecyclerSection = ({
                         </div>
                     ))}
                     {selectedCategories.some(
-                        (item) => item.category === 'Others',
+                        (item: any) => item.category === 'Others',
                     ) && (
                         <Controller
                             name="registration_required_for_other_other_text"
@@ -280,3 +277,4 @@ const LicenseDetailRecyclerSection = ({
 }
 
 export default LicenseDetailRecyclerSection
+

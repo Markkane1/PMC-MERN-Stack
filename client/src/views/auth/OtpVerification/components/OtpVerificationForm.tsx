@@ -6,7 +6,6 @@ import sleep from '@/utils/sleep'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import type { ZodType } from 'zod'
 import type { CommonProps } from '@/@types/common'
 
 interface OtpVerificationFormProps extends CommonProps {
@@ -20,7 +19,7 @@ type ForgotPasswordFormSchema = {
 
 const OTP_LENGTH = 6
 
-const validationSchema: ZodType<ForgotPasswordFormSchema> = z.object({
+const validationSchema = z.object({
     otp: z.string().min(OTP_LENGTH, { message: 'Please enter a valid OTP' }),
 })
 

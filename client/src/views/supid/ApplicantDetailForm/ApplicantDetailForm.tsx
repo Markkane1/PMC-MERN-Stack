@@ -63,7 +63,7 @@ const ApplicantDetailForm = (props: CustomerFormProps) => {
         reset,
         formState: { errors },
         control,
-    } = useForm<ApplicantDetailFormSchema>({
+    } = useForm<any>({
         defaultValues: {
             ...{
                 banAccount: false,
@@ -110,3 +110,6 @@ const ApplicantDetailForm = (props: CustomerFormProps) => {
 }
 
 export default ApplicantDetailForm
+
+
+

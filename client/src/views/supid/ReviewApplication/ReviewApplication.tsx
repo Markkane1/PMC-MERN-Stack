@@ -15,7 +15,7 @@ import {
 import Input from '@/components/ui/Input'
 import { FormItem } from '@/components/ui/Form'
 import { useForm, Controller } from 'react-hook-form'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import AxiosBase from '../../../services/axios/AxiosBase'
 import TablerIcon from '@/components/shared/TablerIcon'
 import { Tooltip } from 'react-tooltip'
@@ -32,8 +32,10 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
         previousStage: false,
         nextStage: false,
     })
-    const [fieldResponses, setFieldResponses] = useState({})
-    const [manualFields, setManualFields] = useState({
+    const [fieldResponses, setFieldResponses] = useState<Record<string, any>>(
+        {},
+    )
+    const [manualFields, setManualFields] = useState<Record<string, any>>({
         latitude: '',
         longitude: '',
     })
@@ -41,6 +43,7 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
     const [isModalVisible, setModalVisible] = useState(false)
     const [isHovered, setIsHovered] = useState(false)
     const [remarks, setRemarks] = useState('')
+    const navigate = useNavigate()
 
     const [documentType, setDocumentType] = useState(
         'Fee Verification from Treasury/District Accounts Office',
@@ -56,8 +59,9 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
 
     // Wrap the file change handler so that it sends the current documentType
     const onFileChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            handleDocumentFormSubmit(e.target.files[0], documentType)
+        const input = e.target as HTMLInputElement
+        if (input.files && input.files[0]) {
+            handleDocumentFormSubmit(input.files[0], documentType)
         }
     }
 
@@ -85,15 +89,12 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
     const isAuthorizedDEO = userAuthority.some((group) => group === 'DEO')
     const isAuthorizedDG = userAuthority.some((group) => group === 'DG')
 
-    const {
-        control,
-        handleSubmit,
-        formState: { errors },
-    } = useForm({
+    const { control, handleSubmit, formState } = useForm<any>({
         defaultValues: {
             firstName: '',
         },
     })
+    const errors: any = formState.errors
 
     const [searchParams] = useSearchParams()
     const group = searchParams.get('group')
@@ -157,8 +158,9 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
 
     const loadApplicantResponses = async (applicantId) => {
         try {
-            const transformedResponses = applicantDetail.field_responses.reduce(
-                (acc, item) => {
+            const transformedResponses = (
+                applicantDetail.field_responses || []
+            ).reduce((acc: Record<string, any>, item: any) => {
                     acc[item.field_key] = {
                         response: item.response,
                         comment: item.comment,
@@ -174,7 +176,7 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
                 setManualFields(applicantDetail.manual_fields)
             } else {
                 // If none, perhaps reset or leave it alone
-                setManualFields({})
+                setManualFields({ latitude: '', longitude: '' })
             }
         } finally {
             // setLoading(false);
@@ -452,7 +454,7 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
         verifiedFeeAmount: 'Verified Fee Amount',
     }
 
-    const renderPSIDTracking = (title, psidData) => (
+    const renderPSIDTracking = (title: string, psidData: any[]) => (
         <Card className="mb-4">
             <CardContent>
                 <Typography variant="h6" className="font-bold mb-4">
@@ -464,7 +466,8 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
                             key={index}
                             className="border-b border-gray-300 last:border-none"
                         >
-                            {Object.entries(item).map(([key, value]) =>
+                            {Object.entries(item as Record<string, any>).map(
+                                ([key, value]) =>
                                 value !== '' ? (
                                     <div
                                         key={key}
@@ -477,7 +480,7 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
                                             {typeof value === 'object' &&
                                             value !== null
                                                 ? JSON.stringify(value, null, 2)
-                                                : value}
+                                                : String(value ?? '')}
                                         </span>
                                     </div>
                                 ) : null,
@@ -493,7 +496,7 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
         </Card>
     )
 
-    const renderSection = (title, data) => (
+    const renderSection = (title: string, data: Record<string, any>) => (
         <Card className="mb-4">
             <CardContent>
                 <Typography variant="h6" className="font-bold mb-4">
@@ -519,7 +522,7 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
                                         : key === 'licenseType' &&
                                             value === 'Consumer'
                                           ? 'Stockist/Distributor/Supplier'
-                                          : value}
+                                          : String(value ?? '')}
                                 </span>
                             </div>
 
@@ -989,12 +992,14 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
                                         type="file"
                                         accept=".pdf,.png,.jpg"
                                         disabled={disabled}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
+                                            const input =
+                                                e.target as HTMLInputElement
                                             handleChangeManualFields(
                                                 'consent_permit_file',
-                                                e.target.files[0],
+                                                input.files?.[0],
                                             )
-                                        }
+                                        }}
                                     />
                                 </FormItem>
 
@@ -1009,55 +1014,52 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
                                         type="file"
                                         accept=".pdf,.png,.jpg"
                                         disabled={disabled}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
+                                            const input =
+                                                e.target as HTMLInputElement
                                             handleChangeManualFields(
                                                 'flow_diagram_file',
-                                                e.target.files[0],
+                                                input.files?.[0],
                                             )
-                                        }
+                                        }}
                                     />
                                 </FormItem>
 
                                 <FormItem
-                                    label={
-                                        <p>
-                                            <p>
-                                                Action Plan (in accordance with
-                                                the Section 6 of the
-                                                Regulations)
-                                            </p>
-                                            <span
-                                                data-tip
-                                                data-for="info-tooltip"
-                                                className="absolute top-0 right-0 mt-2 mr-2 cursor-pointer"
-                                                onClick={handleOpenModal} // Trigger modal on click
-                                                onMouseEnter={() =>
-                                                    setModalVisible(true)
-                                                } // Track hover start
-                                                // onMouseLeave={() => setIsHovered(false)} // Track hover end
-                                            >
-                                                <TablerIcon
-                                                    name="info-circle"
-                                                    className="text-blue-500"
-                                                />
-                                            </span>
-                                        </p>
-                                    }
+                                    label="Action Plan (in accordance with the Section 6 of the Regulations)"
                                     invalid={Boolean(errors.actionPlanFile)}
                                     errorMessage={
                                         errors.actionPlanFile?.message
                                     }
                                 >
+                                    <div className="flex items-center justify-end mb-2">
+                                        <span
+                                            data-tip
+                                            data-for="info-tooltip"
+                                            className="cursor-pointer"
+                                            onClick={handleOpenModal}
+                                            onMouseEnter={() =>
+                                                setModalVisible(true)
+                                            }
+                                        >
+                                            <TablerIcon
+                                                name="info-circle"
+                                                className="text-blue-500"
+                                            />
+                                        </span>
+                                    </div>
                                     <Input
                                         type="file"
                                         accept=".pdf,.png,.jpg"
                                         disabled={disabled}
-                                        onChange={(e) =>
+                                        onChange={(e) => {
+                                            const input =
+                                                e.target as HTMLInputElement
                                             handleChangeManualFields(
                                                 'action_plan_file',
-                                                e.target.files[0],
+                                                input.files?.[0],
                                             )
-                                        }
+                                        }}
                                     />
                                 </FormItem>
 
@@ -1277,12 +1279,13 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
                             type="file"
                             accept=".png,.jpg"
                             disabled={disabled}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                                const input = e.target as HTMLInputElement
                                 handleChangeManualFields(
                                     'pictorial_evidence_file',
-                                    e.target.files[0],
+                                    input.files?.[0],
                                 )
-                            }
+                            }}
                         />
                     </FormItem>
 
@@ -1317,12 +1320,14 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
                                             disabled={
                                                 disabled_lsm && !isAuthorizedDO
                                             }
-                                            onChange={(e) =>
+                                            onChange={(e) => {
+                                                const input =
+                                                    e.target as HTMLInputElement
                                                 handleDocumentFormSubmit(
-                                                    e.target.files[0],
+                                                    input.files?.[0],
                                                     'Registration with Labor Deparment',
                                                 )
-                                            }
+                                            }}
                                         />
                                     </FormItem>
                                 </CardContent>
@@ -1421,7 +1426,7 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
                     <Card className="mb-4">
                         <CardContent>
                             <Typography
-                                variant="h7"
+                                variant="h6"
                                 sx={{
                                     fontWeight: 'bold',
                                     marginBottom: '20px',
@@ -1441,7 +1446,7 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
                     <Card className="mb-4">
                         <CardContent>
                             <Typography
-                                variant="h7"
+                                variant="h6"
                                 sx={{
                                     fontWeight: 'bold',
                                     marginBottom: '20px',
@@ -1654,3 +1659,4 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
 }
 
 export default ReviewAndSavePage
+

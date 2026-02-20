@@ -24,7 +24,8 @@ export interface ApplicantRepository {
     filter?: Record<string, unknown>,
     page?: number,
     pageSize?: number,
-    sort?: Record<string, 1 | -1>
+    sort?: Record<string, 1 | -1>,
+    projection?: Record<string, 0 | 1>
   ): Promise<{ data: ApplicantDetail[]; pagination: any }>
   create(applicant: Partial<ApplicantDetail>): Promise<ApplicantDetail>
   updateByNumericId(numericId: number, updates: Partial<ApplicantDetail>): Promise<ApplicantDetail | null>

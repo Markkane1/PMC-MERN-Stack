@@ -19,6 +19,7 @@ import {
   maybeCreateSubmitted,
   maybeUpdateTrackingNumber,
 } from '../../services/pmc/ApplicantService'
+import { invalidatePmcDashboardCaches } from '../../services/pmc/DashboardCacheService'
 import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
 import { parallelQueriesWithMetadata } from '../../../infrastructure/utils/parallelQueries'
 import { cacheManager } from '../../../infrastructure/cache/cacheManager'
@@ -38,6 +39,96 @@ const defaultDeps: ApplicantUseCaseDeps = {
 }
 
 const TARGET_GROUPS = new Set(['LSO', 'LSM', 'DO', 'TL', 'MO', 'LSM2', 'DEO', 'DG', 'Download License'])
+const LIST_CACHE_TTL_SECONDS = 45
+const COMPACT_APPLICANT_PROJECTION: Record<string, 0 | 1> = {
+  id: 1,
+  numericId: 1,
+  numeric_id: 1,
+  firstName: 1,
+  first_name: 1,
+  lastName: 1,
+  last_name: 1,
+  applicantDesignation: 1,
+  applicant_designation: 1,
+  cnic: 1,
+  email: 1,
+  mobileOperator: 1,
+  mobile_operator: 1,
+  mobileNo: 1,
+  mobile_no: 1,
+  applicationStatus: 1,
+  application_status: 1,
+  trackingNumber: 1,
+  tracking_number: 1,
+  assignedGroup: 1,
+  assigned_group: 1,
+  registrationFor: 1,
+  registration_for: 1,
+  remarks: 1,
+  trackingHash: 1,
+  tracking_hash: 1,
+  createdAt: 1,
+  created_at: 1,
+  updatedAt: 1,
+  updated_at: 1,
+}
+
+type CachedApplicantListPayload = {
+  data: any[]
+  total: number
+  queryDuration: number
+  assembleDuration: number
+}
+
+const inFlightApplicantListRequests = new Map<string, Promise<CachedApplicantListPayload>>()
+
+async function getOrCreateApplicantListPayload(
+  cacheKey: string,
+  compute: () => Promise<CachedApplicantListPayload>
+): Promise<{ payload: CachedApplicantListPayload; coalesced: boolean }> {
+  const existing = inFlightApplicantListRequests.get(cacheKey)
+  if (existing) {
+    const payload = await existing
+    return { payload, coalesced: true }
+  }
+
+  const task = (async () => {
+    const payload = await compute()
+    await cacheManager.set(cacheKey, payload, { ttl: LIST_CACHE_TTL_SECONDS })
+    return payload
+  })()
+    .finally(() => {
+      inFlightApplicantListRequests.delete(cacheKey)
+    })
+
+  inFlightApplicantListRequests.set(cacheKey, task)
+  const payload = await task
+  return { payload, coalesced: false }
+}
+
+const normalizeQueryValue = (value: unknown) =>
+  value === undefined || value === null ? '' : String(value).trim().toLowerCase()
+
+const buildApplicantListCacheKey = (scope: string, req: AuthRequest, user: any) => {
+  const userId = String(user?._id || user?.id || 'anonymous')
+  const groups = Array.isArray(user?.groups) ? [...user.groups].sort().join(',') : ''
+  const compact = normalizeQueryValue(req.query.compact)
+  const page = normalizeQueryValue(req.query.page || 1)
+  const pageSize = normalizeQueryValue(req.query.page_size || req.query.limit || 200)
+  const assignedGroup = normalizeQueryValue(req.query.assigned_group)
+  const applicationStatus = normalizeQueryValue(req.query.application_status)
+  return [
+    'applicants:list',
+    scope,
+    `u:${userId}`,
+    `g:${groups}`,
+    `c:${compact}`,
+    `p:${page}`,
+    `ps:${pageSize}`,
+    `ag:${assignedGroup}`,
+    `as:${applicationStatus}`,
+  ].join('|')
+}
 
 const legacyAssignedGroupFilter = (value: string | Record<string, unknown>) => {
   if (typeof value === 'object' && value && '$in' in value) {
@@ -143,6 +234,25 @@ async function getSubmittedApplicantIds(): Promise<number[]> {
   return uniqueIds
 }
 
+async function getDistrictApplicantIdsByDistrictId(districtId: number): Promise<number[]> {
+  const cacheKey = `district:${districtId}:applicant-ids:v1`
+  const cached = await cacheManager.get<number[]>(cacheKey)
+  if (Array.isArray(cached)) {
+    return cached
+  }
+
+  const profiles = await defaultDeps.businessProfileRepo.listByDistrictId(districtId)
+  const applicantIds = Array.from(
+    new Set(
+      profiles
+        .map((profile: any) => Number((profile as any)?.applicantId))
+        .filter((id: number) => Number.isFinite(id))
+    )
+  )
+  await cacheManager.set(cacheKey, applicantIds, { ttl: 300 })
+  return applicantIds
+}
+
 async function filterByUserGroups(req: AuthRequest) {
   const user = req.user
   if (!user) return { filter: { createdBy: null } }
@@ -195,8 +305,7 @@ async function filterByUserGroups(req: AuthRequest) {
     const district = await defaultDeps.districtRepo.findByShortName(districtShort)
     if (!district) return { filter: { _id: null } }
 
-    const profiles = await defaultDeps.businessProfileRepo.listByDistrictId(district.districtId)
-    const applicantIds = profiles.map((p: any) => p.applicantId).filter(Boolean)
+    const applicantIds = await getDistrictApplicantIdsByDistrictId(district.districtId)
 
     return {
       filter: {
@@ -287,6 +396,11 @@ export const createApplicant = asyncHandler(async (req: AuthRequest, res: Respon
   }
 
   await maybeUpdateTrackingNumber((applicant as any).numericId)
+  await invalidatePmcDashboardCaches({
+    applicantId: (applicant as any).numericId,
+    includeSubmitted: true,
+    includeFees: false,
+  })
 
   const data = await assembleApplicantDetail(applicant as any)
   return res.status(201).json(data)
@@ -309,6 +423,11 @@ export const updateApplicant = asyncHandler(async (req: AuthRequest, res: Respon
 
   await maybeUpdateTrackingNumber((applicant as any).numericId)
   await createOrUpdateLicense((applicant as any).numericId, req.user?._id)
+  await invalidatePmcDashboardCaches({
+    applicantId: (applicant as any).numericId,
+    includeSubmitted: true,
+    includeFees: false,
+  })
 
   const data = await assembleApplicantDetail(applicant as any)
   return res.json(data)
@@ -318,17 +437,39 @@ export const deleteApplicant = asyncHandler(async (req: AuthRequest, res: Respon
   if (!req.user?.groups?.includes('Super')) {
     return res.status(403).json({ detail: 'You do not have permission to delete this record.' })
   }
-  await defaultDeps.applicantRepo.deleteByNumericId(Number(req.params.id))
+  const applicantId = Number(req.params.id)
+  await defaultDeps.applicantRepo.deleteByNumericId(applicantId)
+  await invalidatePmcDashboardCaches({
+    applicantId,
+    includeSubmitted: true,
+    includeFees: true,
+  })
   return res.status(204).send()
 })
 
 export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const startedAt = Date.now()
   const user = req.user
   const userGroups = user?.groups || []
   if (!user) return res.json([])
   const compactMode = ['1', 'true', 'yes'].includes(String(req.query.compact || '').toLowerCase())
 
   if (userGroups.includes('Super')) {
+    const cacheKey = compactMode ? buildApplicantListCacheKey('super', req, user) : null
+    if (cacheKey) {
+      const cached = await cacheManager.get<CachedApplicantListPayload>(cacheKey)
+      if (cached) {
+        const totalDuration = Date.now() - startedAt
+        res.setHeader('X-List-Cache', 'HIT')
+        res.setHeader('X-Total-Count', String(cached.total))
+        res.setHeader('X-Query-Time-Ms', String(cached.queryDuration))
+        res.setHeader('X-Assemble-Time-Ms', String(cached.assembleDuration))
+        res.setHeader('X-Handler-Time-Ms', String(totalDuration))
+        return res.json(cached.data)
+      }
+      res.setHeader('X-List-Cache', 'MISS')
+    }
+
     const clauses: any[] = []
     const assignedGroup = req.query.assigned_group as string | undefined
     const applicationStatus = req.query.application_status as string | undefined
@@ -355,11 +496,49 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
     const filter = clauses.length ? { $and: clauses } : {}
     const page = Number(req.query.page || 1)
     const limit = Number(req.query.page_size || req.query.limit || 200)
-    const result = await defaultDeps.applicantRepo.listPaginated(filter, page, limit, { createdAt: -1 })
-    const data = compactMode
-      ? await assembleApplicantDetailsCompact(result.data as any[])
-      : await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
-    res.setHeader('X-Total-Count', String(result.pagination.total))
+    const computePayload = async (): Promise<CachedApplicantListPayload> => {
+      const queryStartedAt = Date.now()
+      const result = await defaultDeps.applicantRepo.listPaginated(
+        filter,
+        page,
+        limit,
+        { createdAt: -1 },
+        compactMode ? COMPACT_APPLICANT_PROJECTION : undefined
+      )
+      const queryDuration = Date.now() - queryStartedAt
+      const assembleStartedAt = Date.now()
+      const data = compactMode
+        ? await assembleApplicantDetailsCompact(result.data as any[])
+        : await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
+      const assembleDuration = Date.now() - assembleStartedAt
+      return {
+        data,
+        total: result.pagination.total,
+        queryDuration,
+        assembleDuration,
+      }
+    }
+
+    let payload: CachedApplicantListPayload
+    if (cacheKey) {
+      const coalescedResult = await getOrCreateApplicantListPayload(cacheKey, computePayload)
+      payload = coalescedResult.payload
+      res.setHeader('X-List-Coalesced', coalescedResult.coalesced ? 'WAIT' : 'LEADER')
+    } else {
+      payload = await computePayload()
+    }
+
+    const { data, total, queryDuration, assembleDuration } = payload
+    const totalDuration = Date.now() - startedAt
+    res.setHeader('X-Total-Count', String(total))
+    res.setHeader('X-Query-Time-Ms', String(queryDuration))
+    res.setHeader('X-Assemble-Time-Ms', String(assembleDuration))
+    res.setHeader('X-Handler-Time-Ms', String(totalDuration))
+    if (totalDuration > 1500) {
+      console.warn(
+        `[PERF] listApplicantsMain(super) slow: ${totalDuration}ms (query=${queryDuration}ms assemble=${assembleDuration}ms)`
+      )
+    }
     await logAccess({
       userId: req.user?._id ? String(req.user._id) : undefined,
       username: req.user?.username,
@@ -372,14 +551,67 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
     return res.json(data)
   }
 
+  const cacheKey = compactMode ? buildApplicantListCacheKey('filtered', req, user) : null
+  if (cacheKey) {
+    const cached = await cacheManager.get<CachedApplicantListPayload>(cacheKey)
+    if (cached) {
+      const totalDuration = Date.now() - startedAt
+      res.setHeader('X-List-Cache', 'HIT')
+      res.setHeader('X-Total-Count', String(cached.total))
+      res.setHeader('X-Query-Time-Ms', String(cached.queryDuration))
+      res.setHeader('X-Assemble-Time-Ms', String(cached.assembleDuration))
+      res.setHeader('X-Handler-Time-Ms', String(totalDuration))
+      return res.json(cached.data)
+    }
+    res.setHeader('X-List-Cache', 'MISS')
+  }
+
   const { filter } = await filterByUserGroups(req)
   const page = Number(req.query.page || 1)
   const limit = Number(req.query.page_size || req.query.limit || 200)
-  const result = await defaultDeps.applicantRepo.listPaginated(filter, page, limit, { createdAt: -1 })
-  const data = compactMode
-    ? await assembleApplicantDetailsCompact(result.data as any[])
-    : await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
-  res.setHeader('X-Total-Count', String(result.pagination.total))
+  const computePayload = async (): Promise<CachedApplicantListPayload> => {
+    const queryStartedAt = Date.now()
+    const result = await defaultDeps.applicantRepo.listPaginated(
+      filter,
+      page,
+      limit,
+      { createdAt: -1 },
+      compactMode ? COMPACT_APPLICANT_PROJECTION : undefined
+    )
+    const queryDuration = Date.now() - queryStartedAt
+    const assembleStartedAt = Date.now()
+    const data = compactMode
+      ? await assembleApplicantDetailsCompact(result.data as any[])
+      : await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
+    const assembleDuration = Date.now() - assembleStartedAt
+    return {
+      data,
+      total: result.pagination.total,
+      queryDuration,
+      assembleDuration,
+    }
+  }
+
+  let payload: CachedApplicantListPayload
+  if (cacheKey) {
+    const coalescedResult = await getOrCreateApplicantListPayload(cacheKey, computePayload)
+    payload = coalescedResult.payload
+    res.setHeader('X-List-Coalesced', coalescedResult.coalesced ? 'WAIT' : 'LEADER')
+  } else {
+    payload = await computePayload()
+  }
+
+  const { data, total, queryDuration, assembleDuration } = payload
+  const totalDuration = Date.now() - startedAt
+  res.setHeader('X-Total-Count', String(total))
+  res.setHeader('X-Query-Time-Ms', String(queryDuration))
+  res.setHeader('X-Assemble-Time-Ms', String(assembleDuration))
+  res.setHeader('X-Handler-Time-Ms', String(totalDuration))
+  if (totalDuration > 1500) {
+    console.warn(
+      `[PERF] listApplicantsMain filtered slow: ${totalDuration}ms (query=${queryDuration}ms assemble=${assembleDuration}ms)`
+    )
+  }
   await logAccess({
     userId: req.user?._id ? String(req.user._id) : undefined,
     username: req.user?.username,
@@ -393,11 +625,26 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
 })
 
 export const listApplicantsMainDO = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const startedAt = Date.now()
   const user = req.user
   if (!user?.groups?.includes('DO')) {
     return res.status(400).json({ error: 'Not DO Group' })
   }
   const compactMode = ['1', 'true', 'yes'].includes(String(req.query.compact || '').toLowerCase())
+  const cacheKey = compactMode ? buildApplicantListCacheKey('do', req, user) : null
+  if (cacheKey) {
+    const cached = await cacheManager.get<CachedApplicantListPayload>(cacheKey)
+    if (cached) {
+      const totalDuration = Date.now() - startedAt
+      res.setHeader('X-List-Cache', 'HIT')
+      res.setHeader('X-Total-Count', String(cached.total))
+      res.setHeader('X-Query-Time-Ms', String(cached.queryDuration))
+      res.setHeader('X-Assemble-Time-Ms', String(cached.assembleDuration))
+      res.setHeader('X-Handler-Time-Ms', String(totalDuration))
+      return res.json(cached.data)
+    }
+    res.setHeader('X-List-Cache', 'MISS')
+  }
 
   const parts = user.username?.split('.') || []
   const districtShort = parts[1] ? parts[1].toUpperCase() : null
@@ -410,8 +657,7 @@ export const listApplicantsMainDO = asyncHandler(async (req: AuthRequest, res: R
     return res.status(400).json({ error: 'No matching district found for the user.' })
   }
 
-  const profiles = await defaultDeps.businessProfileRepo.listByDistrictId(district.districtId)
-  const applicantIds = profiles.map((p: any) => p.applicantId).filter(Boolean)
+  const applicantIds = await getDistrictApplicantIdsByDistrictId(district.districtId)
 
   const clauses: any[] = [legacyNumericIdFilter({ $in: applicantIds })]
   if (req.query.assigned_group) {
@@ -423,12 +669,49 @@ export const listApplicantsMainDO = asyncHandler(async (req: AuthRequest, res: R
 
   const page = Number(req.query.page || 1)
   const limit = Number(req.query.page_size || req.query.limit || 200)
-  const result = await defaultDeps.applicantRepo.listPaginated({ $and: clauses }, page, limit, { createdAt: -1 })
-  const data = compactMode
-    ? await assembleApplicantDetailsCompact(result.data as any[])
-    : await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
-  const totalCount = await defaultDeps.applicantRepo.count({ $and: clauses })
-  res.setHeader('X-Total-Count', String(totalCount))
+  const computePayload = async (): Promise<CachedApplicantListPayload> => {
+    const queryStartedAt = Date.now()
+    const result = await defaultDeps.applicantRepo.listPaginated(
+      { $and: clauses },
+      page,
+      limit,
+      { createdAt: -1 },
+      compactMode ? COMPACT_APPLICANT_PROJECTION : undefined
+    )
+    const queryDuration = Date.now() - queryStartedAt
+    const assembleStartedAt = Date.now()
+    const data = compactMode
+      ? await assembleApplicantDetailsCompact(result.data as any[])
+      : await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
+    const assembleDuration = Date.now() - assembleStartedAt
+    return {
+      data,
+      total: result.pagination.total,
+      queryDuration,
+      assembleDuration,
+    }
+  }
+
+  let payload: CachedApplicantListPayload
+  if (cacheKey) {
+    const coalescedResult = await getOrCreateApplicantListPayload(cacheKey, computePayload)
+    payload = coalescedResult.payload
+    res.setHeader('X-List-Coalesced', coalescedResult.coalesced ? 'WAIT' : 'LEADER')
+  } else {
+    payload = await computePayload()
+  }
+
+  const { data, total, queryDuration, assembleDuration } = payload
+  const totalDuration = Date.now() - startedAt
+  res.setHeader('X-Total-Count', String(total))
+  res.setHeader('X-Query-Time-Ms', String(queryDuration))
+  res.setHeader('X-Assemble-Time-Ms', String(assembleDuration))
+  res.setHeader('X-Handler-Time-Ms', String(totalDuration))
+  if (totalDuration > 1500) {
+    console.warn(
+      `[PERF] listApplicantsMainDO slow: ${totalDuration}ms (query=${queryDuration}ms assemble=${assembleDuration}ms)`
+    )
+  }
   await logAccess({
     userId: req.user?._id ? String(req.user._id) : undefined,
     username: req.user?.username,

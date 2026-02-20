@@ -1,11 +1,11 @@
-/**
+﻿/**
  * Week 3: Virtualized List Component
  * Only renders visible rows, dramatically improves performance for large lists
  * Can handle 10K+ items smoothly
  */
 
 import { memo, useMemo } from 'react'
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { List } from 'react-window'
 import { ApplicantRow } from './ApplicantRow'
 import type { Applicant } from '@/api/hooks'
@@ -20,9 +20,6 @@ export interface VirtualizedApplicantListProps {
   isLoading?: boolean
 }
 
-/**
- * Row renderer for virtualized list
- */
 interface VirtualizedRowProps {
   ariaAttributes: {
     'aria-posinset': number
@@ -37,43 +34,37 @@ interface VirtualizedRowProps {
   selectedIds: Set<string>
 }
 
-const Row = memo(
-  ({ index, style, applicants, onSelect, onDelete, selectedIds, ariaAttributes }: VirtualizedRowProps) => {
-    const applicant = applicants[index]
+const Row = memo(({
+  index,
+  style,
+  applicants,
+  onSelect,
+  onDelete,
+  selectedIds,
+  ariaAttributes,
+}: VirtualizedRowProps) => {
+  const applicant = applicants[index]
 
-    if (!applicant) return null
+  if (!applicant) return null
 
-    return (
-      <div style={style} {...ariaAttributes}>
-        <table style={{ width: '100%' }}>
-          <tbody>
-            <ApplicantRow
-              applicant={applicant}
-              onSelect={onSelect}
-              onDelete={onDelete}
-              isSelected={selectedIds?.has(applicant.id)}
-            />
-          </tbody>
-        </table>
-      </div>
-    )
-  },
-  (prevProps, nextProps) => {
-    // Only re-render if data changed
-    return (
-      prevProps.data === nextProps.data &&
-      prevProps.style === nextProps.style
-    )
-  }
-)
+  return (
+    <div style={style} {...ariaAttributes}>
+      <table style={{ width: '100%' }}>
+        <tbody>
+          <ApplicantRow
+            applicant={applicant}
+            onSelect={onSelect}
+            onDelete={onDelete}
+            isSelected={selectedIds?.has(applicant.id)}
+          />
+        </tbody>
+      </table>
+    </div>
+  )
+})
 
 Row.displayName = 'VirtualizedRow'
 
-/**
- * Virtualized applicant list
- * Efficiently renders 10K+ items
- * Only DOM nodes for visible rows exist at once
- */
 export const VirtualizedApplicantList = memo<VirtualizedApplicantListProps>(
   ({
     applicants,
@@ -84,7 +75,6 @@ export const VirtualizedApplicantList = memo<VirtualizedApplicantListProps>(
     selectedIds = new Set(),
     isLoading = false,
   }) => {
-    // Memoize data object to avoid unnecessary re-renders
     const itemData = useMemo(
       () => ({
         applicants,
@@ -92,10 +82,10 @@ export const VirtualizedApplicantList = memo<VirtualizedApplicantListProps>(
         onDelete,
         selectedIds,
       }),
-      [applicants, onSelect, onDelete, selectedIds]
+      [applicants, onSelect, onDelete, selectedIds],
     )
 
-    let content: React.ReactNode
+    let content: ReactNode
 
     if (isLoading) {
       content = (
@@ -132,8 +122,8 @@ export const VirtualizedApplicantList = memo<VirtualizedApplicantListProps>(
             defaultHeight={height}
             rowCount={applicants.length}
             rowHeight={itemSize}
-            rowComponent={Row}
-            rowProps={itemData}
+            rowComponent={Row as any}
+            rowProps={itemData as any}
             style={{ height, width: '100%' }}
           />
         </div>
@@ -233,7 +223,7 @@ export const VirtualizedApplicantList = memo<VirtualizedApplicantListProps>(
         `}</style>
       </>
     )
-  }
+  },
 )
 
 VirtualizedApplicantList.displayName = 'VirtualizedApplicantList'

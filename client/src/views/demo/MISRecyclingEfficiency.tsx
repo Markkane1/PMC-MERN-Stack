@@ -32,7 +32,7 @@ import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import TablerIcon from '@/components/shared/TablerIcon'
 
 // Helper function
-function getCategoryColor(category) {
+function getCategoryColor(category: any) {
     switch (category) {
         case 'Producer':
             return '#FB923C' // matches bg-orange-500 (#FB923C)
@@ -101,17 +101,17 @@ const tileDefs2 = [
 ]
 
 const MISDirectory = () => {
-    const mapRef = useRef(null)
-    const [mapInstance, setMapInstance] = useState(null)
-    const [vectorLayer, setVectorLayer] = useState(null)
-    const [applicantLayer, setApplicantLayer] = useState(null) // NEW LAYER FOR POINTS
+    const mapRef = useRef<HTMLDivElement | null>(null)
+    const [mapInstance, setMapInstance] = useState<any>(null)
+    const [vectorLayer, setVectorLayer] = useState<any>(null)
+    const [applicantLayer, setApplicantLayer] = useState<any>(null) // NEW LAYER FOR POINTS
 
-    const [selectedDistrictId, setSelectedDistrictId] = useState(null)
-    const [stateDistrictData, setStateDistrictData] = useState(null)
+    const [selectedDistrictId, setSelectedDistrictId] = useState<any>(null)
+    const [stateDistrictData, setStateDistrictData] = useState<any>(null)
 
     // ---------- Applicant data and filters ----------
-    const [applicantData, setApplicantData] = useState([])
-    const [districtOptions, setDistrictOptions] = useState([])
+    const [applicantData, setApplicantData] = useState<any[]>([])
+    const [districtOptions, setDistrictOptions] = useState<any[]>([])
 
     const [selectedDistrict, setSelectedDistrict] = useState<string | null>(
         null,
@@ -137,7 +137,7 @@ const MISDirectory = () => {
         content: '',
     })
 
-    const openModal = (title, content) => {
+    const openModal = (title: string, content: string) => {
         setModalInfo({ open: true, title, content })
     }
 
@@ -148,7 +148,7 @@ const MISDirectory = () => {
     // ================ 1) Map Initialization =================
     useEffect(() => {
         const initialMap = new Map({
-            target: mapRef.current,
+            target: mapRef.current ?? undefined,
             layers: [
                 new TileLayer({
                     source: new OSM(),
@@ -170,7 +170,7 @@ const MISDirectory = () => {
 
         setMapInstance(initialMap)
 
-        return () => initialMap.setTarget(null)
+        return () => initialMap.setTarget(undefined)
     }, [])
 
     // ================ 2) Applicant Layer for Points ===========
@@ -180,7 +180,7 @@ const MISDirectory = () => {
         // Create a vector layer for applicant points
         const newApplicantLayer = new VectorLayer({
             source: new VectorSource(),
-            style: (feature) => {
+            style: (feature: any) => {
                 const category = feature.get('category')
                 return new Style({
                     image: new CircleStyle({
@@ -205,7 +205,7 @@ const MISDirectory = () => {
                     '/pmc/mis-district-plastic-stats/',
                 )
                 setApplicantData(resp.data)
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching applicant data:', error)
             }
         }
@@ -215,13 +215,13 @@ const MISDirectory = () => {
     const districtFilteredData = useMemo(() => {
         if (!selectedDistrict) return applicantData
         return applicantData.filter(
-            (item) => item.district_name === selectedDistrict,
+            (item: any) => item.district_name === selectedDistrict,
         )
     }, [selectedDistrict, applicantData])
 
     const filteredApplicants = useMemo(() => {
         return districtFilteredData.filter(
-            (item) => enabledCategories, //.includes(item.category)
+            (item: any) => enabledCategories, //.includes(item.category)
         )
     }, [districtFilteredData, enabledCategories])
 
@@ -233,7 +233,7 @@ const MISDirectory = () => {
         const source = applicantLayer.getSource()
         source.clear() // remove old points
 
-        filteredApplicants.forEach((app) => {
+        filteredApplicants.forEach((app: any) => {
             if (app.latitude && app.longitude) {
                 // convert from lat/lon to map coords
                 const coords = fromLonLat([
@@ -257,11 +257,11 @@ const MISDirectory = () => {
             let districtData = stateDistrictData
             if (!districtData) {
                 const response = await AxiosBase.get('/pmc/districts-public')
-                districtData = response.data.filter((d) => d.geom)
+                districtData = response.data.filter((d: any) => d.geom)
                 // optionally store for later use
             }
 
-            const geoJsonFeatures = districtData.map((district) => ({
+            const geoJsonFeatures = districtData.map((district: any) => ({
                 type: 'Feature',
                 geometry: parse(district.geom.replace('SRID=4326;', '')),
                 properties: {
@@ -302,10 +302,10 @@ const MISDirectory = () => {
     useEffect(() => {
         if (!vectorLayer) return
 
-        vectorLayer.setStyle((feature) => {
+        vectorLayer.setStyle((feature: any) => {
             const districtId = feature.get('district_id')
             const districtData = applicantData.find(
-                (d) => d.district_id === districtId,
+                (d: any) => d.district_id === districtId,
             )
 
             let color = 'rgba(200, 200, 200, 0.5)' // Default gray for missing data
@@ -337,7 +337,7 @@ const MISDirectory = () => {
     // useEffect(() => {
     //   if (!vectorLayer) return;
 
-    //   vectorLayer.setStyle((feature) => {
+    //   vectorLayer.setStyle((feature: any) => {
     //     const districtId = feature.get('district_id');
     //     const districtData = applicantData.find(d => d.district_id === districtId);
 
@@ -365,7 +365,7 @@ const MISDirectory = () => {
     useEffect(() => {
         if (!mapInstance || !vectorLayer) return
 
-        const handleMapClick = (event) => {
+        const handleMapClick = (event: any) => {
             const features = mapInstance.getFeaturesAtPixel(event.pixel)
 
             if (features && features.length > 0) {
@@ -414,10 +414,10 @@ const MISDirectory = () => {
     // ================ 8) Filter + Tiles + Table as before ======
     // const districtFilteredData = useMemo(() => {
     //   if (!selectedDistrict) return applicantData;
-    //   return applicantData.filter((item) => item.district_name === selectedDistrict);
+    //   return applicantData.filter((item: any) => item.district_name === selectedDistrict);
     // }, [selectedDistrict, applicantData]);
 
-    function computeCategoryStats(dataArray) {
+    function computeCategoryStats(dataArray: any[]) {
         const result = {
             Total: dataArray.length,
             Producer: 0,
@@ -425,7 +425,7 @@ const MISDirectory = () => {
             Collector: 0,
             Recycler: 0,
         }
-        dataArray.forEach((item) => {
+        dataArray.forEach((item: any) => {
             if (item.category === 'Producer') result.Producer++
             if (item.category === 'Distributor') result.Distributor++
             if (item.category === 'Collector') result.Collector++
@@ -434,7 +434,7 @@ const MISDirectory = () => {
         return result
     }
 
-    function computePlasticFlowStats(dataArray) {
+    function computePlasticFlowStats(dataArray: any[]) {
         return dataArray.reduce(
             (acc, item) => {
                 acc.Produced += item.produced_kg_per_day || 0
@@ -453,7 +453,7 @@ const MISDirectory = () => {
                     maxCollected > 0
                         ? Math.max(
                               0,
-                              ((acc.Recycled / maxCollected) * 100).toFixed(2),
+                              Number(((acc.Recycled / maxCollected) * 100).toFixed(2)),
                           )
                         : '0.00'
 
@@ -480,23 +480,23 @@ const MISDirectory = () => {
     const categoryStats = computePlasticFlowStats(districtFilteredData)
     console.log(categoryStats)
     const enabledTotal = enabledCategories.reduce(
-        (acc, cat) => acc + categoryStats[cat],
+        (acc: number, cat: any) => acc + (categoryStats[cat as keyof typeof categoryStats] as number),
         0,
     )
 
-    const [columnFilters, setColumnFilters] = useState([])
+    const [columnFilters, setColumnFilters] = useState<any[]>([])
     // 6) handle MRT filter changes
-    const handleColumnFiltersChange = (updaterOrValue) => {
+    const handleColumnFiltersChange = (updaterOrValue: any) => {
         // The new filter state could be:
         //  - an array
         //  - an object
-        //  - a functional updater (like (old) => newFilters)
+        //  - a functional updater (like (old: any) => newFilters)
         let newFilters
         // alert('its here 2')
 
         if (typeof updaterOrValue === 'function') {
             // It's a functional updater
-            setColumnFilters((old) => {
+            setColumnFilters((old: any) => {
                 newFilters = updaterOrValue(old)
                 return newFilters
             })
@@ -533,7 +533,7 @@ const MISDirectory = () => {
             'Recycler',
         ]
 
-        filtersArray.forEach((f) => {
+        filtersArray.forEach((f: any) => {
             if (f.id === 'district_name') {
                 newSelectedDistrict = f.value || null
             }
@@ -655,8 +655,8 @@ const CategoryTiles = ({
     setEnabledCategories,
     enabledTotal,
     openModal,
-}) => {
-    // const handleTileClick = (cat) => {
+}: any) => {
+    // const handleTileClick = (cat: any) => {
     //   if (cat === "Total") {
     //     if (enabledCategories.length === 4) {
     //       setEnabledCategories([]); // Disable all
@@ -666,24 +666,24 @@ const CategoryTiles = ({
     //     return;
     //   }
     //   if (enabledCategories.includes(cat)) {
-    //     setEnabledCategories(enabledCategories.filter((c) => c !== cat));
+    //     setEnabledCategories(enabledCategories.filter((c: any) => c !== cat));
     //   } else {
     //     setEnabledCategories([...enabledCategories, cat]);
     //   }
     // };
 
-    // const isTileEnabled = (cat) => {
+    // const isTileEnabled = (cat: any) => {
     //   if (cat === "Total") {
     //     return enabledCategories.length > 0;
     //   }
     //   return enabledCategories.includes(cat);
     // };
 
-    function getTileDisplayValue(cat) {
+    function getTileDisplayValue(cat: any) {
         // if (cat === "Total") {
         //   return isTileEnabled("Total") ? enabledTotal : 0;
         // }
-        return stats[cat] || 0
+        return (stats as Record<string, number>)[cat] || 0
     }
 
     return (
@@ -716,7 +716,7 @@ const CategoryTiles = ({
 
                 {/* Tile Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                    {tileDefs.concat(tileDefs2).map((tile) => {
+                    {tileDefs.concat(tileDefs2).map((tile: any) => {
                         const value = getTileDisplayValue(tile.key)
                         return (
                             <div
@@ -749,7 +749,7 @@ const CategoryTiles = ({
 
             {/* <Paper elevation={3} sx={{ p: 2, border: "1px solid #ccc", borderRadius: 2, position: "relative" }} className='mt-1'>
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
-          {tileDefs2.map((tile) => {
+          {tileDefs2.map((tile: any) => {
             // const enabled = isTileEnabled(tile.key);
             const value = getTileDisplayValue(tile.key);
 
@@ -776,7 +776,7 @@ const CategoryTiles = ({
 }
 
 // --------------------- MyDataTable ---------------------
-// const MyDataTable = ({ data }) => {
+// const MyDataTable = ({ data }: any) => {
 //   // A helper map from category name to icon
 const categoryIconMap = {
     Producer: <TablerIcon name="building-factory" className="text-xl" />,
@@ -803,7 +803,7 @@ const MyDataTable = ({
     districtOptions,
     onColumnFiltersChange,
     openModal,
-}) => {
+}: any) => {
     console.log('districtOptions', districtOptions)
 
     const columns = useMemo(
@@ -819,7 +819,7 @@ const MyDataTable = ({
             {
                 accessorKey: 'produced_kg_per_day',
                 header: 'Produced (Kg/day)',
-                Header: ({ column }) => (
+                Header: ({ column }: any) => (
                     <div className="flex items-center">
                         <span>Produced (Kg/day)</span>
                         <TablerIcon
@@ -844,7 +844,7 @@ const MyDataTable = ({
                         <TablerIcon
                             name="info-circle"
                             className="ml-1 cursor-pointer text-blue-500"
-                            size={22}
+                            
                             onClick={() =>
                                 openModal('Distributed', tileDefs[1].info)
                             }
@@ -883,7 +883,7 @@ const MyDataTable = ({
                         <TablerIcon
                             name="info-circle"
                             className="ml-1 cursor-pointer text-blue-500"
-                            size={25}
+                            
                             onClick={() =>
                                 openModal('Waste Collected', tileDefs[3].info)
                             }
@@ -903,7 +903,7 @@ const MyDataTable = ({
                         <TablerIcon
                             name="info-circle"
                             className="ml-1 cursor-pointer text-blue-500"
-                            size={25}
+                            
                             onClick={() =>
                                 openModal('Recycled', tileDefs[4].info)
                             }
@@ -923,7 +923,7 @@ const MyDataTable = ({
                         <TablerIcon
                             name="info-circle"
                             className="ml-1 cursor-pointer text-blue-500"
-                            size={25}
+                            
                             onClick={() =>
                                 openModal('Un-Managed', tileDefs[5].info)
                             }
@@ -943,7 +943,7 @@ const MyDataTable = ({
                         <TablerIcon
                             name="info-circle"
                             className="ml-1 cursor-pointer text-blue-500"
-                            size={25}
+                            
                             onClick={() =>
                                 openModal(
                                     'Recycling Efficiency',
@@ -956,7 +956,7 @@ const MyDataTable = ({
                 minSize: 50,
                 maxSize: 50,
                 size: 50,
-                Cell: ({ cell }) => {
+                Cell: ({ cell }: any) => {
                     const value = parseFloat(cell.getValue()) || 0
                     let color = ''
 
@@ -991,10 +991,14 @@ const MyDataTable = ({
             initialState={{
                 showColumnFilters: false, // Hide column filters by default
                 // density: 'compact', // Set compact view
-                pagination: { pageSize: 10 }, // Set 7 rows per page
+                pagination: { pageIndex: 0, pageSize: 10 }, // Set 7 rows per page
             }}
         />
     )
 }
 
 export default MISDirectory
+
+
+
+

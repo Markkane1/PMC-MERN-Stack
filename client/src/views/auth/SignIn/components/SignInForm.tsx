@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import { FormItem, Form } from '@/components/ui/Form'
@@ -8,7 +8,6 @@ import { useAuth } from '@/auth'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import type { ZodType } from 'zod'
 import type { CommonProps } from '@/@types/common'
 import type { ReactNode } from 'react'
 import { useSessionUser } from '@/store/authStore'
@@ -27,7 +26,7 @@ type SignInFormSchema = {
     captcha_token: string
 }
 
-const validationSchema: ZodType<SignInFormSchema> = z.object({
+const validationSchema = z.object({
     email: z
         .string({ required_error: 'Please enter your email' })
         .min(1, { message: 'Please enter your email' }),
@@ -36,13 +35,13 @@ const validationSchema: ZodType<SignInFormSchema> = z.object({
         .string({ required_error: 'Please enter your password' })
         .min(1, { message: 'Please enter your password' }),
 
-    // captcha_input: z
-    //     .string({ required_error: 'Please enter the CAPTCHA' })
-    //     .min(1, { message: 'Please enter the CAPTCHA' }),
+    captcha_input: z
+        .string({ required_error: 'Please enter the CAPTCHA' })
+        .min(1, { message: 'Please enter the CAPTCHA' }),
 
-    // captcha_token: z
-    //     .string({ required_error: 'CAPTCHA token missing' })
-    //     .min(1, { message: 'CAPTCHA token missing' }),
+    captcha_token: z
+        .string({ required_error: 'CAPTCHA token missing' })
+        .min(1, { message: 'CAPTCHA token missing' }),
 })
 
 const SignInForm = (props: SignInFormProps) => {
@@ -186,7 +185,7 @@ const SignInForm = (props: SignInFormProps) => {
                             className="text-blue-600 hover:text-blue-800"
                             title="Refresh CAPTCHA"
                         >
-                            🔁
+                            ðŸ”
                         </button>
                     </div>
                     <Controller
@@ -201,7 +200,11 @@ const SignInForm = (props: SignInFormProps) => {
                             />
                         )}
                     />
-                    <input type="hidden" value={captchaToken} {...register('captcha_token')} />
+                    <input
+                        type="hidden"
+                        value={captchaToken}
+                        {...register('captcha_token')}
+                    />
                 </FormItem>
                 {passwordHint}
                 <Button

@@ -425,3 +425,6 @@ const BusinessDetailSectionIndividual = ({
 }
 
 export default BusinessDetailSectionIndividual
+
+
+

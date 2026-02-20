@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+﻿import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Divider } from '@mui/material'
@@ -7,12 +7,15 @@ import Input from '@/components/ui/Input'
 import AxiosBase from '../../../services/axios/AxiosBase'
 import Modal from '@mui/material/Modal'
 import Box from '@mui/material/Box'
+import axios from 'axios'
+import type { TypeAttributes } from '@/components/ui/@types/common'
 
 const Banner = () => {
     const [trackingPopupOpen, setTrackingPopupOpen] = useState(false) // New state for Thank You popup
-    const [trackingPopupType, setTankYouPopupType] = useState('info')
+    const [trackingPopupType, setTankYouPopupType] =
+        useState<TypeAttributes.Status>('info')
     const [trackingNumber, setTrackingNumber] = useState('')
-    const [dialogContent, setDialogContent] = useState(null)
+    const [dialogContent, setDialogContent] = useState<string | null>(null)
     const [competitionPopupOpen, setCompetitionPopupOpen] = useState(false) // Default true on page load
 
     const closeTrackingPopup = () => {
@@ -33,19 +36,25 @@ const Banner = () => {
             setTankYouPopupType('success')
         } catch (error) {
             console.error('Error fetching user groups:', error)
-            // Set user groups to an empty array if an error occurs
-            setDialogContent(error.response.data.message)
+            if (axios.isAxiosError(error)) {
+                setDialogContent(
+                    (error.response?.data as { message?: string })?.message ||
+                        'Error tracking application.',
+                )
+            } else {
+                setDialogContent('Error tracking application.')
+            }
             setTankYouPopupType('danger')
         }
     }
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Backspace') {
             setTrackingNumber(formatTrackingNumber(trackingNumber, true))
         }
     }
 
-    const formatTrackingNumber = (value, isBackspace) => {
+    const formatTrackingNumber = (value: string, isBackspace: boolean) => {
         // Remove any invalid characters for each segment
         const rawValue = value.replace(/[^a-zA-Z0-9]/g, '') // Allow only alphanumeric characters
 
@@ -192,7 +201,7 @@ const Banner = () => {
             <Link
               to="/sign-up?redirectUrl=/register-competition"
               className="relative text-white bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 text-sm md:text-base font-semibold w-full md:w-auto text-center"
-              // onClick={() => alert("🚧 Coming Soon 🚧\nThis feature will be available shortly.")}
+              // onClick={() => alert("ðŸš§ Coming Soon ðŸš§\nThis feature will be available shortly.")}
 
             >
               Register for Competition
@@ -293,7 +302,7 @@ const Banner = () => {
                         &times;
                     </button>
                     <h2 className="text-lg font-bold mb-2 text-center">
-                        🎨 Competition Announcement
+                        ðŸŽ¨ Competition Announcement
                     </h2>
                     <div className="grid md:grid-cols-2 gap-4">
                         <img

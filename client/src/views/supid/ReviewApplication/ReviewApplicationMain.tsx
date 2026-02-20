@@ -756,12 +756,15 @@ const CustomerEdit = () => {
             // console.log('fieldResponses', applicantDetail.fieldResponses)
             console.log('readOnly', applicantDetail.readOnly)
             const payload = Object.entries(applicantDetail.fieldResponses).map(
-                ([key, value]) => ({
+                ([key, value]) => {
+                    const responseValue = value as any
+                    return {
                     field_key: key,
-                    response: value.response,
-                    comment: value.comment,
+                    response: responseValue?.response,
+                    comment: responseValue?.comment,
                     applicant: applicantDetail.id, // Use the applicant ID
-                }),
+                    }
+                },
             )
 
             try {
@@ -786,7 +789,7 @@ const CustomerEdit = () => {
 
         // Prepare form data
         const formData = new FormData()
-        formData.append('applicant', applicantDetail.id)
+        formData.append('applicant', String(applicantDetail.id))
 
         // Example fields — update/add/remove these as per your model
         formData.append(
@@ -1206,3 +1209,4 @@ const CustomerEdit = () => {
 }
 
 export default CustomerEdit
+

@@ -19,7 +19,7 @@ import { Divider, Select, MenuItem, Box } from '@mui/material'
 import { MaterialReactTable } from 'material-react-table'
 
 // Helper function
-function getCategoryColor(category) {
+function getCategoryColor(category: any) {
     switch (category) {
         case 'Producer':
             return '#FB923C' // matches bg-orange-500 (#FB923C)
@@ -33,18 +33,18 @@ function getCategoryColor(category) {
             return 'gray'
     }
 }
-const DistrictMap = ({ onDistrictClick }) => {
-    const mapRef = useRef(null)
-    const [mapInstance, setMapInstance] = useState(null)
-    const [vectorLayer, setVectorLayer] = useState(null)
-    const [applicantLayer, setApplicantLayer] = useState(null) // NEW LAYER FOR POINTS
+const DistrictMap = ({ onDistrictClick }: any) => {
+    const mapRef = useRef<HTMLDivElement | null>(null)
+    const [mapInstance, setMapInstance] = useState<any>(null)
+    const [vectorLayer, setVectorLayer] = useState<any>(null)
+    const [applicantLayer, setApplicantLayer] = useState<any>(null) // NEW LAYER FOR POINTS
 
-    const [selectedDistrictId, setSelectedDistrictId] = useState(null)
-    const [stateDistrictData, setStateDistrictData] = useState(null)
+    const [selectedDistrictId, setSelectedDistrictId] = useState<any>(null)
+    const [stateDistrictData, setStateDistrictData] = useState<any>(null)
 
     // ---------- Applicant data and filters ----------
-    const [applicantData, setApplicantData] = useState([])
-    const [districtOptions, setDistrictOptions] = useState([])
+    const [applicantData, setApplicantData] = useState<any[]>([])
+    const [districtOptions, setDistrictOptions] = useState<any[]>([])
 
     const [selectedDistrict, setSelectedDistrict] = useState<string | null>(
         null,
@@ -67,7 +67,7 @@ const DistrictMap = ({ onDistrictClick }) => {
     // ================ 1) Map Initialization =================
     useEffect(() => {
         const initialMap = new Map({
-            target: mapRef.current,
+            target: mapRef.current ?? undefined,
             layers: [
                 new TileLayer({
                     source: new OSM(),
@@ -89,7 +89,7 @@ const DistrictMap = ({ onDistrictClick }) => {
 
         setMapInstance(initialMap)
 
-        return () => initialMap.setTarget(null)
+        return () => initialMap.setTarget(undefined)
     }, [])
 
     // ================ 2) Applicant Layer for Points ===========
@@ -99,7 +99,7 @@ const DistrictMap = ({ onDistrictClick }) => {
         // Create a vector layer for applicant points
         const newApplicantLayer = new VectorLayer({
             source: new VectorSource(),
-            style: (feature) => {
+            style: (feature: any) => {
                 const category = feature.get('category')
                 return new Style({
                     image: new CircleStyle({
@@ -127,11 +127,11 @@ const DistrictMap = ({ onDistrictClick }) => {
 
                 // Extract unique district names directly from resp.data
                 const distinctDistricts = new Set(
-                    resp.data.map((row) => row.district_name).filter(Boolean),
+                    resp.data.map((row: any) => row.district_name).filter(Boolean),
                 )
                 const sortedDistricts = Array.from(distinctDistricts).sort()
                 setDistrictOptions(sortedDistricts)
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error fetching applicant data:', error)
             }
         }
@@ -141,12 +141,12 @@ const DistrictMap = ({ onDistrictClick }) => {
     const districtFilteredData = useMemo(() => {
         if (!selectedDistrict) return applicantData
         return applicantData.filter(
-            (item) => item.district_name === selectedDistrict,
+            (item: any) => item.district_name === selectedDistrict,
         )
     }, [selectedDistrict, applicantData])
 
     const filteredApplicants = useMemo(() => {
-        return districtFilteredData.filter((item) =>
+        return districtFilteredData.filter((item: any) =>
             enabledCategories.includes(item.category),
         )
     }, [districtFilteredData, enabledCategories])
@@ -159,7 +159,7 @@ const DistrictMap = ({ onDistrictClick }) => {
         const source = applicantLayer.getSource()
         source.clear() // remove old points
 
-        filteredApplicants.forEach((app) => {
+        filteredApplicants.forEach((app: any) => {
             if (app.latitude && app.longitude) {
                 // convert from lat/lon to map coords
                 const coords = fromLonLat([
@@ -183,11 +183,11 @@ const DistrictMap = ({ onDistrictClick }) => {
             let districtData = stateDistrictData
             if (!districtData) {
                 const response = await AxiosBase.get('/pmc/districts-public')
-                districtData = response.data.filter((d) => d.geom)
+                districtData = response.data.filter((d: any) => d.geom)
                 // optionally store for later use
             }
 
-            const geoJsonFeatures = districtData.map((district) => ({
+            const geoJsonFeatures = districtData.map((district: any) => ({
                 type: 'Feature',
                 geometry: parse(district.geom.replace('SRID=4326;', '')),
                 properties: {
@@ -227,7 +227,7 @@ const DistrictMap = ({ onDistrictClick }) => {
     // either define a style callback on `vectorLayer` or a separate effect:
     useEffect(() => {
         if (!vectorLayer) return
-        vectorLayer.setStyle((feature) => {
+        vectorLayer.setStyle((feature: any) => {
             const isSelected = feature.get('district_id') === selectedDistrictId
             return new Style({
                 stroke: new Stroke({
@@ -247,7 +247,7 @@ const DistrictMap = ({ onDistrictClick }) => {
     useEffect(() => {
         if (!mapInstance || !vectorLayer) return
 
-        const handleMapClick = (event) => {
+        const handleMapClick = (event: any) => {
             const features = mapInstance.getFeaturesAtPixel(event.pixel)
 
             if (features && features.length > 0) {
@@ -296,10 +296,10 @@ const DistrictMap = ({ onDistrictClick }) => {
     // ================ 8) Filter + Tiles + Table as before ======
     // const districtFilteredData = useMemo(() => {
     //   if (!selectedDistrict) return applicantData;
-    //   return applicantData.filter((item) => item.district_name === selectedDistrict);
+    //   return applicantData.filter((item: any) => item.district_name === selectedDistrict);
     // }, [selectedDistrict, applicantData]);
 
-    function computeCategoryStats(dataArray) {
+    function computeCategoryStats(dataArray: any[]) {
         const result = {
             Total: dataArray.length,
             Producer: 0,
@@ -307,7 +307,7 @@ const DistrictMap = ({ onDistrictClick }) => {
             Collector: 0,
             Recycler: 0,
         }
-        dataArray.forEach((item) => {
+        dataArray.forEach((item: any) => {
             if (item.category === 'Producer') result.Producer++
             if (item.category === 'Distributor') result.Distributor++
             if (item.category === 'Collector') result.Collector++
@@ -318,17 +318,17 @@ const DistrictMap = ({ onDistrictClick }) => {
     // set district options
     // const districtOptions = useMemo(() => {
     //   // Extract unique district names from data
-    //   const distinct = new Set(applicantData.map((row) => row.district_name).filter(Boolean));
+    //   const distinct = new Set(applicantData.map((row: any) => row.district_name).filter(Boolean));
     //   return Array.from(distinct).sort(); // convert to array, sort alphabetically
     // }, [applicantData]);
 
-    // const handleColumnFiltersChange = (updaterOrValue) => {
+    // const handleColumnFiltersChange = (updaterOrValue: any) => {
     //   // 1) Resolve the new filter data from MRT
     //   let newFilters;
 
     //   if (typeof updaterOrValue === 'function') {
     //     // It's a functional state updater
-    //     setColumnFilters((old) => {
+    //     setColumnFilters((old: any) => {
     //       newFilters = updaterOrValue(old);
     //       return newFilters;
     //     });
@@ -352,7 +352,7 @@ const DistrictMap = ({ onDistrictClick }) => {
     //     let newSelectedDistrict = null;
     //     let newEnabledCats = ['Producer', 'Distributor', 'Collector', 'Recycler'];
 
-    //     filtersArray.forEach((f) => {
+    //     filtersArray.forEach((f: any) => {
     //       if (f.id === 'district_name') {
     //         newSelectedDistrict = f.value || null;
     //       }
@@ -373,29 +373,29 @@ const DistrictMap = ({ onDistrictClick }) => {
     const categoryStats = computeCategoryStats(districtFilteredData)
 
     // const filteredApplicants = useMemo(() => {
-    //   return districtFilteredData.filter((item) =>
+    //   return districtFilteredData.filter((item: any) =>
     //     enabledCategories.includes(item.category)
     //   );
     // }, [districtFilteredData, enabledCategories]);
 
     const enabledTotal = enabledCategories.reduce(
-        (acc, cat) => acc + categoryStats[cat],
+        (acc: number, cat: any) => acc + (categoryStats[cat as keyof typeof categoryStats] as number),
         0,
     )
 
-    const [columnFilters, setColumnFilters] = useState([])
+    const [columnFilters, setColumnFilters] = useState<any[]>([])
     // 6) handle MRT filter changes
-    const handleColumnFiltersChange = (updaterOrValue) => {
+    const handleColumnFiltersChange = (updaterOrValue: any) => {
         // The new filter state could be:
         //  - an array
         //  - an object
-        //  - a functional updater (like (old) => newFilters)
+        //  - a functional updater (like (old: any) => newFilters)
         let newFilters
         // alert('its here 2')
 
         if (typeof updaterOrValue === 'function') {
             // It's a functional updater
-            setColumnFilters((old) => {
+            setColumnFilters((old: any) => {
                 newFilters = updaterOrValue(old)
                 return newFilters
             })
@@ -432,7 +432,7 @@ const DistrictMap = ({ onDistrictClick }) => {
             'Recycler',
         ]
 
-        filtersArray.forEach((f) => {
+        filtersArray.forEach((f: any) => {
             if (f.id === 'district_name') {
                 newSelectedDistrict = f.value || null
             }
@@ -543,9 +543,9 @@ const CategoryTiles = ({
     enabledCategories, // e.g. ['Producer', 'Distributor', ...]
     setEnabledCategories,
     enabledTotal,
-}) => {
+}: any) => {
     // Toggle category
-    const handleTileClick = (cat) => {
+    const handleTileClick = (cat: any) => {
         if (cat === 'Total') {
             // If "Total" tile is clicked, maybe toggle all on/off
             if (enabledCategories.length === 4) {
@@ -562,14 +562,14 @@ const CategoryTiles = ({
         }
         // For an individual category, toggle it
         if (enabledCategories.includes(cat)) {
-            setEnabledCategories(enabledCategories.filter((c) => c !== cat))
+            setEnabledCategories(enabledCategories.filter((c: any) => c !== cat))
         } else {
             setEnabledCategories([...enabledCategories, cat])
         }
     }
 
     // Determine if tile is “enabled” visually
-    const isTileEnabled = (cat) => {
+    const isTileEnabled = (cat: any) => {
         if (cat === 'Total') {
             // "Total" is enabled if there's at least one category enabled
             return enabledCategories.length > 0
@@ -579,7 +579,7 @@ const CategoryTiles = ({
 
     // If the Total tile is *disabled*, show 0.
     // Otherwise, show the sum of enabled categories.
-    function getTileDisplayValue(cat) {
+    function getTileDisplayValue(cat: any) {
         if (cat === 'Total') {
             if (!isTileEnabled('Total')) {
                 return 0 // If the Total tile is disabled, show 0
@@ -588,7 +588,7 @@ const CategoryTiles = ({
             return enabledTotal
         }
         // For categories, always show the “raw” stats
-        return stats[cat] || 0
+        return (stats as Record<string, number>)[cat] || 0
     }
 
     const tileDefs = [
@@ -628,7 +628,7 @@ const CategoryTiles = ({
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
-            {tileDefs.map((tile) => {
+            {tileDefs.map((tile: any) => {
                 const enabled = isTileEnabled(tile.key)
                 const value = getTileDisplayValue(tile.key)
 
@@ -659,7 +659,7 @@ const CategoryTiles = ({
 }
 
 // --------------------- MyDataTable ---------------------
-// const MyDataTable = ({ data }) => {
+// const MyDataTable = ({ data }: any) => {
 //   // A helper map from category name to icon
 const categoryIconMap = {
     Producer: <TablerIcon name="building-factory" className="text-xl" />,
@@ -690,11 +690,11 @@ const categoryColorClassMap = {
 //         accessorKey: 'category',
 //         header: 'Category',
 //         // Use a custom Cell to render the icon instead of text
-//         Cell: ({ cell }) => {
-//           const categoryValue = cell.getValue();
+//         Cell: ({ cell }: any) => {
+//           const categoryValue = String(cell.getValue());
 //           // e.g. "Producer", "Collector", etc.
-//           const icon = categoryIconMap[categoryValue];
-//           const colorClass = categoryColorClassMap[categoryValue] || 'text-gray-500';
+//           const icon = (categoryIconMap as Record<string, JSX.Element>)[categoryValue];
+//           const colorClass = (categoryColorClassMap as Record<string, string>)[categoryValue] || 'text-gray-500';
 
 //           return icon ? (
 //             <div className={`flex items-center ${colorClass}`}>
@@ -726,7 +726,7 @@ const categoryColorClassMap = {
 // enableRowStriping
 // initialState={{
 //   density: 'compact',
-//   pagination: { pageSize: 12 }, // set default rows per page to 12
+//   pagination: { pageIndex: 0, pageSize: 12 }, // set default rows per page to 12
 // }}
 // />;
 
@@ -739,20 +739,20 @@ const MyDataTable = ({
     columnFilters,
     districtOptions,
     onColumnFiltersChange,
-}) => {
+}: any) => {
     console.log('districtOptions', districtOptions)
 
     // // // 1) Gather unique district names for the District filter
     // const districtOptions = useMemo(() => {
     //   // Extract unique district names from data
-    //   const distinct = new Set(data.map((row) => row.district_name).filter(Boolean));
+    //   const distinct = new Set(data.map((row: any) => row.district_name).filter(Boolean));
     //   return Array.from(distinct).sort(); // convert to array, sort alphabetically
     // }, [data]);
 
     // // 1) Gather unique district names for the District filter
     // const districtOptions = useMemo(() => {
     //   // Extract unique district names from data
-    //   const distinct = new Set(data.map((row) => row.district_name).filter(Boolean));
+    //   const distinct = new Set(data.map((row: any) => row.district_name).filter(Boolean));
     //   return Array.from(distinct).sort(); // convert to array, sort alphabetically
     // }, [data]);
 
@@ -764,13 +764,13 @@ const MyDataTable = ({
                 header: 'District',
                 // filterFn: 'equals', // or 'includesString' if you want partial matches
                 // Provide a custom Filter component
-                // Filter: ({ column, table }) => {
+                // Filter: ({ column, table }: any) => {
                 //   const filterValue = column.getFilterValue() || '';
                 //   return (
                 //     <Select
                 //       displayEmpty
                 //       value={filterValue} // store the filter state
-                //       onChange={(e) => {
+                //       onChange={(e: any) => {
                 //         column.setFilterValue(e.target.value || undefined)
                 //         // alert('its here')
                 //       }
@@ -780,7 +780,7 @@ const MyDataTable = ({
                 //       <MenuItem value="">
                 //         <em>All Districts</em>
                 //       </MenuItem>
-                //       {districtOptions.map((dist) => (
+                //       {districtOptions.map((dist: any) => (
                 //         <MenuItem key={dist} value={dist}>
                 //           {dist}
                 //         </MenuItem>
@@ -808,14 +808,14 @@ const MyDataTable = ({
                 // filterFn: 'equals',
                 // enableColumnFilter: true,
                 // // Custom Filter for category icons
-                // Filter: ({ column }) => {
+                // Filter: ({ column }: any) => {
                 //   const filterValue = column.getFilterValue() || '';
 
                 //   return (
                 //     <Select
                 //       displayEmpty
                 //       value={filterValue}
-                //       onChange={(e) =>
+                //       onChange={(e: any) =>
                 //         column.setFilterValue(e.target.value || undefined)
                 //       }
                 //       style={{ width: '100%' }}
@@ -823,7 +823,7 @@ const MyDataTable = ({
                 //       <MenuItem value="">
                 //         <em>All Categories</em>
                 //       </MenuItem>
-                //       {Object.keys(categoryIconMap).map((cat) => (
+                //       {Object.keys(categoryIconMap).map((cat: any) => (
                 //         <MenuItem key={cat} value={cat}>
                 //           <Box
                 //             className={`flex items-center ${
@@ -838,11 +838,11 @@ const MyDataTable = ({
                 //     </Select>
                 //   );
                 // },
-                Cell: ({ cell }) => {
-                    const categoryValue = cell.getValue()
-                    const icon = categoryIconMap[categoryValue]
+                Cell: ({ cell }: any) => {
+                    const categoryValue = String(cell.getValue())
+                    const icon = (categoryIconMap as Record<string, JSX.Element>)[categoryValue]
                     const colorClass =
-                        categoryColorClassMap[categoryValue] || 'text-gray-500'
+                        (categoryColorClassMap as Record<string, string>)[categoryValue] || 'text-gray-500'
 
                     return icon ? (
                         <div className={`flex items-center ${colorClass}`}>
@@ -895,10 +895,14 @@ const MyDataTable = ({
             initialState={{
                 showColumnFilters: false, // Hide column filters by default
                 // density: 'compact', // Set compact view
-                pagination: { pageSize: 5 }, // Set 7 rows per page
+                pagination: { pageIndex: 0, pageSize: 5 }, // Set 7 rows per page
             }}
         />
     )
 }
 
 export default DistrictMap
+
+
+
+
