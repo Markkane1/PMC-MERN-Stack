@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { MaterialReactTable } from 'material-react-table'
 import AxiosBase from '../services/axios/AxiosBase'
 import { useNavigate } from 'react-router-dom'
@@ -100,18 +100,28 @@ const sanitizeData = (data) => {
     })
 }
 
+const normalizeListData = (payload) => {
+    if (Array.isArray(payload)) return payload
+    if (Array.isArray(payload?.results)) return payload.results
+    if (Array.isArray(payload?.data)) return payload.data
+    return []
+}
+
 const Home = () => {
     const [flattenedData, setFlattenedData] = useState([])
     const [columns, setColumns] = useState([])
-    const [userGroups, setUserGroups] = useState(null)
+    const [userGroups, setUserGroups] = useState([])
     const [statistics, setStatistics] = useState({})
     const [selectedTile, setSelectedTile] = useState(null) // State for the selected tile
-    const [loading, setLoading] = useState(false)
+    const [tableLoading, setTableLoading] = useState(false)
+    const [metaLoading, setMetaLoading] = useState(false)
     const [rowCount, setRowCount] = useState(0)
     const [pagination, setPagination] = useState({
         pageIndex: 0,
         pageSize: 25,
     })
+    const tableRequestControllerRef = useRef<AbortController | null>(null)
+    const latestTableRequestRef = useRef(0)
 
     // APPLICANT > LSO > LSM > DO > LSM2 > TL > DEO > Download License
 
@@ -131,8 +141,27 @@ const Home = () => {
     }
 
     const handleTileClick = async (group) => {
+        if (!group) {
+            setSelectedTile(null)
+            setFlattenedData([])
+            setColumns([])
+            setRowCount(0)
+            return
+        }
+        const isNewGroup = selectedTile !== group
+        const targetPageIndex = isNewGroup ? 0 : pagination.pageIndex
+        if (isNewGroup && pagination.pageIndex !== 0) {
+            setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+        }
+        const requestId = latestTableRequestRef.current + 1
+        latestTableRequestRef.current = requestId
+        if (tableRequestControllerRef.current) {
+            tableRequestControllerRef.current.abort()
+        }
+        const controller = new AbortController()
+        tableRequestControllerRef.current = controller
         try {
-            setLoading(true)
+            setTableLoading(true)
             setSelectedTile(group) // Update selected tile state
 
             // Logic for LSO.1, LSO.2, LSO.3
@@ -146,12 +175,18 @@ const Home = () => {
                         {
                             params: {
                                 assigned_group: 'LSO',
-                                page: pagination.pageIndex + 1,
+                                page: targetPageIndex + 1,
                                 page_size: pagination.pageSize,
+                                compact: 1,
                             },
+                            signal: controller.signal,
                         },
                     )
-                    const filteredData = (response.data || []).filter(
+                    if (latestTableRequestRef.current !== requestId) {
+                        return
+                    }
+                    const responseList = normalizeListData(response.data)
+                    const filteredData = responseList.filter(
                         (item) =>
                             item.submittedapplication?.id % 3 === moduloValue,
                     )
@@ -165,11 +200,7 @@ const Home = () => {
                           : 0
                     setRowCount(Number.isFinite(total) ? total : 0)
                     // Update the table data
-                    const extracted = extractColumns(
-                        filteredData,
-                        !!userGroups.length,
-                        userGroups[0],
-                    )
+                    const extracted = extractColumns(filteredData, group)
                     setFlattenedData(extracted.flattenedData)
                     setColumns(extracted.columns)
                 } else {
@@ -193,12 +224,17 @@ const Home = () => {
                                     group === 'Challan-Downloaded'
                                         ? 'Fee Challan'
                                         : undefined,
-                                page: pagination.pageIndex + 1,
+                                page: targetPageIndex + 1,
                                 page_size: pagination.pageSize,
+                                compact: 1,
                             },
+                            signal: controller.signal,
                         },
                     )
-                    const filteredData = response.data || []
+                    if (latestTableRequestRef.current !== requestId) {
+                        return
+                    }
+                    const filteredData = normalizeListData(response.data)
                     const totalHeader =
                         response.headers?.['x-total-count'] ||
                         response.headers?.['X-Total-Count']
@@ -210,11 +246,7 @@ const Home = () => {
                     setRowCount(Number.isFinite(total) ? total : 0)
 
                     // Update the table data
-                    const extracted = extractColumns(
-                        filteredData,
-                        !!userGroups.length,
-                        userGroups[0],
-                    )
+                    const extracted = extractColumns(filteredData, group)
                     setFlattenedData(extracted.flattenedData)
                     setColumns(extracted.columns)
                 } else {
@@ -224,11 +256,19 @@ const Home = () => {
                 }
             }
         } catch (error) {
+            if (
+                (error as any)?.code === 'ERR_CANCELED' ||
+                (error as any)?.name === 'CanceledError'
+            ) {
+                return
+            }
             console.error('Error fetching filtered data:', error)
             setFlattenedData([])
             setColumns([])
         } finally {
-            setLoading(false) // Hide the loading spinner
+            if (latestTableRequestRef.current === requestId) {
+                setTableLoading(false)
+            }
         }
     }
 
@@ -239,7 +279,7 @@ const Home = () => {
     }, [pagination.pageIndex, pagination.pageSize])
 
     // Extract columns and flattened data
-    const extractColumns = (data, hasUserGroup, group) => {
+    const extractColumns = (data, selectedGroup) => {
         const allowedColumns = [
             'first_name',
             'last_name',
@@ -259,7 +299,10 @@ const Home = () => {
             'created_by_username',
         ]
 
-        const flattenedData = sanitizeData(data) // Ensure sanitized data
+        const flattenedData = sanitizeData(Array.isArray(data) ? data : []) // Ensure sanitized data
+        if (!flattenedData.length) {
+            return { flattenedData: [], columns: [] }
+        }
         const firstRecord = flattenedData[0]
 
         const columns = [
@@ -280,30 +323,42 @@ const Home = () => {
                         customSize = 180 // Reduce size for these specific columns
                     }
 
+                    if (key === 'tracking_number') {
+                        return {
+                            accessorKey: key,
+                            header: key
+                                .replace(/_/g, ' ')
+                                .replace(/\b\w/g, (char) =>
+                                    char.toUpperCase(),
+                                ),
+                            size: customSize,
+                            Cell: ({ cell, row }) => {
+                                const id = row.original.id
+                                const url = `/spuid-review/${id}?group=${selectedGroup}`
+                                return (
+                                    <a
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                            color: '#0f172a',
+                                            textDecoration: 'underline',
+                                            fontWeight: 500,
+                                        }}
+                                    >
+                                        {cell.getValue() || '-'}
+                                    </a>
+                                )
+                            },
+                        }
+                    }
+
                     return {
                         accessorKey: key,
                         header: key
                             .replace(/_/g, ' ')
                             .replace(/\b\w/g, (char) => char.toUpperCase()),
                         size: customSize,
-                        Cell: ({ cell, row }) => {
-                            const id = row.original.id
-                            const url = `/spuid-review/${id}?group=${group}` // Adjust URL as needed
-                            return (
-                                <a
-                                    href={url} // Link to the desired URL
-                                    target="_blank" // Open in a new tab on click
-                                    rel="noopener noreferrer" // Security best practices for external links
-                                    style={{
-                                        cursor: 'pointer',
-                                        color: 'blue',
-                                        textDecoration: 'underline',
-                                    }}
-                                >
-                                    {cell.getValue() || '-'}
-                                </a>
-                            )
-                        },
                     }
                 }),
         ]
@@ -314,7 +369,7 @@ const Home = () => {
     const navigate = useNavigate()
     useEffect(() => {
         const fetchData = async () => {
-            setLoading(true) // Show the loading spinner
+            setMetaLoading(true) // Show summary loading state
             // try {
             //     const response = await AxiosBase.get(`/pmc/ping/`, {
             //         headers: {
@@ -371,7 +426,7 @@ const Home = () => {
             } catch (error) {
                 console.error('Error fetching data:', error)
             } finally {
-                setLoading(false) // Hide the loading spinner
+                setMetaLoading(false)
             }
         }
 
@@ -380,10 +435,18 @@ const Home = () => {
 
     useEffect(() => {
         console.log('userGroups:', userGroups)
-        if (userGroups && !userGroups.includes('Admin')) {
+        if (userGroups.length > 0 && !userGroups.includes('Admin')) {
             navigate('/home')
         }
     }, [userGroups, navigate]) // Run only once on component load
+
+    useEffect(() => {
+        return () => {
+            if (tableRequestControllerRef.current) {
+                tableRequestControllerRef.current.abort()
+            }
+        }
+    }, [])
 
     const handleExport = async () => {
         try {
@@ -428,6 +491,11 @@ const Home = () => {
                     </div>
                 ))}
             </div>
+            {metaLoading && Object.keys(statistics || {}).length === 0 && (
+                <p className="text-sm text-gray-600 mb-4">
+                    Loading dashboard summary...
+                </p>
+            )}
 
             <div className="mb-4">
                 <h3>
@@ -443,68 +511,52 @@ const Home = () => {
                     Dashboard
                 </h3>
             </div>
-            {loading ? (
-                // Show a spinner or loading message
-                <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
-                    <div className="w-16 h-16 border-4 border-blue-400 border-t-transparent border-solid rounded-full animate-spin"></div>
-                    <p className="mt-4 text-lg font-medium text-gray-600">
-                        Loading data, please wait...
-                    </p>
-                </div>
-            ) : (
-                <>
-                    <div className="grid md:grid-cols-5 gap-5 items-center mb-4">
-                        {/* Left-aligned warning message */}
-                        <h6 className="text-red-500 col-span-3">
-                            Records highlighted in red require immediate
-                            attention, as they have been returned from a next
-                            step.
-                        </h6>
-                        <span></span>
-                        {/* Right-aligned Export button with icon */}
-                        <button
-                            type="button"
-                            className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
-                            onClick={handleExport}
-                        >
-                            <TablerIcon
-                                name="file-spreadsheet"
-                                className="mr-2 text-xl"
-                            />
-                            Export to Excel
-                        </button>
-                    </div>
+            <div className="grid md:grid-cols-5 gap-5 items-center mb-4">
+                {/* Left-aligned warning message */}
+                <h6 className="text-red-500 col-span-3">
+                    Records highlighted in red require immediate attention, as
+                    they have been returned from a next step.
+                </h6>
+                <span></span>
+                {/* Right-aligned Export button with icon */}
+                <button
+                    type="button"
+                    className="flex items-center justify-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
+                    onClick={handleExport}
+                >
+                    <TablerIcon name="file-spreadsheet" className="mr-2 text-xl" />
+                    Export to Excel
+                </button>
+            </div>
 
-                    <MaterialReactTable
-                        enableColumnResizing
-                        data={flattenedData.map((row) => ({
-                            ...row,
-                            assigned_group_title:
-                                groupTitles[row.assigned_group] ||
-                                row.assigned_group, // Add a title for the assigned group
-                        }))} // Include updated data
-                        columns={[...columns]}
-                        getRowId={(row) => row.id} // Explicitly set the row ID using the `id` field from your original data
-                        initialState={{
-                            showColumnFilters: false,
-                        }}
-                        defaultColumn={{
-                            maxSize: 200,
-                            minSize: 1,
-                            size: 50, // default size is usually 180
-                        }}
-                        columnResizeMode="onChange" // default
-                        enableTopToolbar={true} // Disables the top-right controls entirely
-                        // enableGlobalFilter={false} // Disables the global search/filter box
-                        enablePagination={true} // Optionally disable pagination controls
-                        manualPagination
-                        rowCount={rowCount}
-                        onPaginationChange={setPagination}
-                        state={{ pagination, isLoading: loading }}
-                        // enableSorting={false} // Optionally disable column sorting
-                    />
-                </>
-            )}
+            <MaterialReactTable
+                enableColumnResizing
+                data={flattenedData.map((row) => ({
+                    ...row,
+                    assigned_group_title:
+                        groupTitles[row.assigned_group] ||
+                        row.assigned_group, // Add a title for the assigned group
+                }))} // Include updated data
+                columns={[...columns]}
+                getRowId={(row) => row.id} // Explicitly set the row ID using the `id` field from your original data
+                initialState={{
+                    showColumnFilters: false,
+                }}
+                defaultColumn={{
+                    maxSize: 200,
+                    minSize: 1,
+                    size: 50, // default size is usually 180
+                }}
+                columnResizeMode="onChange" // default
+                enableTopToolbar={true} // Disables the top-right controls entirely
+                // enableGlobalFilter={false} // Disables the global search/filter box
+                enablePagination={true} // Optionally disable pagination controls
+                manualPagination
+                rowCount={rowCount}
+                onPaginationChange={setPagination}
+                state={{ pagination, isLoading: tableLoading }}
+                // enableSorting={false} // Optionally disable column sorting
+            />
         </div>
     )
 }

@@ -5,6 +5,8 @@ import PDFDocument from 'pdfkit'
 import ExcelJS from 'exceljs'
 import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
 import { parallelQueriesWithMetadata } from '../../../infrastructure/utils/parallelQueries'
+import { InspectionReportModel } from '../../../infrastructure/database/models/pmc/InspectionReport'
+import { DistrictModel } from '../../../infrastructure/database/models/pmc/District'
 import type { InspectionReportRepository, SingleUsePlasticsSnapshotRepository, DistrictRepository } from '../../../domain/repositories/pmc'
 import type { UserProfileRepository } from '../../../domain/repositories/accounts'
 import {
@@ -94,6 +96,25 @@ export const listInspectionReports = asyncHandler(async (req: AuthRequest, res: 
   const districtMap = new Map(districts.map((d: any) => [d.districtId, d.districtName]))
   const data = paginated.map((r: any) => serializeInspectionReport(r, districtMap))
   return res.json(paginateResponse(data, { page, pageSize, total: reports.length }))
+})
+
+export const getInspectionReport = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const reportId = req.params.id
+  // Try to find by _id first, then by numericId
+  let report = await InspectionReportModel.findById(reportId).lean()
+  if (!report) {
+    report = await InspectionReportModel.findOne({ numericId: Number(reportId) }).lean()
+  }
+  
+  if (!report) return res.status(404).json({ message: 'Inspection report not found' })
+  
+  // Get district details if available
+  const districtDoc = (report as any).districtId ? await DistrictModel.findOne({ districtId: (report as any).districtId }).lean() : null
+  const districtName = districtDoc ? (districtDoc as any).districtName || (districtDoc as any).district_name : undefined
+  
+  const districtMap = districtName ? new Map([[(report as any).districtId, districtName]]) : new Map()
+  const data = serializeInspectionReport(report, districtMap)
+  return res.json(data)
 })
 
 export const createInspectionReport = [

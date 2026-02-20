@@ -162,9 +162,14 @@ const mapAssignment = (doc: any) => {
 
 const mapSubmitted = (doc: any) => {
   if (!doc) return doc
+  const applicantIdRaw = doc.applicantId ?? doc.applicant_id
+  const applicantId =
+    applicantIdRaw !== undefined && applicantIdRaw !== null
+      ? Number(applicantIdRaw)
+      : undefined
   return {
     ...doc,
-    applicantId: doc.applicantId ?? (doc.applicant_id !== undefined ? Number(doc.applicant_id) : undefined),
+    applicantId: Number.isFinite(applicantId) ? applicantId : undefined,
     createdAt: doc.createdAt ?? doc.created_at,
     updatedAt: doc.updatedAt ?? doc.updated_at,
   }
@@ -654,17 +659,26 @@ export const districtPlasticCommitteeDocumentRepositoryMongo: DistrictPlasticCom
 
 export const applicationSubmittedRepositoryMongo: ApplicationSubmittedRepository = {
   async findByApplicantId(applicantId: number) {
-    const doc = await ApplicationSubmittedModel.findOne({ applicantId }).lean()
-    if (doc) return mapSubmitted(doc)
-    const legacy = await ApplicationSubmittedModel.findOne({ applicant_id: String(applicantId) }).lean()
-    return legacy ? mapSubmitted(legacy) : null
+    const doc = await ApplicationSubmittedModel.collection.findOne({
+      $or: [{ applicantId }, { applicant_id: String(applicantId) }],
+    })
+    return doc ? mapSubmitted(doc) : null
   },
   async create(applicantId: number) {
     const created = await ApplicationSubmittedModel.create({ applicantId })
     return mapSubmitted(created.toObject())
   },
   async list() {
-    const docs = await ApplicationSubmittedModel.find().lean()
+    const docs = await ApplicationSubmittedModel.collection.find({}).toArray()
+    return docs.map(mapSubmitted)
+  },
+  async listByApplicantIds(applicantIds: number[]) {
+    if (!applicantIds.length) return []
+    const docs = await ApplicationSubmittedModel.collection
+      .find({
+        $or: [{ applicantId: { $in: applicantIds } }, { applicant_id: { $in: applicantIds.map(String) } }],
+      })
+      .toArray()
     return docs.map(mapSubmitted)
   },
 }
@@ -764,6 +778,15 @@ export const applicantFeeRepositoryMongo: ApplicantFeeRepository = {
     const docs = await ApplicantFeeModel.find({ applicantId }).sort({ createdAt: -1 }).lean()
     if (docs.length) return docs.map(mapApplicantFee)
     const legacy = await ApplicantFeeModel.find({ applicant_id: String(applicantId) }).sort({ created_at: -1 }).lean()
+    return legacy.map(mapApplicantFee)
+  },
+  async listByApplicantIds(applicantIds: number[]) {
+    if (!applicantIds.length) return []
+    const docs = await ApplicantFeeModel.find({ applicantId: { $in: applicantIds } }).sort({ createdAt: -1 }).lean()
+    if (docs.length) return docs.map(mapApplicantFee)
+    const legacy = await ApplicantFeeModel.find({ applicant_id: { $in: applicantIds.map(String) } })
+      .sort({ created_at: -1 })
+      .lean()
     return legacy.map(mapApplicantFee)
   },
   async sumFeeByApplicantId(applicantId: number) {

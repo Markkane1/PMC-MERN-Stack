@@ -148,6 +148,7 @@ export interface ApplicantFeeRepository {
   findAll(): Promise<ApplicantFee[]>
   list(): Promise<ApplicantFee[]>
   listByApplicantId(applicantId: number): Promise<ApplicantFee[]>
+  listByApplicantIds?(applicantIds: number[]): Promise<ApplicantFee[]>
   sumFeeByApplicantId(applicantId: number): Promise<number>
   countByApplicantId(applicantId: number): Promise<number>
   aggregateBySettlement(): Promise<Array<{ _id: boolean; total: number; count: number }>>
@@ -187,6 +188,7 @@ export interface RecyclerRepository {
 
 export interface ApplicationSubmittedRepository {
   findByApplicantId(applicantId: number): Promise<ApplicationSubmitted | null>
+  listByApplicantIds?(applicantIds: number[]): Promise<ApplicationSubmitted[]>
   create(applicantId: number): Promise<ApplicationSubmitted>
   list(): Promise<ApplicationSubmitted[]>
 }

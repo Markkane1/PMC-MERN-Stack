@@ -1,6 +1,7 @@
 import Logo from '@/components/template/Logo'
 import Alert from '@/components/ui/Alert'
 import SignInForm from './components/SignInForm'
+import { OAuthSignIn } from '@/components/auth/OAuthSignIn'
 import ActionLink from '@/components/shared/ActionLink'
 import useTimeOutMessage from '@/utils/hooks/useTimeOutMessage'
 import { useThemeStore } from '@/store/themeStore'
@@ -44,6 +45,9 @@ export const SignInBase = ({
                     <span className="break-all">{message}</span>
                 </Alert>
             )}
+            <OAuthSignIn
+                onError={(error) => setMessage(error)}
+            />
             <SignInForm
                 disableSubmit={disableSubmit}
                 setMessage={setMessage}

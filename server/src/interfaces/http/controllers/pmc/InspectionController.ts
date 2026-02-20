@@ -1,5 +1,6 @@
 export {
   listInspectionReports,
+  getInspectionReport,
   createInspectionReport,
   updateInspectionReport,
   deleteInspectionReport,

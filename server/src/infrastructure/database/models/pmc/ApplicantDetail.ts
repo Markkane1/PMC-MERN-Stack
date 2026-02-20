@@ -45,6 +45,14 @@ const ApplicantDetailSchema = new Schema<ApplicantDetailDocument>(
   { timestamps: true }
 )
 
+// Dashboard and list endpoints filter on group/status and sort by creation time.
+ApplicantDetailSchema.index({ assignedGroup: 1, createdAt: -1 })
+ApplicantDetailSchema.index({ applicationStatus: 1, createdAt: -1 })
+ApplicantDetailSchema.index({ assignedGroup: 1, applicationStatus: 1, createdAt: -1 })
+ApplicantDetailSchema.index({ assigned_group: 1, created_at: -1 })
+ApplicantDetailSchema.index({ application_status: 1, created_at: -1 })
+ApplicantDetailSchema.index({ assigned_group: 1, application_status: 1, created_at: -1 })
+
 ApplicantDetailSchema.pre('save', async function preSave(next) {
   if (!this.numericId) {
     this.numericId = await getNextSequence('ApplicantDetail')

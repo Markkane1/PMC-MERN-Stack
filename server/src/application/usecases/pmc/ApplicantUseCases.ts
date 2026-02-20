@@ -1,4 +1,5 @@
 import { Response, Request } from 'express'
+import mongoose from 'mongoose'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import { logAccess } from '../../services/common/LogService'
 import type { AuthRequest } from '../../../interfaces/http/middlewares/auth'
@@ -13,6 +14,7 @@ import {
 import type { ApplicantRepository, BusinessProfileRepository, ApplicationSubmittedRepository, DistrictRepository } from '../../../domain/repositories/pmc'
 import {
   assembleApplicantDetail,
+  assembleApplicantDetailsCompact,
   createOrUpdateLicense,
   maybeCreateSubmitted,
   maybeUpdateTrackingNumber,
@@ -37,20 +39,108 @@ const defaultDeps: ApplicantUseCaseDeps = {
 
 const TARGET_GROUPS = new Set(['LSO', 'LSM', 'DO', 'TL', 'MO', 'LSM2', 'DEO', 'DG', 'Download License'])
 
-const legacyAssignedGroupFilter = (value: string | Record<string, unknown>) => ({
-  $or: [{ assignedGroup: value }, { assigned_group: value }],
-})
+const legacyAssignedGroupFilter = (value: string | Record<string, unknown>) => {
+  if (typeof value === 'object' && value && '$in' in value) {
+    const values = Array.isArray((value as any).$in)
+      ? (value as any).$in.map((v: unknown) => String(v))
+      : []
+    return {
+      $or: [
+        { assignedGroup: { $in: values } },
+        { assigned_group: { $in: values } },
+      ],
+    }
+  }
+  const normalizedValue = String(value)
+  return {
+    $or: [{ assignedGroup: normalizedValue }, { assigned_group: normalizedValue }],
+  }
+}
 
-const legacyApplicationStatusFilter = (value: string | Record<string, unknown>) => ({
-  $or: [{ applicationStatus: value }, { application_status: value }],
-})
+const legacyApplicationStatusFilter = (value: string | Record<string, unknown>) => {
+  if (typeof value === 'object' && value && '$in' in value) {
+    const values = Array.isArray((value as any).$in)
+      ? (value as any).$in.map((v: unknown) => String(v))
+      : []
+    return {
+      $or: [
+        { applicationStatus: { $in: values } },
+        { application_status: { $in: values } },
+      ],
+    }
+  }
+  const normalizedValue = String(value)
+  return {
+    $or: [
+      { applicationStatus: normalizedValue },
+      { application_status: normalizedValue },
+    ],
+  }
+}
 
 const legacyNumericIdFilter = (value: Record<string, unknown> | number[] | number) => {
   if (typeof value === 'object' && value && '$in' in value) {
-    const ids = (value as any).$in
-    return { $or: [{ numericId: { $in: ids } }, { id: { $in: ids.map((v: any) => String(v)) } }] }
+    const rawIds = Array.isArray((value as any).$in) ? (value as any).$in : []
+    const numericIds = rawIds.map((v: any) => Number(v)).filter((v: number) => Number.isFinite(v))
+    const stringIds = rawIds.map((v: any) => String(v))
+    return {
+      $or: [
+        { numericId: { $in: numericIds } },
+        { id: { $in: stringIds } },
+        { numeric_id: { $in: numericIds } },
+      ],
+    }
   }
-  return { $or: [{ numericId: value }, { id: String(value) }] }
+
+  if (Array.isArray(value)) {
+    const numericIds = value.map((v: any) => Number(v)).filter((v: number) => Number.isFinite(v))
+    const stringIds = value.map((v: any) => String(v))
+    return {
+      $or: [
+        { numericId: { $in: numericIds } },
+        { id: { $in: stringIds } },
+        { numeric_id: { $in: numericIds } },
+      ],
+    }
+  }
+
+  const numericId = Number(value)
+  const stringId = String(value)
+  return {
+    $or: [
+      { numericId: Number.isFinite(numericId) ? numericId : -1 },
+      { id: stringId },
+      { numeric_id: Number.isFinite(numericId) ? numericId : -1 },
+    ],
+  }
+}
+
+async function getSubmittedApplicantIds(): Promise<number[]> {
+  const cacheKey = 'applicants:submitted-ids'
+  const cached = await cacheManager.get<number[]>(cacheKey)
+  if (Array.isArray(cached) && cached.length) {
+    return cached
+  }
+
+  const submitted = await defaultDeps.applicationSubmittedRepo.list()
+  let ids = submitted
+    .map((s: any) => Number((s as any).applicantId))
+    .filter((id: number) => Number.isFinite(id))
+
+  // Fallback for legacy rows where only applicant_id exists and may not map through schema.
+  if (!ids.length) {
+    const raw = await mongoose.connection.db
+      ?.collection('applicationsubmitteds')
+      .find({}, { projection: { applicantId: 1, applicant_id: 1 } })
+      .toArray()
+    ids = (raw || [])
+      .map((row: any) => Number(row?.applicantId ?? row?.applicant_id))
+      .filter((id: number) => Number.isFinite(id))
+  }
+
+  const uniqueIds = Array.from(new Set(ids))
+  await cacheManager.set(cacheKey, uniqueIds, { ttl: 300 })
+  return uniqueIds
 }
 
 async function filterByUserGroups(req: AuthRequest) {
@@ -72,11 +162,26 @@ async function filterByUserGroups(req: AuthRequest) {
   }
 
   if (matchingGroups.includes('LSO') && user.username?.toLowerCase().startsWith('lso.')) {
+    // Extract suffix from username (e.g., "lso.001" → "001")
+    const parts = user.username.split('.')
+    const suffix = parts[1] ? parseInt(parts[1], 10) : null
+    if (!suffix && suffix !== 0) {
+      // Invalid LSO username format, restrict to this user's applicants
+      return { filter: { createdBy: user._id } }
+    }
+
+    // 3-way modulo partitioning: LSO user with suffix N gets applicants where numericId % 3 == N % 3
+    const moduloValue = suffix % 3
+
     return {
       filter: {
-        $or: [
-          { assignedGroup: { $in: ['LSO', 'APPLICANT'] } },
-          { assigned_group: { $in: ['LSO', 'APPLICANT'] } },
+        $and: [
+          legacyAssignedGroupFilter({ $in: ['LSO', 'APPLICANT'] }),
+          {
+            $expr: {
+              $eq: [{ $mod: [{ $ifNull: ['$numericId', 0] }, 3] }, moduloValue],
+            },
+          },
         ],
       },
     }
@@ -102,9 +207,7 @@ async function filterByUserGroups(req: AuthRequest) {
 
   if (matchingGroups.length > 0) {
     return {
-      filter: {
-        $or: [{ assignedGroup: { $in: matchingGroups } }, { assigned_group: { $in: matchingGroups } }],
-      },
+      filter: legacyAssignedGroupFilter({ $in: matchingGroups }),
     }
   }
 
@@ -223,25 +326,24 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
   const user = req.user
   const userGroups = user?.groups || []
   if (!user) return res.json([])
+  const compactMode = ['1', 'true', 'yes'].includes(String(req.query.compact || '').toLowerCase())
 
   if (userGroups.includes('Super')) {
     const clauses: any[] = []
     const assignedGroup = req.query.assigned_group as string | undefined
     const applicationStatus = req.query.application_status as string | undefined
 
-    if (assignedGroup === 'Submitted') {
-      const submitted = await defaultDeps.applicationSubmittedRepo.list()
-      const ids = submitted.map((s: any) => (s as any).applicantId).filter(Boolean)
+    const normalizedAssignedGroup = assignedGroup?.trim().toLowerCase()
+
+    if (normalizedAssignedGroup === 'submitted') {
+      const ids = await getSubmittedApplicantIds()
       if (ids.length) {
         clauses.push(legacyNumericIdFilter({ $in: ids }))
+      } else {
+        clauses.push({ _id: null })
       }
-    } else if (assignedGroup === 'PMC') {
-      clauses.push({
-        $or: [
-          { assignedGroup: { $in: ['LSO', 'LSM', 'LSM2', 'TL'] } },
-          { assigned_group: { $in: ['LSO', 'LSM', 'LSM2', 'TL'] } },
-        ],
-      })
+    } else if (normalizedAssignedGroup === 'pmc') {
+      clauses.push(legacyAssignedGroupFilter({ $in: ['LSO', 'LSM', 'LSM2', 'TL'] }))
     } else if (assignedGroup) {
       clauses.push(legacyAssignedGroupFilter(assignedGroup))
     }
@@ -254,7 +356,9 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
     const page = Number(req.query.page || 1)
     const limit = Number(req.query.page_size || req.query.limit || 200)
     const result = await defaultDeps.applicantRepo.listPaginated(filter, page, limit, { createdAt: -1 })
-    const data = await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
+    const data = compactMode
+      ? await assembleApplicantDetailsCompact(result.data as any[])
+      : await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
     res.setHeader('X-Total-Count', String(result.pagination.total))
     await logAccess({
       userId: req.user?._id ? String(req.user._id) : undefined,
@@ -272,7 +376,9 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
   const page = Number(req.query.page || 1)
   const limit = Number(req.query.page_size || req.query.limit || 200)
   const result = await defaultDeps.applicantRepo.listPaginated(filter, page, limit, { createdAt: -1 })
-  const data = await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
+  const data = compactMode
+    ? await assembleApplicantDetailsCompact(result.data as any[])
+    : await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
   res.setHeader('X-Total-Count', String(result.pagination.total))
   await logAccess({
     userId: req.user?._id ? String(req.user._id) : undefined,
@@ -291,6 +397,7 @@ export const listApplicantsMainDO = asyncHandler(async (req: AuthRequest, res: R
   if (!user?.groups?.includes('DO')) {
     return res.status(400).json({ error: 'Not DO Group' })
   }
+  const compactMode = ['1', 'true', 'yes'].includes(String(req.query.compact || '').toLowerCase())
 
   const parts = user.username?.split('.') || []
   const districtShort = parts[1] ? parts[1].toUpperCase() : null
@@ -317,7 +424,9 @@ export const listApplicantsMainDO = asyncHandler(async (req: AuthRequest, res: R
   const page = Number(req.query.page || 1)
   const limit = Number(req.query.page_size || req.query.limit || 200)
   const result = await defaultDeps.applicantRepo.listPaginated({ $and: clauses }, page, limit, { createdAt: -1 })
-  const data = await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
+  const data = compactMode
+    ? await assembleApplicantDetailsCompact(result.data as any[])
+    : await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
   const totalCount = await defaultDeps.applicantRepo.count({ $and: clauses })
   res.setHeader('X-Total-Count', String(totalCount))
   await logAccess({

@@ -4,14 +4,27 @@ export type User = Timestamped & {
   id?: Id
   djangoId?: number
   username: string
+  email?: string
   passwordHash: string
   firstName?: string
   lastName?: string
+  avatar?: string
   groups: string[]
   permissions?: string[]
   directPermissions?: string[]
   isActive: boolean
   isSuperadmin?: boolean
+}
+
+export type SocialAccount = Timestamped & {
+  id?: Id
+  userId: Id
+  provider: 'google' | 'github'
+  providerId: string
+  email?: string
+  name?: string
+  avatar?: string
+  raw?: Record<string, unknown>
 }
 
 export type UserProfile = Timestamped & {

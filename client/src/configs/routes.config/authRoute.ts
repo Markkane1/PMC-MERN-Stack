@@ -65,6 +65,18 @@ const authRoute: Routes = [
         authority: [],
     },
     {
+        key: 'googleOAuthCallback',
+        path: `/auth/google/callback`,
+        component: lazy(() => import('@/views/auth/GoogleOAuthCallback')),
+        authority: [],
+    },
+    {
+        key: 'githubOAuthCallback',
+        path: `/auth/github/callback`,
+        component: lazy(() => import('@/views/auth/GitHubOAuthCallback')),
+        authority: [],
+    },
+    {
         key: 'cr',
         path: `/cr`,
         component: lazy(() => import('@/views/auth/Analytics/CR')),

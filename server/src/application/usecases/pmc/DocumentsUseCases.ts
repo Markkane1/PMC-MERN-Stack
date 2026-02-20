@@ -5,11 +5,13 @@ import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import { createUploader } from '../../../interfaces/http/middlewares/upload'
 import { env } from '../../../infrastructure/config/env'
 import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
+import { ApplicantFeeModel } from '../../../infrastructure/database/models/pmc/ApplicantFee'
 import type {
   ApplicantDocumentRepository,
   ApplicantRepository,
   DistrictPlasticCommitteeDocumentRepository,
   DistrictRepository,
+  ApplicantFeeRepository,
 } from '../../../domain/repositories/pmc'
 import type { UserRepository } from '../../../domain/repositories/accounts'
 import {
@@ -17,6 +19,7 @@ import {
   applicantRepositoryMongo,
   districtPlasticCommitteeDocumentRepositoryMongo,
   districtRepositoryMongo,
+  applicantFeeRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
 import { userRepositoryMongo } from '../../../infrastructure/database/repositories/accounts'
 
@@ -28,6 +31,7 @@ type DocumentsDeps = {
   districtDocRepo: DistrictPlasticCommitteeDocumentRepository
   districtRepo: DistrictRepository
   userRepo: UserRepository
+  applicantFeeRepo: ApplicantFeeRepository
 }
 
 const defaultDeps: DocumentsDeps = {
@@ -36,11 +40,20 @@ const defaultDeps: DocumentsDeps = {
   districtDocRepo: districtPlasticCommitteeDocumentRepositoryMongo,
   districtRepo: districtRepositoryMongo,
   userRepo: userRepositoryMongo,
+  applicantFeeRepo: applicantFeeRepositoryMongo,
 }
 
 const applicantUploader = createUploader('media/documents')
 const districtUploader = createUploader('media/plastic_committee')
 const SAFE_PATH_SEGMENT = /^[a-zA-Z0-9._-]+$/
+
+// Fee verification labels that trigger automatic fee settlement
+const FEE_VERIFICATION_LABELS = [
+  'Fee Verification from Treasury/District Accounts Office',
+  'Fee Verification',
+  'Payment Verification',
+  'Fee Receipt',
+]
 
 function parsePositiveInt(value: unknown): number | null {
   const parsed = Number(value)
@@ -88,12 +101,42 @@ export const uploadApplicantDocument = [
       createdBy: req.user?._id,
     })
 
+    // PHASE 2.1: Check if document is fee verification and settle fee if applicable
+    if (documentDescription && FEE_VERIFICATION_LABELS.some((label) => documentDescription.includes(label))) {
+      try {
+        // Find all fees for this applicant
+        const allFees = await defaultDeps.applicantFeeRepo.listByApplicantId(applicantId)
+        
+        // Filter for unsettled fees
+        const unsettledFees = allFees?.filter((fee: any) => !fee.isSettled && fee.status !== 'SETTLED') || []
+        
+        if (unsettledFees && unsettledFees.length > 0) {
+          // Mark all unsettled fees as settled using ApplicantFeeModel
+          for (const fee of unsettledFees) {
+            await ApplicantFeeModel.findByIdAndUpdate(
+              (fee as any)._id,
+              { isSettled: true, status: 'SETTLED', settledAt: new Date(), settledBy: req.user?._id },
+              { new: true }
+            )
+          }
+          
+          console.log(
+            `✓ Fee settlement: ${unsettledFees.length} fee(s) settled for applicant ${applicantId} due to fee verification document`
+          )
+        }
+      } catch (error) {
+        console.warn(`Fee settlement side-effect failed for applicant ${applicantId}:`, error)
+        // Don't fail the request - this is a non-blocking side effect
+      }
+    }
+
     return res.status(201).json({
       id: (doc as any).numericId,
       applicant: (doc as any).applicantId,
       document_description: (doc as any).documentDescription,
       created_at: (doc as any).createdAt,
       document: toDocumentUrl((doc as any).documentPath),
+      _fee_settlement_applied: documentDescription && FEE_VERIFICATION_LABELS.some((label) => documentDescription.includes(label)),
     })
   }),
 ]

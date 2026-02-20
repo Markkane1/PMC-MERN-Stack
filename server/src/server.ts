@@ -3,8 +3,12 @@ import { connectDb } from './infrastructure/config/db'
 import { env } from './infrastructure/config/env'
 import { SystemMetricsCollector } from './infrastructure/monitoring'
 import { healthCheckAggregator, MemoryHealthCheck } from './infrastructure/ha'
+import { initializeServiceTokens } from './interfaces/http/middlewares/externalTokenAuth'
 
 async function start() {
+  // Initialize external service tokens for PITB, ePay, etc.
+  initializeServiceTokens()
+
   await connectDb()
   const app = createApp()
 
@@ -31,3 +35,4 @@ start().catch((err) => {
   console.error(err)
   process.exit(1)
 })
+

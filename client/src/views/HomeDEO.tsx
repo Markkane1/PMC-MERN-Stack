@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react'
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react'
 import { MaterialReactTable } from 'material-react-table'
 import AxiosBase from '../services/axios/AxiosBase'
 import { useNavigate } from 'react-router-dom'
@@ -132,19 +132,33 @@ const sanitizeData = (data) => {
     })
 }
 
+const normalizeListData = (payload) => {
+    if (Array.isArray(payload)) return payload
+    if (Array.isArray(payload?.results)) return payload.results
+    if (Array.isArray(payload?.data)) return payload.data
+    return []
+}
+
 const Home = () => {
     const [flattenedData, setFlattenedData] = useState([])
     const [columns, setColumns] = useState([])
-    const [userGroups, setUserGroups] = useState(null)
+    const [userGroups, setUserGroups] = useState([])
     const [statistics, setStatistics] = useState({})
     const [selectedTile, setSelectedTile] = useState(null) // State for the selected tile
-    const [loading, setLoading] = useState(false)
+    const [hasAutoSelectedTile, setHasAutoSelectedTile] = useState(false)
+    const [tableLoading, setTableLoading] = useState(false)
+    const [feeLoading, setFeeLoading] = useState(false)
+    const [metaLoading, setMetaLoading] = useState(false)
     const [feeStats, setFeeStats] = useState([]) // Store fetched data
     const [rowCount, setRowCount] = useState(0)
     const [pagination, setPagination] = useState({
         pageIndex: 0,
         pageSize: 25,
     })
+    const safeFeeStats = Array.isArray(feeStats) ? feeStats : []
+    const tableRequestControllerRef = useRef<AbortController | null>(null)
+    const latestTableRequestRef = useRef(0)
+    const selectedTileRef = useRef<string | null>(null)
 
     // APPLICANT > LSO > LSM > DO > LSM2 > TL > DEO > Download License
 
@@ -201,7 +215,10 @@ const Home = () => {
             'is_assigned_back', // Include this column
         ]
 
-        const flattenedData = sanitizeData(data) // Ensure sanitized data
+        const flattenedData = sanitizeData(Array.isArray(data) ? data : []) // Ensure sanitized data
+        if (!flattenedData.length) {
+            return { flattenedData: [], columns: [] }
+        }
         const firstRecord = flattenedData[0]
 
         const columns = [
@@ -240,7 +257,7 @@ const Home = () => {
                                 >
                                     <option value="">All</option>
                                     <option value="Yes">Yes</option>
-                                    <option value="">No</option>
+                                    <option value="No">No</option>
                                 </select>
                             ),
                             filterFn: (row, _id, filterValue) => {
@@ -249,11 +266,39 @@ const Home = () => {
                                     row.original[key] === filterValue
                                 )
                             },
+                            Cell: ({ cell }) => {
+                                const value = cell.getValue() || '-'
+                                return (
+                                    <span
+                                        style={{
+                                            fontWeight: 600,
+                                            color:
+                                                value === 'Yes'
+                                                    ? '#b91c1c'
+                                                    : '#111827',
+                                        }}
+                                    >
+                                        {value}
+                                    </span>
+                                )
+                            },
+                        }
+                    }
+
+                    if (key === 'tracking_number') {
+                        return {
+                            accessorKey: key,
+                            header: key
+                                .replace(/_/g, ' ')
+                                .replace(/\b\w/g, (char) =>
+                                    char.toUpperCase(),
+                                ),
+                            size: customSize,
                             Cell: ({ cell, row }) => {
                                 const id = row.original.id
                                 const assignedBack =
                                     row.original.is_assigned_back
-                                const url = `/spuid-review/${id}` // Adjust URL as needed
+                                const url = `/spuid-review/${id}`
 
                                 return (
                                     <a
@@ -261,13 +306,12 @@ const Home = () => {
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         style={{
-                                            cursor: 'pointer',
-                                            // If assigned_back = 'Yes', color is red; otherwise, it's blue
                                             color:
                                                 assignedBack === 'Yes'
-                                                    ? 'red'
-                                                    : 'blue',
+                                                    ? '#b91c1c'
+                                                    : '#0f172a',
                                             textDecoration: 'underline',
+                                            fontWeight: 500,
                                         }}
                                     >
                                         {cell.getValue() || '-'}
@@ -283,30 +327,6 @@ const Home = () => {
                             .replace(/_/g, ' ')
                             .replace(/\b\w/g, (char) => char.toUpperCase()),
                         size: customSize,
-                        Cell: ({ cell, row }) => {
-                            const id = row.original.id
-                            const assignedBack = row.original.is_assigned_back
-                            const url = `/spuid-review/${id}` // Adjust URL as needed
-
-                            return (
-                                <a
-                                    href={url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    style={{
-                                        cursor: 'pointer',
-                                        // If assigned_back = 'Yes', color is red; otherwise, it's blue
-                                        color:
-                                            assignedBack === 'Yes'
-                                                ? 'red'
-                                                : 'blue',
-                                        textDecoration: 'underline',
-                                    }}
-                                >
-                                    {cell.getValue() || '-'}
-                                </a>
-                            )
-                        },
                     }
                 }),
         ]
@@ -316,9 +336,29 @@ const Home = () => {
 
     const handleTileClick = useCallback(
         async (group) => {
+            if (!group) {
+                setSelectedTile(null)
+                setFlattenedData([])
+                setColumns([])
+                setRowCount(0)
+                return
+            }
+            const isNewGroup = selectedTileRef.current !== group
+            const targetPageIndex = isNewGroup ? 0 : pagination.pageIndex
+            if (isNewGroup && pagination.pageIndex !== 0) {
+                setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+            }
+            const requestId = latestTableRequestRef.current + 1
+            latestTableRequestRef.current = requestId
+            if (tableRequestControllerRef.current) {
+                tableRequestControllerRef.current.abort()
+            }
+            const controller = new AbortController()
+            tableRequestControllerRef.current = controller
             try {
-                setLoading(true)
+                setTableLoading(true)
                 setSelectedTile(group) // Update selected tile state
+                setHasAutoSelectedTile(true)
 
                 // Logic for LSO.1, LSO.2, LSO.3
                 if (group === 'LSO1' || group === 'LSO2' || group === 'LSO3') {
@@ -330,12 +370,18 @@ const Home = () => {
                         {
                             params: {
                                 assigned_group: 'LSO',
-                                page: pagination.pageIndex + 1,
+                                page: targetPageIndex + 1,
                                 page_size: pagination.pageSize,
+                                compact: 1,
                             },
+                            signal: controller.signal,
                         },
                     )
-                    const filteredData = (response.data || []).filter(
+                    if (latestTableRequestRef.current !== requestId) {
+                        return
+                    }
+                    const responseList = normalizeListData(response.data)
+                    const filteredData = responseList.filter(
                         (item) =>
                             item.submittedapplication?.id % 3 === moduloValue,
                     )
@@ -367,12 +413,17 @@ const Home = () => {
                                     group === 'Challan-Downloaded'
                                         ? 'Fee Challan'
                                         : undefined,
-                                page: pagination.pageIndex + 1,
+                                page: targetPageIndex + 1,
                                 page_size: pagination.pageSize,
+                                compact: 1,
                             },
+                            signal: controller.signal,
                         },
                     )
-                    const filteredData = response.data || []
+                    if (latestTableRequestRef.current !== requestId) {
+                        return
+                    }
+                    const filteredData = normalizeListData(response.data)
                     const totalHeader =
                         response.headers?.['x-total-count'] ||
                         response.headers?.['X-Total-Count']
@@ -389,15 +440,27 @@ const Home = () => {
                     setColumns(extracted.columns)
                 }
             } catch (error) {
+                if (
+                    (error as any)?.code === 'ERR_CANCELED' ||
+                    (error as any)?.name === 'CanceledError'
+                ) {
+                    return
+                }
                 console.error('Error fetching filtered data:', error)
                 setFlattenedData([])
                 setColumns([])
             } finally {
-                setLoading(false) // Hide the loading spinner
+                if (latestTableRequestRef.current === requestId) {
+                    setTableLoading(false)
+                }
             }
         },
         [extractColumns, pagination.pageIndex, pagination.pageSize],
     )
+
+    useEffect(() => {
+        selectedTileRef.current = selectedTile
+    }, [selectedTile])
 
     useEffect(() => {
         if (selectedTile) {
@@ -409,14 +472,14 @@ const Home = () => {
 
     useEffect(() => {
         const fetchData = async () => {
-            setLoading(true)
+            setFeeLoading(true)
             try {
                 const response = await AxiosBase.get(`/pmc/report-fee/`) // API Endpoint
                 setFeeStats(response.data) // Store in state
             } catch (error) {
                 console.error('Error fetching fee statistics:', error)
             } finally {
-                setLoading(false)
+                setFeeLoading(false)
             }
         }
 
@@ -424,17 +487,66 @@ const Home = () => {
     }, [])
 
     useEffect(() => {
-        // Find first matching group
-        const matchingGroup = Object.keys(groupTitles).find((group) =>
-            userAuthorityList.includes(group),
+        if (hasAutoSelectedTile || selectedTile) {
+            return
+        }
+        const isApplicantOnly =
+            userAuthorityList.length === 1 && userAuthorityList[0] === 'APPLICANT'
+        const preferredGroups = [
+            'DEO',
+            'DG',
+            'DO',
+            'Download License',
+            'LSM',
+            'LSM2',
+            'TL',
+            'LSO',
+            'LSO1',
+            'LSO2',
+            'LSO3',
+            'APPLICANT',
+        ]
+        const authorityMatch = preferredGroups.find(
+            (group) =>
+                userAuthorityList.includes(group) &&
+                (isApplicantOnly || group !== 'APPLICANT'),
         )
-        handleTileClick(matchingGroup) // Set the highlighted tile
-    }, [userAuthorityList, groupTitles, handleTileClick])
+        const groupsMatch = preferredGroups.find(
+            (group) =>
+                userGroups.includes(group) &&
+                (isApplicantOnly || group !== 'APPLICANT'),
+        )
+        const statsMatch =
+            preferredGroups.find(
+                (group) =>
+                    Object.prototype.hasOwnProperty.call(statistics || {}, group) &&
+                    Number((statistics as Record<string, number>)[group] || 0) > 0,
+            ) ||
+            preferredGroups.find((group) =>
+                Object.prototype.hasOwnProperty.call(statistics || {}, group),
+            )
+        const fallbackGroup = Object.keys(statistics || {}).find(
+            (group) => isApplicantOnly || group !== 'APPLICANT',
+        )
+        const matchingGroup = authorityMatch || groupsMatch || statsMatch || fallbackGroup
+        if (matchingGroup) {
+            setHasAutoSelectedTile(true)
+            handleTileClick(matchingGroup)
+        }
+    }, [
+        userAuthorityList,
+        userGroups,
+        statistics,
+        groupTitles,
+        handleTileClick,
+        hasAutoSelectedTile,
+        selectedTile,
+    ])
 
     // console.log('userAuthorityList', userAuthorityList)
     useEffect(() => {
         const fetchData = async () => {
-            setLoading(true) // Show the loading spinner
+            setMetaLoading(true) // Show summary loading state
             // try {
             //     const response = await AxiosBase.get(`/pmc/ping/`, {
             //         headers: {
@@ -475,7 +587,7 @@ const Home = () => {
             } catch (error) {
                 console.error('Error fetching data:', error)
             } finally {
-                setLoading(false) // Hide the loading spinner
+                setMetaLoading(false)
             }
         }
 
@@ -484,10 +596,18 @@ const Home = () => {
 
     useEffect(() => {
         console.log('userGroups:', userGroups)
-        if (userGroups && !userGroups.includes('Super')) {
+        if (userGroups.length > 0 && !userGroups.includes('Super')) {
             navigate('/home')
         }
     }, [userGroups, navigate]) // Run only once on component load
+
+    useEffect(() => {
+        return () => {
+            if (tableRequestControllerRef.current) {
+                tableRequestControllerRef.current.abort()
+            }
+        }
+    }, [])
 
     const handleExport = async () => {
         try {
@@ -536,9 +656,14 @@ const Home = () => {
                         </div>
                     ))}
             </div>
+            {metaLoading && Object.keys(statistics || {}).length === 0 && (
+                <p className="text-sm text-gray-600 mb-4">
+                    Loading dashboard summary...
+                </p>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                {feeStats.map((stat, index) => {
+                {safeFeeStats.map((stat, index) => {
                     const formatAmount = (amount) => {
                         return new Intl.NumberFormat('en-US', {
                             minimumFractionDigits: 0,
@@ -578,6 +703,11 @@ const Home = () => {
                     )
                 })}
             </div>
+            {feeLoading && safeFeeStats.length === 0 && (
+                <p className="text-sm text-gray-600 mb-4">
+                    Loading fee statistics...
+                </p>
+            )}
 
             <div className="mb-4">
                 <h3>
@@ -615,44 +745,34 @@ const Home = () => {
                 </button>
             </div>
 
-            {loading ? (
-                // Show a spinner or loading message
-                <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
-                    <div className="w-16 h-16 border-4 border-blue-400 border-t-transparent border-solid rounded-full animate-spin"></div>
-                    <p className="mt-4 text-lg font-medium text-gray-600">
-                        Loading data, please wait...
-                    </p>
-                </div>
-            ) : (
-                <MaterialReactTable
-                    enableColumnResizing
-                    data={flattenedData.map((row) => ({
-                        ...row,
-                        assigned_group_title:
-                            groupTitles[row.assigned_group] ||
-                            row.assigned_group, // Add a title for the assigned group
-                    }))} // Include updated data
-                    columns={[...columns]}
-                    getRowId={(row) => row.id} // Explicitly set the row ID using the `id` field from your original data
-                    initialState={{
-                        showColumnFilters: false,
-                    }}
-                    defaultColumn={{
-                        maxSize: 200,
-                        minSize: 1,
-                        size: 50, // default size is usually 180
-                    }}
-                    columnResizeMode="onChange" // default
-                    enableTopToolbar={true} // Disables the top-right controls entirely
-                    // enableGlobalFilter={false} // Disables the global search/filter box
-                    enablePagination={true} // Optionally disable pagination controls
-                    manualPagination
-                    rowCount={rowCount}
-                    onPaginationChange={setPagination}
-                    state={{ pagination, isLoading: loading }}
-                    // enableSorting={false} // Optionally disable column sorting
-                />
-            )}
+            <MaterialReactTable
+                enableColumnResizing
+                data={flattenedData.map((row) => ({
+                    ...row,
+                    assigned_group_title:
+                        groupTitles[row.assigned_group] ||
+                        row.assigned_group, // Add a title for the assigned group
+                }))} // Include updated data
+                columns={[...columns]}
+                getRowId={(row) => row.id} // Explicitly set the row ID using the `id` field from your original data
+                initialState={{
+                    showColumnFilters: false,
+                }}
+                defaultColumn={{
+                    maxSize: 200,
+                    minSize: 1,
+                    size: 50, // default size is usually 180
+                }}
+                columnResizeMode="onChange" // default
+                enableTopToolbar={true} // Disables the top-right controls entirely
+                // enableGlobalFilter={false} // Disables the global search/filter box
+                enablePagination={true} // Optionally disable pagination controls
+                manualPagination
+                rowCount={rowCount}
+                onPaginationChange={setPagination}
+                state={{ pagination, isLoading: tableLoading }}
+                // enableSorting={false} // Optionally disable column sorting
+            />
         </div>
     )
 }

@@ -141,29 +141,160 @@ export async function createOrUpdateLicense(applicantId: mongoose.Types.ObjectId
   })
 }
 
-export async function assembleApplicantDetail(applicant: any, deps: ApplicantServiceDeps = defaultDeps) {
+function resolveApplicantId(applicant: any): number | undefined {
   const numericId =
     Number.isFinite(applicant?.numericId) ? Number(applicant.numericId) : Number.parseInt(String(applicant?.id), 10)
-  const applicantId = Number.isFinite(numericId) ? numericId : undefined
+  return Number.isFinite(numericId) ? numericId : undefined
+}
+
+function buildBaseApplicantPayload(applicant: any) {
+  return {
+    id: applicant.numericId ?? applicant.id ?? applicant._id,
+    first_name: applicant.firstName ?? applicant.first_name,
+    last_name: applicant.lastName ?? applicant.last_name,
+    applicant_designation: applicant.applicantDesignation ?? applicant.applicant_designation,
+    gender: applicant.gender,
+    cnic: applicant.cnic,
+    email: applicant.email,
+    mobile_operator: applicant.mobileOperator ?? applicant.mobile_operator,
+    mobile_no: applicant.mobileNo ?? applicant.mobile_no,
+    application_status: applicant.applicationStatus ?? applicant.application_status,
+    tracking_number: applicant.trackingNumber ?? applicant.tracking_number,
+    remarks: applicant.remarks,
+    assigned_group: applicant.assignedGroup ?? applicant.assigned_group,
+    registration_for: applicant.registrationFor ?? applicant.registration_for,
+    tracking_hash: applicant.trackingHash ?? applicant.tracking_hash,
+    created_at: applicant.createdAt ?? applicant.created_at,
+    updated_at: applicant.updatedAt ?? applicant.updated_at,
+  }
+}
+
+async function findSubmittedByApplicantIds(applicantIds: number[], deps: ApplicantServiceDeps) {
+  if (!applicantIds.length) return []
+  if (deps.applicationSubmittedRepo.listByApplicantIds) {
+    return deps.applicationSubmittedRepo.listByApplicantIds(applicantIds)
+  }
+  const submitted = await Promise.all(applicantIds.map((id) => deps.applicationSubmittedRepo.findByApplicantId(id)))
+  return submitted.filter(Boolean) as any[]
+}
+
+async function findFeesByApplicantIds(applicantIds: number[], deps: ApplicantServiceDeps) {
+  if (!applicantIds.length) return []
+  if (deps.applicantFeeRepo.listByApplicantIds) {
+    return deps.applicantFeeRepo.listByApplicantIds(applicantIds)
+  }
+  const nested = await Promise.all(applicantIds.map((id) => deps.applicantFeeRepo.listByApplicantId(id)))
+  return nested.flat()
+}
+
+export async function assembleApplicantDetailsCompact(applicants: any[], deps: ApplicantServiceDeps = defaultDeps) {
+  if (!Array.isArray(applicants) || applicants.length === 0) return []
+
+  const applicantIds = applicants
+    .map(resolveApplicantId)
+    .filter((id): id is number => Number.isFinite(id))
+
+  const [assignments, submittedRows, fees] = await Promise.all([
+    applicantIds.length ? deps.applicationAssignmentRepo.listByApplicantIds(applicantIds) : Promise.resolve([]),
+    findSubmittedByApplicantIds(applicantIds, deps),
+    findFeesByApplicantIds(applicantIds, deps),
+  ])
+
+  const assignmentsByApplicant = new Map<number, any[]>()
+  for (const assignment of assignments as any[]) {
+    const applicantId = Number((assignment as any)?.applicantId)
+    if (!Number.isFinite(applicantId)) continue
+    const list = assignmentsByApplicant.get(applicantId) || []
+    list.push(assignment)
+    assignmentsByApplicant.set(applicantId, list)
+  }
+
+  const submittedByApplicant = new Map<number, any>()
+  for (const submitted of submittedRows as any[]) {
+    const applicantId = Number((submitted as any)?.applicantId)
+    if (!Number.isFinite(applicantId)) continue
+    submittedByApplicant.set(applicantId, submitted)
+  }
+
+  const feesByApplicant = new Map<number, any[]>()
+  for (const fee of fees as any[]) {
+    const applicantId = Number((fee as any)?.applicantId)
+    if (!Number.isFinite(applicantId)) continue
+    const list = feesByApplicant.get(applicantId) || []
+    list.push(fee)
+    feesByApplicant.set(applicantId, list)
+  }
+
+  return applicants.map((applicant: any) => {
+    const base = buildBaseApplicantPayload(applicant)
+    const applicantId = resolveApplicantId(applicant)
+
+    if (!applicantId) {
+      return {
+        ...base,
+        has_identity_document: false,
+        has_fee_challan: false,
+        is_downloaded_fee_challan: false,
+        businessprofile: null,
+        producer: null,
+        consumer: null,
+        collector: null,
+        recycler: null,
+        applicationassignment: [],
+        applicationdocument: [],
+        submittedapplication: null,
+        field_responses: [],
+        applicantfees: [],
+        total_fee_amount: 0,
+        verified_fee_amount: 0,
+        manual_fields: null,
+        psid_tracking: [],
+      }
+    }
+
+    const applicantAssignments = (assignmentsByApplicant.get(applicantId) || []).map((a) => serializeAssignment(a))
+    const applicantSubmitted = submittedByApplicant.get(applicantId)
+    const applicantFees = feesByApplicant.get(applicantId) || []
+    const totalFeeAmount = applicantFees.reduce((sum: number, fee: any) => sum + Number(fee.feeAmount || 0), 0)
+    const verifiedFeeAmount = applicantFees
+      .filter((fee: any) => Boolean(fee.isSettled))
+      .reduce((sum: number, fee: any) => sum + Number(fee.feeAmount || 0), 0)
+
+    return {
+      ...base,
+      has_identity_document: false,
+      has_fee_challan: applicantFees.length > 0,
+      is_downloaded_fee_challan: applicantFees.length > 0,
+      businessprofile: null,
+      producer: null,
+      consumer: null,
+      collector: null,
+      recycler: null,
+      applicationassignment: applicantAssignments,
+      applicationdocument: [],
+      submittedapplication: applicantSubmitted
+        ? {
+            id: (applicantSubmitted as any).id ?? (applicantSubmitted as any)._id,
+            applicant_id: (applicantSubmitted as any).applicantId,
+            created_at: (applicantSubmitted as any).createdAt,
+            updated_at: (applicantSubmitted as any).updatedAt,
+          }
+        : null,
+      field_responses: [],
+      applicantfees: [],
+      total_fee_amount: totalFeeAmount,
+      verified_fee_amount: verifiedFeeAmount,
+      manual_fields: null,
+      psid_tracking: [],
+    }
+  })
+}
+
+export async function assembleApplicantDetail(applicant: any, deps: ApplicantServiceDeps = defaultDeps) {
+  const applicantId = resolveApplicantId(applicant)
   if (!applicantId) {
     return {
-      id: applicant.numericId ?? applicant.id ?? applicant._id,
-      first_name: applicant.firstName ?? applicant.first_name,
-      last_name: applicant.lastName ?? applicant.last_name,
-      applicant_designation: applicant.applicantDesignation ?? applicant.applicant_designation,
-      gender: applicant.gender,
-      cnic: applicant.cnic,
-      email: applicant.email,
-      mobile_operator: applicant.mobileOperator ?? applicant.mobile_operator,
-      mobile_no: applicant.mobileNo ?? applicant.mobile_no,
-      application_status: applicant.applicationStatus ?? applicant.application_status,
-      tracking_number: applicant.trackingNumber ?? applicant.tracking_number,
-      remarks: applicant.remarks,
-      assigned_group: applicant.assignedGroup ?? applicant.assigned_group,
-      registration_for: applicant.registrationFor ?? applicant.registration_for,
-      tracking_hash: applicant.trackingHash ?? applicant.tracking_hash,
-      created_at: applicant.createdAt ?? applicant.created_at,
-      updated_at: applicant.updatedAt ?? applicant.updated_at,
+      ...buildBaseApplicantPayload(applicant),
       has_identity_document: false,
       has_fee_challan: false,
       is_downloaded_fee_challan: false,
@@ -212,8 +343,7 @@ export async function assembleApplicantDetail(applicant: any, deps: ApplicantSer
   const hasIdentityDocument = documents.some((d: any) => (d.documentDescription || '') === 'Identity Document')
   const hasFeeChallan =
     documents.some((d: any) => (d.documentDescription || '') === 'Fee Challan') || psidTracking.length > 0
-  const isDownloadedFeeChallan =
-    fees.length > 0 && (await deps.psidTrackingRepo.countByApplicantId(applicantId)) === 0
+  const isDownloadedFeeChallan = fees.length > 0 && psidTracking.length === 0
 
   let businessProfileData = serializeBusinessProfile(businessProfile) as any
   if (businessProfile) {

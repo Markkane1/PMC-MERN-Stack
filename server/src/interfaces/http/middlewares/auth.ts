@@ -55,10 +55,10 @@ export function requirePermission(permissions: string[]) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     const user = req.user
     const userPermissions: string[] = user?.permissions || []
+    const isSuperadmin = Boolean(user?.isSuperadmin || user?.groups?.includes('Super'))
 
-    // SECURITY: Do not allow group-based bypass for permission checks
-    // Each endpoint must explicitly grant required permissions
-    const allowed = userPermissions.some((p) => permissions.includes(p))
+    // Super admins have full access across permission-protected endpoints.
+    const allowed = isSuperadmin || userPermissions.some((p) => permissions.includes(p))
     if (!allowed) {
       // Log failed permission attempt for audit
       console.warn(`Permission denied for user ${user?._id} attempting ${permissions.join(', ')}`)

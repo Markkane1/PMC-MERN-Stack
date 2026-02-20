@@ -77,4 +77,16 @@ export const env = {
   uploadDir: path.resolve(process.env.UPLOAD_DIR || 'uploads'),
   nodeEnv: process.env.NODE_ENV || 'development',
   allowLegacyMasterkeyLogin: process.env.ALLOW_LEGACY_MASTERKEY_LOGIN === 'true',
+  
+  // OAuth Configuration
+  googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+  googleRedirectUri: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:4000/api/accounts/oauth/google/callback',
+  
+  githubClientId: process.env.GITHUB_CLIENT_ID || '',
+  githubClientSecret: process.env.GITHUB_CLIENT_SECRET || '',
+  githubRedirectUri: process.env.GITHUB_REDIRECT_URI || 'http://localhost:4000/api/accounts/oauth/github/callback',
+  
+  // Frontend URLs for OAuth redirects
+  appUrl: process.env.APP_URL || 'http://localhost:5173',
 }

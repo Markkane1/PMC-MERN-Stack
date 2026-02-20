@@ -164,11 +164,20 @@ const courierLabelSchema = new mongoose.Schema<ICourierLabel>(
 competitionSchema.index({ status: 1, endDate: 1 })
 registrationSchema.index({ competitionId: 1, applicantId: 1 })
 registrationSchema.index({ applicantId: 1 })
-courierLabelSchema.index({ trackingNumber: 1 })
+// trackingNumber already has unique: true on field, avoid duplicate index
+// courierLabelSchema.index({ trackingNumber: 1 })
 
-export const Competition = mongoose.model<ICompetition>('Competition', competitionSchema)
-export const CompetitionRegistration = mongoose.model<ICompetitionRegistration>(
-  'CompetitionRegistration',
-  registrationSchema
-)
-export const CourierLabel = mongoose.model<ICourierLabel>('CourierLabel', courierLabelSchema)
+export const Competition =
+  (mongoose.models.Competition as mongoose.Model<ICompetition>) ||
+  mongoose.model<ICompetition>('Competition', competitionSchema)
+
+export const CompetitionRegistration =
+  (mongoose.models.CompetitionRegistration as mongoose.Model<ICompetitionRegistration>) ||
+  mongoose.model<ICompetitionRegistration>(
+    'CompetitionRegistration',
+    registrationSchema
+  )
+
+export const CourierLabel =
+  (mongoose.models.CourierLabel as mongoose.Model<ICourierLabel>) ||
+  mongoose.model<ICourierLabel>('CourierLabel', courierLabelSchema)

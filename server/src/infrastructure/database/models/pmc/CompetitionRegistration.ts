@@ -37,7 +37,10 @@ CompetitionRegistrationSchema.pre('save', function preSave(next) {
   next()
 })
 
-export const CompetitionRegistrationModel = mongoose.model<CompetitionRegistrationDocument>(
-  'CompetitionRegistration',
-  CompetitionRegistrationSchema
-, 'competitionregistrations')
+export const CompetitionRegistrationModel =
+  (mongoose.models.CompetitionRegistration as mongoose.Model<CompetitionRegistrationDocument>) ||
+  mongoose.model<CompetitionRegistrationDocument>(
+    'CompetitionRegistration',
+    CompetitionRegistrationSchema,
+    'competitionregistrations'
+  )

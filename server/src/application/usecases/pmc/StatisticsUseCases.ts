@@ -1,4 +1,5 @@
 import { Response, Request } from 'express'
+import mongoose from 'mongoose'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import type { ApplicantRepository, ApplicationSubmittedRepository, BusinessProfileRepository, DistrictRepository } from '../../../domain/repositories/pmc'
 import {
@@ -27,6 +28,25 @@ const defaultDeps: StatsDeps = {
 const USER_GROUPS = ['APPLICANT', 'LSO', 'LSM', 'LSM2', 'TL', 'DO', 'DEO', 'DG', 'Download License']
 const USER_GROUPS_DO = ['APPLICANT', 'DO', 'DEO', 'DG', 'Download License']
 
+async function getSubmittedApplicantIds(submittedRepo: ApplicationSubmittedRepository): Promise<number[]> {
+  const submitted = await submittedRepo.list()
+  let ids = submitted
+    .map((s: any) => Number((s as any).applicantId))
+    .filter((id: number) => Number.isFinite(id))
+
+  if (!ids.length) {
+    const raw = await mongoose.connection.db
+      ?.collection('applicationsubmitteds')
+      .find({}, { projection: { applicantId: 1, applicant_id: 1 } })
+      .toArray()
+    ids = (raw || [])
+      .map((row: any) => Number(row?.applicantId ?? row?.applicant_id))
+      .filter((id: number) => Number.isFinite(id))
+  }
+
+  return Array.from(new Set(ids))
+}
+
 export const listApplicants = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user
   if (!user) return res.json({})
@@ -45,26 +65,19 @@ export const listApplicants = asyncHandler(async (req: AuthRequest, res: Respons
       result[group] = 0
     }
     result['All-Applications'] = await defaultDeps.applicantRepo.count()
-    result['Challan-Downloaded'] = await defaultDeps.applicantRepo.count({
-      $or: [{ applicationStatus: 'Fee Challan' }, { application_status: 'Fee Challan' }],
-    })
+    const challanDownloadedAgg = await defaultDeps.applicantRepo.aggregate([
+      { $addFields: { normalizedStatus: { $ifNull: ['$applicationStatus', '$application_status'] } } },
+      { $match: { normalizedStatus: 'Fee Challan' } },
+      { $count: 'count' },
+    ])
+    result['Challan-Downloaded'] = challanDownloadedAgg[0]?.count || 0
 
-    const submitted = await defaultDeps.submittedRepo.list()
-    result['Submitted'] = submitted.length
-
-    const submittedIds = submitted.map((s: any) => (s as any).applicantId).filter((v: any) => v !== undefined)
-    const submittedApplicants = submittedIds.length
-      ? await defaultDeps.applicantRepo.list({
-          $or: [
-            { numericId: { $in: submittedIds } },
-            { id: { $in: submittedIds.map((v: any) => String(v)) } },
-          ],
-        })
-      : []
+    const submittedIds = await getSubmittedApplicantIds(defaultDeps.submittedRepo)
+    result['Submitted'] = submittedIds.length
 
     const lsoCounts = { LSO1: 0, LSO2: 0, LSO3: 0 }
-    for (const applicant of submittedApplicants) {
-      const mod = ((applicant as any).numericId || 0) % 3
+    for (const applicantId of submittedIds) {
+      const mod = applicantId % 3
       if (mod === 1) lsoCounts.LSO1 += 1
       if (mod === 2) lsoCounts.LSO2 += 1
       if (mod === 0) lsoCounts.LSO3 += 1

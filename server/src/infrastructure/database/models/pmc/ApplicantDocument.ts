@@ -128,7 +128,6 @@ const ApplicantDocumentSchema = new Schema<ApplicantDocumentDocument>(
     },
     expiryDate: {
       type: Date,
-      index: true,
       sparse: true
     },
     status: {

@@ -14,7 +14,7 @@ import {
   applicationAssignmentCrudRepo,
 } from '../../../infrastructure/database/repositories/pmc/resources'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
-import { maybeUpdateTrackingNumber } from '../../services/pmc/ApplicantService'
+import { maybeUpdateTrackingNumber, createOrUpdateLicense } from '../../services/pmc/ApplicantService'
 import {
   serializeBusinessProfile,
   serializeCollector,
@@ -25,7 +25,7 @@ import {
   serializeApplicantManualFields,
   serializeAssignment,
 } from '../../services/pmc/serializers'
-import type { Request } from 'express'
+import type { Request, Response } from 'express'
 import { applicationAssignmentRepositoryMongo, applicantRepositoryMongo } from '../../../infrastructure/database/repositories/pmc'
 
 type AuthRequest = Request & { user?: any }
@@ -41,83 +41,258 @@ export const plasticItemsController = createCrudController(plasticItemCrudRepo)
 export const productsController = createCrudController(productCrudRepo)
 export const byProductsController = createCrudController(byProductCrudRepo)
 
-export const producersController = createCrudController(producerCrudRepo, {
-  setCreatedBy: true,
-  transform: (doc) => serializeProducer(doc),
-  mapPayload: (body) => ({
-    applicantId: toNumber(body.applicant || body.applicant_id || body.applicantId),
-    trackingNumber: body.tracking_number ?? body.trackingNumber,
-    registrationRequiredFor: parseJson(body.registration_required_for),
-    registrationRequiredForOther: parseJson(body.registration_required_for_other),
-    plainPlasticSheetsForFoodWrapping: parseJson(body.plain_plastic_sheets_for_food_wrapping),
-    packagingItems: parseJson(body.packaging_items),
-    numberOfMachines: body.number_of_machines ?? body.numberOfMachines,
-    totalCapacityValue: toNumber(body.total_capacity_value ?? body.totalCapacityValue),
-    dateOfSettingUp: body.date_of_setting_up ?? body.dateOfSettingUp,
-    totalWasteGeneratedValue: toNumber(body.total_waste_generated_value ?? body.totalWasteGeneratedValue),
-    hasWasteStorageCapacity: body.has_waste_storage_capacity ?? body.hasWasteStorageCapacity,
-    wasteDisposalProvision: body.waste_disposal_provision ?? body.wasteDisposalProvision,
-    registrationRequiredForOtherOtherText: body.registration_required_for_other_other_text ?? body.registrationRequiredForOtherOtherText,
-  }),
-})
-export const consumersController = createCrudController(consumerCrudRepo, {
-  setCreatedBy: true,
-  setUpdatedBy: true,
-  transform: (doc) => serializeConsumer(doc),
-  mapPayload: (body) => ({
-    applicantId: toNumber(body.applicant || body.applicant_id || body.applicantId),
-    registrationRequiredFor: parseJson(body.registration_required_for),
-    registrationRequiredForOther: parseJson(body.registration_required_for_other),
-    plainPlasticSheetsForFoodWrapping: parseJson(body.plain_plastic_sheets_for_food_wrapping),
-    packagingItems: parseJson(body.packaging_items),
-    consumption: body.consumption,
-    provisionWasteDisposalBins: body.provision_waste_disposal_bins ?? body.provisionWasteDisposalBins,
-    noOfWasteDisposableBins: toNumber(body.no_of_waste_disposable_bins ?? body.noOfWasteDisposableBins),
-    segregatedPlasticsHandedOverToRegisteredRecyclers: body.segregated_plastics_handed_over_to_registered_recyclers ?? body.segregatedPlasticsHandedOverToRegisteredRecyclers,
-    registrationRequiredForOtherOtherText: body.registration_required_for_other_other_text ?? body.registrationRequiredForOtherOtherText,
-  }),
-})
-export const collectorsController = createCrudController(collectorCrudRepo, {
-  setCreatedBy: true,
-  setUpdatedBy: true,
-  transform: (doc) => serializeCollector(doc),
-  mapPayload: (body) => ({
-    applicantId: toNumber(body.applicant || body.applicant_id || body.applicantId),
-    registrationRequiredFor: parseJson(body.registration_required_for),
-    registrationRequiredForOther: parseJson(body.registration_required_for_other),
-    selectedCategories: parseJson(body.selected_categories ?? body.selectedCategories),
-    totalCapacityValue: toNumber(body.total_capacity_value ?? body.totalCapacityValue),
-    numberOfVehicles: toNumber(body.number_of_vehicles ?? body.numberOfVehicles),
-    numberOfPersons: toNumber(body.number_of_persons ?? body.numberOfPersons),
-    registrationRequiredForOtherOtherText: body.registration_required_for_other_other_text ?? body.registrationRequiredForOtherOtherText,
-  }),
-})
-export const recyclersController = createCrudController(recyclerCrudRepo, {
-  setCreatedBy: true,
-  setUpdatedBy: true,
-  transform: (doc) => serializeRecycler(doc),
-  mapPayload: (body) => ({
-    applicantId: toNumber(body.applicant || body.applicant_id || body.applicantId),
-    selectedCategories: parseJson(body.selected_categories ?? body.selectedCategories),
-    plasticWasteAcquiredThrough: parseJson(body.plastic_waste_acquired_through ?? body.plasticWasteAcquiredThrough),
-    hasAdequatePollutionControlSystems: body.has_adequate_pollution_control_systems ?? body.hasAdequatePollutionControlSystems,
-    pollutionControlDetails: body.pollution_control_details ?? body.pollutionControlDetails,
-    registrationRequiredForOtherOtherText: body.registration_required_for_other_other_text ?? body.registrationRequiredForOtherOtherText,
-  }),
-})
+export const producersController = {
+  list: createCrudController(producerCrudRepo, {
+    setCreatedBy: true,
+    transform: (doc) => serializeProducer(doc),
+    mapPayload: (body) => mapProducerPayload(body),
+  }).list,
 
-export const rawMaterialsController = createCrudController(rawMaterialCrudRepo)
-export const applicantFieldResponsesController = createCrudController(applicantFieldResponseCrudRepo, {
-  setCreatedBy: true,
-  enablePagination: true,
-  transform: (doc) => serializeApplicantFieldResponse(doc),
-  mapPayload: (body) => ({
-    applicantId: toNumber(body.applicant || body.applicant_id || body.applicantId),
-    fieldKey: body.field_key ?? body.fieldKey,
-    response: body.response,
-    comment: body.comment,
+  get: createCrudController(producerCrudRepo, {
+    setCreatedBy: true,
+    transform: (doc) => serializeProducer(doc),
+    mapPayload: (body) => mapProducerPayload(body),
+  }).get,
+
+  create: asyncHandler(async (req: AuthRequest, res: Response) => {
+    const payload = {
+      ...mapProducerPayload(req.body),
+      createdBy: req.user?._id,
+    }
+
+    const applicantId = payload.applicantId
+    // Try to find existing producer with this applicantId
+    const existing = (await producerCrudRepo.list({ applicantId }))[0]
+
+    if (existing) {
+      // Update existing record (upsert semantics)
+      const updated = await producerCrudRepo.updateById(existing._id, payload)
+      return res.status(200).json(serializeProducer(updated))
+    } else {
+      // Create new record
+      const created = await producerCrudRepo.create(payload)
+      return res.status(201).json(serializeProducer(created))
+    }
   }),
+
+  update: createCrudController(producerCrudRepo, {
+    setCreatedBy: true,
+    setUpdatedBy: true,
+    transform: (doc) => serializeProducer(doc),
+    mapPayload: (body) => mapProducerPayload(body),
+  }).update,
+
+  remove: createCrudController(producerCrudRepo, {
+    setCreatedBy: true,
+    transform: (doc) => serializeProducer(doc),
+    mapPayload: (body) => mapProducerPayload(body),
+  }).remove,
+}
+export const consumersController = {
+  list: createCrudController(consumerCrudRepo, {
+    setCreatedBy: true,
+    setUpdatedBy: true,
+    transform: (doc) => serializeConsumer(doc),
+    mapPayload: (body) => mapConsumerPayload(body),
+  }).list,
+
+  get: createCrudController(consumerCrudRepo, {
+    setCreatedBy: true,
+    setUpdatedBy: true,
+    transform: (doc) => serializeConsumer(doc),
+    mapPayload: (body) => mapConsumerPayload(body),
+  }).get,
+
+  create: asyncHandler(async (req: AuthRequest, res: Response) => {
+    const payload = {
+      ...mapConsumerPayload(req.body),
+      createdBy: req.user?._id,
+    }
+
+    const applicantId = payload.applicantId
+    // Try to find existing consumer with this applicantId
+    const existing = (await consumerCrudRepo.list({ applicantId }))[0]
+
+    if (existing) {
+      // Update existing record (upsert semantics)
+      const updated = await consumerCrudRepo.updateById(existing._id, payload)
+      return res.status(200).json(serializeConsumer(updated))
+    } else {
+      // Create new record
+      const created = await consumerCrudRepo.create(payload)
+      return res.status(201).json(serializeConsumer(created))
+    }
+  }),
+
+  update: createCrudController(consumerCrudRepo, {
+    setCreatedBy: true,
+    setUpdatedBy: true,
+    transform: (doc) => serializeConsumer(doc),
+    mapPayload: (body) => mapConsumerPayload(body),
+  }).update,
+
+  remove: createCrudController(consumerCrudRepo, {
+    setCreatedBy: true,
+    transform: (doc) => serializeConsumer(doc),
+    mapPayload: (body) => mapConsumerPayload(body),
+  }).remove,
+}
+export const collectorsController = {
+  list: createCrudController(collectorCrudRepo, {
+    setCreatedBy: true,
+    setUpdatedBy: true,
+    transform: (doc) => serializeCollector(doc),
+    mapPayload: (body) => mapCollectorPayload(body),
+  }).list,
+
+  get: createCrudController(collectorCrudRepo, {
+    setCreatedBy: true,
+    setUpdatedBy: true,
+    transform: (doc) => serializeCollector(doc),
+    mapPayload: (body) => mapCollectorPayload(body),
+  }).get,
+
+  create: asyncHandler(async (req: AuthRequest, res: Response) => {
+    const payload = {
+      ...mapCollectorPayload(req.body),
+      createdBy: req.user?._id,
+    }
+
+    const applicantId = payload.applicantId
+    // Try to find existing collector with this applicantId
+    const existing = (await collectorCrudRepo.list({ applicantId }))[0]
+
+    if (existing) {
+      // Update existing record (upsert semantics)
+      const updated = await collectorCrudRepo.updateById(existing._id, payload)
+      return res.status(200).json(serializeCollector(updated))
+    } else {
+      // Create new record
+      const created = await collectorCrudRepo.create(payload)
+      return res.status(201).json(serializeCollector(created))
+    }
+  }),
+
+  update: createCrudController(collectorCrudRepo, {
+    setCreatedBy: true,
+    setUpdatedBy: true,
+    transform: (doc) => serializeCollector(doc),
+    mapPayload: (body) => mapCollectorPayload(body),
+  }).update,
+
+  remove: createCrudController(collectorCrudRepo, {
+    setCreatedBy: true,
+    transform: (doc) => serializeCollector(doc),
+    mapPayload: (body) => mapCollectorPayload(body),
+  }).remove,
+}
+export const recyclersController = {
+  list: createCrudController(recyclerCrudRepo, {
+    setCreatedBy: true,
+    setUpdatedBy: true,
+    transform: (doc) => serializeRecycler(doc),
+    mapPayload: (body) => mapRecyclerPayload(body),
+  }).list,
+
+  get: createCrudController(recyclerCrudRepo, {
+    setCreatedBy: true,
+    setUpdatedBy: true,
+    transform: (doc) => serializeRecycler(doc),
+    mapPayload: (body) => mapRecyclerPayload(body),
+  }).get,
+
+  create: asyncHandler(async (req: AuthRequest, res: Response) => {
+    const payload = {
+      ...mapRecyclerPayload(req.body),
+      createdBy: req.user?._id,
+    }
+
+    const applicantId = payload.applicantId
+    // Try to find existing recycler with this applicantId
+    const existing = (await recyclerCrudRepo.list({ applicantId }))[0]
+
+    if (existing) {
+      // Update existing record (upsert semantics)
+      const updated = await recyclerCrudRepo.updateById(existing._id, payload)
+      return res.status(200).json(serializeRecycler(updated))
+    } else {
+      // Create new record
+      const created = await recyclerCrudRepo.create(payload)
+      return res.status(201).json(serializeRecycler(created))
+    }
+  }),
+
+  update: createCrudController(recyclerCrudRepo, {
+    setCreatedBy: true,
+    setUpdatedBy: true,
+    transform: (doc) => serializeRecycler(doc),
+    mapPayload: (body) => mapRecyclerPayload(body),
+  }).update,
+
+  remove: createCrudController(recyclerCrudRepo, {
+    setCreatedBy: true,
+    transform: (doc) => serializeRecycler(doc),
+    mapPayload: (body) => mapRecyclerPayload(body),
+  }).remove,
+}
+
+export const rawMaterialsController = createCrudController(rawMaterialCrudRepo, {
+  setCreatedBy: true,
+  setUpdatedBy: true,
 })
+export const applicantFieldResponsesController = {
+  list: createCrudController(applicantFieldResponseCrudRepo, {
+    setCreatedBy: true,
+    enablePagination: true,
+    transform: (doc) => serializeApplicantFieldResponse(doc),
+    mapPayload: (body) => mapApplicantFieldResponsePayload(body),
+  }).list,
+
+  get: createCrudController(applicantFieldResponseCrudRepo, {
+    setCreatedBy: true,
+    enablePagination: true,
+    transform: (doc) => serializeApplicantFieldResponse(doc),
+    mapPayload: (body) => mapApplicantFieldResponsePayload(body),
+  }).get,
+
+  create: asyncHandler(async (req: AuthRequest, res: Response) => {
+    const isArray = Array.isArray(req.body)
+    const payloads = isArray ? req.body : [req.body]
+
+    // Transform all payloads
+    const transformedPayloads = payloads.map((body: any) => ({
+      ...mapApplicantFieldResponsePayload(body),
+      createdBy: req.user?._id,
+    }))
+
+    // Create records
+    const created = await applicantFieldResponseCrudRepo.create(transformedPayloads)
+
+    // Return appropriately based on input type
+    if (isArray) {
+      return res.status(201).json(Array.isArray(created) ? created.map(serializeApplicantFieldResponse) : [serializeApplicantFieldResponse(created)])
+    } else {
+      // Single create - return single object
+      const single = Array.isArray(created) ? created[0] : created
+      return res.status(201).json(serializeApplicantFieldResponse(single))
+    }
+  }),
+
+  update: createCrudController(applicantFieldResponseCrudRepo, {
+    setCreatedBy: true,
+    setUpdatedBy: true,
+    enablePagination: true,
+    transform: (doc) => serializeApplicantFieldResponse(doc),
+    mapPayload: (body) => mapApplicantFieldResponsePayload(body),
+  }).update,
+
+  remove: createCrudController(applicantFieldResponseCrudRepo, {
+    setCreatedBy: true,
+    enablePagination: true,
+    transform: (doc) => serializeApplicantFieldResponse(doc),
+    mapPayload: (body) => mapApplicantFieldResponsePayload(body),
+  }).remove,
+}
 export const applicantManualFieldsController = createCrudController(applicantManualFieldsCrudRepo, {
   setCreatedBy: true,
   setUpdatedBy: true,
@@ -166,10 +341,31 @@ export const createApplicationAssignment = asyncHandler(async (req: AuthRequest,
   const assignment = await applicationAssignmentRepositoryMongo.create(payload)
 
   if (payload.applicantId && payload.assignedGroup) {
+    // PHASE 2.2: Add assignment side-effects
+    // Update assigned group
     await applicantRepositoryMongo.updateOne(
       { numericId: payload.applicantId },
       { assignedGroup: payload.assignedGroup }
     )
+
+    // Set application status to 'In Process' (unless being reassigned to APPLICANT)
+    if (payload.assignedGroup !== 'APPLICANT' && payload.assignedGroup !== 'Download License') {
+      await applicantRepositoryMongo.updateOne(
+        { numericId: payload.applicantId },
+        { applicationStatus: 'In Process', updatedAt: new Date() }
+      )
+    }
+
+    // Create or update license for the applicant
+    try {
+      await createOrUpdateLicense(payload.applicantId, req.user?._id)
+      console.log(`✓ License created/updated for applicant ${payload.applicantId} during assignment`)
+    } catch (error) {
+      // Log error but don't fail the assignment creation
+      console.warn(
+        `Warning: Failed to create/update license for applicant ${payload.applicantId}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      )
+    }
   }
 
   return res.status(201).json(serializeAssignment(assignment))
@@ -244,4 +440,70 @@ function toNumber(value: any) {
   if (value === undefined || value === null || value === '') return undefined
   const n = Number(value)
   return Number.isNaN(n) ? undefined : n
+}
+
+function mapProducerPayload(body: any) {
+  return {
+    applicantId: toNumber(body.applicant || body.applicant_id || body.applicantId),
+    trackingNumber: body.tracking_number ?? body.trackingNumber,
+    registrationRequiredFor: parseJson(body.registration_required_for),
+    registrationRequiredForOther: parseJson(body.registration_required_for_other),
+    plainPlasticSheetsForFoodWrapping: parseJson(body.plain_plastic_sheets_for_food_wrapping),
+    packagingItems: parseJson(body.packaging_items),
+    numberOfMachines: body.number_of_machines ?? body.numberOfMachines,
+    totalCapacityValue: toNumber(body.total_capacity_value ?? body.totalCapacityValue),
+    dateOfSettingUp: body.date_of_setting_up ?? body.dateOfSettingUp,
+    totalWasteGeneratedValue: toNumber(body.total_waste_generated_value ?? body.totalWasteGeneratedValue),
+    hasWasteStorageCapacity: body.has_waste_storage_capacity ?? body.hasWasteStorageCapacity,
+    wasteDisposalProvision: body.waste_disposal_provision ?? body.wasteDisposalProvision,
+    registrationRequiredForOtherOtherText: body.registration_required_for_other_other_text ?? body.registrationRequiredForOtherOtherText,
+  }
+}
+
+function mapConsumerPayload(body: any) {
+  return {
+    applicantId: toNumber(body.applicant || body.applicant_id || body.applicantId),
+    registrationRequiredFor: parseJson(body.registration_required_for),
+    registrationRequiredForOther: parseJson(body.registration_required_for_other),
+    plainPlasticSheetsForFoodWrapping: parseJson(body.plain_plastic_sheets_for_food_wrapping),
+    packagingItems: parseJson(body.packaging_items),
+    consumption: body.consumption,
+    provisionWasteDisposalBins: body.provision_waste_disposal_bins ?? body.provisionWasteDisposalBins,
+    noOfWasteDisposableBins: toNumber(body.no_of_waste_disposable_bins ?? body.noOfWasteDisposableBins),
+    segregatedPlasticsHandedOverToRegisteredRecyclers: body.segregated_plastics_handed_over_to_registered_recyclers ?? body.segregatedPlasticsHandedOverToRegisteredRecyclers,
+    registrationRequiredForOtherOtherText: body.registration_required_for_other_other_text ?? body.registrationRequiredForOtherOtherText,
+  }
+}
+
+function mapCollectorPayload(body: any) {
+  return {
+    applicantId: toNumber(body.applicant || body.applicant_id || body.applicantId),
+    registrationRequiredFor: parseJson(body.registration_required_for),
+    registrationRequiredForOther: parseJson(body.registration_required_for_other),
+    selectedCategories: parseJson(body.selected_categories ?? body.selectedCategories),
+    totalCapacityValue: toNumber(body.total_capacity_value ?? body.totalCapacityValue),
+    numberOfVehicles: toNumber(body.number_of_vehicles ?? body.numberOfVehicles),
+    numberOfPersons: toNumber(body.number_of_persons ?? body.numberOfPersons),
+    registrationRequiredForOtherOtherText: body.registration_required_for_other_other_text ?? body.registrationRequiredForOtherOtherText,
+  }
+}
+
+function mapRecyclerPayload(body: any) {
+  return {
+    applicantId: toNumber(body.applicant || body.applicant_id || body.applicantId),
+    selectedCategories: parseJson(body.selected_categories ?? body.selectedCategories),
+    plasticWasteAcquiredThrough: parseJson(body.plastic_waste_acquired_through ?? body.plasticWasteAcquiredThrough),
+    hasAdequatePollutionControlSystems: body.has_adequate_pollution_control_systems ?? body.hasAdequatePollutionControlSystems,
+    pollutionControlDetails: body.pollution_control_details ?? body.pollutionControlDetails,
+    registrationRequiredForOtherOtherText: body.registration_required_for_other_other_text ?? body.registrationRequiredForOtherOtherText,
+  }
+}
+
+function mapApplicantFieldResponsePayload(body: any) {
+  return {
+    applicantId: toNumber(body.applicant || body.applicant_id || body.applicantId),
+    fieldKey: body.field_key ?? body.fieldKey,
+    response: body.response,
+    comment: body.comment,
+  }
 }

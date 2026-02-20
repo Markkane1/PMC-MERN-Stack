@@ -1,5 +1,6 @@
 ﻿import { Router } from 'express'
 import { authenticate, requirePermission } from '../middlewares/auth'
+import { authenticateServiceToken, authenticateUserOrService } from '../middlewares/externalTokenAuth'
 import { parseMultipart } from '../middlewares/multipart'
 import { cacheMiddleware } from '../middlewares/cache'
 import {
@@ -56,6 +57,7 @@ import { getPaymentStatus, recordPayment, checkPsidPaymentStatus, getPaymentHist
 import { generatePsid, checkPsidStatus, paymentIntimation, plmisToken } from '../controllers/pmc/PsidController'
 import {
   listInspectionReports,
+  getInspectionReport,
   createInspectionReport,
   updateInspectionReport,
   deleteInspectionReport,
@@ -70,6 +72,25 @@ import { registerCompetition, generateLabel, listCompetitions, getCompetition, g
 import { districtsClubCounts, clubsGeojsonAll, clubsGeojsonAllViewset } from '../controllers/idm/IdmController'
 import { ping, verifyChalan, confiscationLookup } from '../controllers/pmc/UtilityController'
 import { listApplicants as listGroupStats, listApplicantsDo as listGroupStatsDo } from '../controllers/pmc/StatisticsController'
+import {
+  getBusinessProfilesByApplicant,
+  getApplicationAssignmentByApplicant,
+  getApplicantDocument,
+  updateApplicantDocument,
+  deleteApplicantDocument,
+  getDistrictDocument,
+  updateDistrictDocument,
+  deleteDistrictDocument,
+  listCachedInspectionReports,
+  getCachedInspectionReport,
+  createCachedInspectionReport,
+  updateCachedInspectionReport,
+  deleteCachedInspectionReport,
+  listCompetitionRegistrations,
+  getCompetitionRegistrationDetails,
+  updateCompetitionRegistration,
+  deleteCompetitionRegistration,
+} from '../../../application/usecases/pmc/QueryHandlers'
 import * as plmisUseCases from '../../../application/usecases/pmc/PLMISUseCases'
 import * as excelExportUseCases from '../../../application/usecases/pmc/ExcelExportUseCases'
 import * as alertUseCases from '../../../application/usecases/pmc/AlertUseCases'
@@ -90,47 +111,67 @@ pmcRouter.get('/applicant-detail-main-do-list/', authenticate, requirePermission
 // Business profiles
 pmcRouter.get('/business-profiles/', authenticate, requirePermission(['pmc_api.view_businessprofile']), businessProfileController.list)
 pmcRouter.get('/business-profiles/:id/', authenticate, requirePermission(['pmc_api.view_businessprofile']), businessProfileController.get)
+pmcRouter.get('/business-profiles/by_applicant/', authenticate, requirePermission(['pmc_api.view_businessprofile']), getBusinessProfilesByApplicant)
 pmcRouter.post('/business-profiles/', authenticate, requirePermission(['pmc_api.add_businessprofile']), parseMultipart, createBusinessProfile)
 pmcRouter.patch('/business-profiles/:id/', authenticate, requirePermission(['pmc_api.change_businessprofile']), parseMultipart, updateBusinessProfile)
 pmcRouter.delete('/business-profiles/:id/', authenticate, requirePermission(['pmc_api.delete_businessprofile']), businessProfileController.remove)
 
 // Reference data
 pmcRouter.get('/plastic-items/', authenticate, requirePermission(['pmc_api.view_plasticitem']), cacheMiddleware(3600), plasticItemsController.list)
+pmcRouter.get('/plastic-items/:id/', authenticate, requirePermission(['pmc_api.view_plasticitem']), plasticItemsController.get)
 pmcRouter.post('/plastic-items/', authenticate, requirePermission(['pmc_api.add_plasticitem']), plasticItemsController.create)
+pmcRouter.patch('/plastic-items/:id/', authenticate, requirePermission(['pmc_api.change_plasticitem']), plasticItemsController.update)
+pmcRouter.delete('/plastic-items/:id/', authenticate, requirePermission(['pmc_api.delete_plasticitem']), plasticItemsController.remove)
 
 pmcRouter.get('/products/', authenticate, requirePermission(['pmc_api.view_product']), cacheMiddleware(3600), productsController.list)
+pmcRouter.get('/products/:id/', authenticate, requirePermission(['pmc_api.view_product']), productsController.get)
 pmcRouter.post('/products/', authenticate, requirePermission(['pmc_api.add_product']), productsController.create)
+pmcRouter.patch('/products/:id/', authenticate, requirePermission(['pmc_api.change_product']), productsController.update)
+pmcRouter.delete('/products/:id/', authenticate, requirePermission(['pmc_api.delete_product']), productsController.remove)
 
 pmcRouter.get('/by-products/', authenticate, requirePermission(['pmc_api.view_byproduct']), cacheMiddleware(3600), byProductsController.list)
+pmcRouter.get('/by-products/:id/', authenticate, requirePermission(['pmc_api.view_byproduct']), byProductsController.get)
 pmcRouter.post('/by-products/', authenticate, requirePermission(['pmc_api.add_byproduct']), byProductsController.create)
+pmcRouter.patch('/by-products/:id/', authenticate, requirePermission(['pmc_api.change_byproduct']), byProductsController.update)
+pmcRouter.delete('/by-products/:id/', authenticate, requirePermission(['pmc_api.delete_byproduct']), byProductsController.remove)
 
 // Producers/Consumers/Collectors/Recyclers
 pmcRouter.get('/producers/', authenticate, requirePermission(['pmc_api.view_producer']), producersController.list)
 pmcRouter.get('/producers/:id/', authenticate, requirePermission(['pmc_api.view_producer']), producersController.get)
 pmcRouter.post('/producers/', authenticate, requirePermission(['pmc_api.add_producer']), parseMultipart, producersController.create)
 pmcRouter.patch('/producers/:id/', authenticate, requirePermission(['pmc_api.change_producer']), parseMultipart, producersController.update)
+pmcRouter.delete('/producers/:id/', authenticate, requirePermission(['pmc_api.delete_producer']), producersController.remove)
 
 pmcRouter.get('/consumers/', authenticate, requirePermission(['pmc_api.view_consumer']), consumersController.list)
 pmcRouter.get('/consumers/:id/', authenticate, requirePermission(['pmc_api.view_consumer']), consumersController.get)
 pmcRouter.post('/consumers/', authenticate, requirePermission(['pmc_api.add_consumer']), parseMultipart, consumersController.create)
 pmcRouter.patch('/consumers/:id/', authenticate, requirePermission(['pmc_api.change_consumer']), parseMultipart, consumersController.update)
+pmcRouter.delete('/consumers/:id/', authenticate, requirePermission(['pmc_api.delete_consumer']), consumersController.remove)
 
 pmcRouter.get('/collectors/', authenticate, requirePermission(['pmc_api.view_collector']), collectorsController.list)
 pmcRouter.get('/collectors/:id/', authenticate, requirePermission(['pmc_api.view_collector']), collectorsController.get)
 pmcRouter.post('/collectors/', authenticate, requirePermission(['pmc_api.add_collector']), parseMultipart, collectorsController.create)
 pmcRouter.patch('/collectors/:id/', authenticate, requirePermission(['pmc_api.change_collector']), parseMultipart, collectorsController.update)
+pmcRouter.delete('/collectors/:id/', authenticate, requirePermission(['pmc_api.delete_collector']), collectorsController.remove)
 
 pmcRouter.get('/recyclers/', authenticate, requirePermission(['pmc_api.view_recycler']), recyclersController.list)
 pmcRouter.get('/recyclers/:id/', authenticate, requirePermission(['pmc_api.view_recycler']), recyclersController.get)
 pmcRouter.post('/recyclers/', authenticate, requirePermission(['pmc_api.add_recycler']), parseMultipart, recyclersController.create)
 pmcRouter.patch('/recyclers/:id/', authenticate, requirePermission(['pmc_api.change_recycler']), parseMultipart, recyclersController.update)
+pmcRouter.delete('/recyclers/:id/', authenticate, requirePermission(['pmc_api.delete_recycler']), recyclersController.remove)
 
 pmcRouter.get('/raw-materials/', authenticate, requirePermission(['pmc_api.view_rawmaterial']), rawMaterialsController.list)
+pmcRouter.get('/raw-materials/:id/', authenticate, requirePermission(['pmc_api.view_rawmaterial']), rawMaterialsController.get)
 pmcRouter.post('/raw-materials/', authenticate, requirePermission(['pmc_api.add_rawmaterial']), rawMaterialsController.create)
+pmcRouter.patch('/raw-materials/:id/', authenticate, requirePermission(['pmc_api.change_rawmaterial']), rawMaterialsController.update)
+pmcRouter.delete('/raw-materials/:id/', authenticate, requirePermission(['pmc_api.delete_rawmaterial']), rawMaterialsController.remove)
 
 // Documents
 pmcRouter.get('/applicant-documents/', authenticate, requirePermission(['pmc_api.view_applicantdocument']), listApplicantDocuments)
+pmcRouter.get('/applicant-documents/:id/', authenticate, requirePermission(['pmc_api.view_applicantdocument']), getApplicantDocument)
 pmcRouter.post('/applicant-documents/', authenticate, requirePermission(['pmc_api.add_applicantdocument']), ...uploadApplicantDocument)
+pmcRouter.patch('/applicant-documents/:id/', authenticate, requirePermission(['pmc_api.change_applicantdocument']), updateApplicantDocument)
+pmcRouter.delete('/applicant-documents/:id/', authenticate, requirePermission(['pmc_api.delete_applicantdocument']), deleteApplicantDocument)
 pmcRouter.get(
   '/download_latest_document/',
   authenticate,
@@ -139,7 +180,10 @@ pmcRouter.get(
 )
 
 pmcRouter.get('/district-documents/', authenticate, requirePermission(['pmc_api.view_districtplasticcommitteedocument']), listDistrictDocuments)
+pmcRouter.get('/district-documents/:id/', authenticate, requirePermission(['pmc_api.view_districtplasticcommitteedocument']), getDistrictDocument)
 pmcRouter.post('/district-documents/', authenticate, requirePermission(['pmc_api.add_districtplasticcommitteedocument']), ...uploadDistrictDocument)
+pmcRouter.patch('/district-documents/:id/', authenticate, requirePermission(['pmc_api.change_districtplasticcommitteedocument']), updateDistrictDocument)
+pmcRouter.delete('/district-documents/:id/', authenticate, requirePermission(['pmc_api.delete_districtplasticcommitteedocument']), deleteDistrictDocument)
 
 // Districts/Tehsils
 pmcRouter.get('/districts/', authenticate, requirePermission(['pmc_api.view_district']), cacheMiddleware(3600), listDistricts)
@@ -154,16 +198,23 @@ pmcRouter.get('/user-groups/', authenticate, listUserGroups)
 
 // Assignments
 pmcRouter.get('/application-assignment/', authenticate, requirePermission(['pmc_api.view_applicationassignment']), applicationAssignmentController.list)
+pmcRouter.get('/application-assignment/:id/', authenticate, requirePermission(['pmc_api.view_applicationassignment']), applicationAssignmentController.get)
+pmcRouter.get('/application-assignment/by_applicant/', authenticate, requirePermission(['pmc_api.view_applicationassignment']), getApplicationAssignmentByApplicant)
 pmcRouter.post('/application-assignment/', authenticate, requirePermission(['pmc_api.add_applicationassignment']), parseMultipart, createApplicationAssignment)
 pmcRouter.patch('/application-assignment/:id/', authenticate, requirePermission(['pmc_api.change_applicationassignment']), parseMultipart, applicationAssignmentController.update)
 
 // Field responses / manual fields
 pmcRouter.get('/field-responses/', authenticate, requirePermission(['pmc_api.view_applicantfieldresponse']), applicantFieldResponsesController.list)
+pmcRouter.get('/field-responses/:id/', authenticate, requirePermission(['pmc_api.view_applicantfieldresponse']), applicantFieldResponsesController.get)
 pmcRouter.post('/field-responses/', authenticate, requirePermission(['pmc_api.add_applicantfieldresponse']), parseMultipart, applicantFieldResponsesController.create)
+pmcRouter.patch('/field-responses/:id/', authenticate, requirePermission(['pmc_api.change_applicantfieldresponse']), parseMultipart, applicantFieldResponsesController.update)
+pmcRouter.delete('/field-responses/:id/', authenticate, requirePermission(['pmc_api.delete_applicantfieldresponse']), applicantFieldResponsesController.remove)
 
 pmcRouter.get('/manual-fields/', authenticate, requirePermission(['pmc_api.view_applicantmanualfields']), applicantManualFieldsController.list)
+pmcRouter.get('/manual-fields/:id/', authenticate, requirePermission(['pmc_api.view_applicantmanualfields']), applicantManualFieldsController.get)
 pmcRouter.post('/manual-fields/', authenticate, requirePermission(['pmc_api.add_applicantmanualfields']), parseMultipart, applicantManualFieldsController.create)
 pmcRouter.patch('/manual-fields/:id/', authenticate, requirePermission(['pmc_api.change_applicantmanualfields']), parseMultipart, applicantManualFieldsController.update)
+pmcRouter.delete('/manual-fields/:id/', authenticate, requirePermission(['pmc_api.delete_applicantmanualfields']), applicantManualFieldsController.remove)
 
 // Statistics
 pmcRouter.get('/fetch-statistics-view-groups/', authenticate, requirePermission(['pmc_api.view_applicantdetail']), cacheMiddleware(1800), listGroupStats)
@@ -188,8 +239,10 @@ pmcRouter.get('/psid-report/', authenticate, requirePermission(['pmc_api.view_ps
 // PSID
 pmcRouter.get('/generate-psid/', authenticate, requirePermission(['pmc_api.add_psidtracking']), generatePsid)
 pmcRouter.get('/check-psid-status/', authenticate, checkPsidStatus)
-pmcRouter.post('/payment-intimation/', authenticate, requirePermission(['pmc_api.add_psidtracking']), paymentIntimation)
-pmcRouter.get('/plmis-token/', plmisToken)
+// Payment intimation: Accept both user JWT and external service tokens
+pmcRouter.post('/payment-intimation/', authenticateUserOrService, paymentIntimation)
+pmcRouter.post('/plmis-token/', plmisToken)
+pmcRouter.get('/plmis-token/', plmisToken) // Backward compatibility
 
 // Licenses
 pmcRouter.get('/generate-license-pdf/', generateLicensePdf)
@@ -228,6 +281,7 @@ pmcRouter.post('/plmis/webhook/payment-failed', plmisUseCases.plmisPaymentFailed
 
 // Inspection reports
 pmcRouter.get('/inspection-report/', authenticate, requirePermission(['pmc_api.view_inspectionreport']), listInspectionReports)
+pmcRouter.get('/inspection-report/:id/', authenticate, requirePermission(['pmc_api.view_inspectionreport']), getInspectionReport)
 pmcRouter.post('/inspection-report/', authenticate, requirePermission(['pmc_api.add_inspectionreport']), ...createInspectionReport)
 pmcRouter.patch('/inspection-report/:id/', authenticate, requirePermission(['pmc_api.change_inspectionreport']), ...updateInspectionReport)
 pmcRouter.delete('/inspection-report/:id/', authenticate, requirePermission(['pmc_api.delete_inspectionreport']), deleteInspectionReport)
@@ -238,13 +292,22 @@ pmcRouter.get('/inspection-report/export-all-inspections-pdf/', authenticate, re
 pmcRouter.get('/inspection-report/export-district-summary-excel/', authenticate, requirePermission(['pmc_api.view_inspectionreport']), exportDistrictSummaryExcel)
 pmcRouter.get('/inspection-report/export-district-summary-pdf/', authenticate, requirePermission(['pmc_api.view_inspectionreport']), exportDistrictSummaryPdf)
 
+pmcRouter.get('/inspection-report-cached/', authenticate, requirePermission(['pmc_api.view_inspectionreport']), listCachedInspectionReports)
+pmcRouter.get('/inspection-report-cached/:id/', authenticate, requirePermission(['pmc_api.view_inspectionreport']), getCachedInspectionReport)
+pmcRouter.post('/inspection-report-cached/', authenticate, requirePermission(['pmc_api.add_inspectionreport']), createCachedInspectionReport)
+pmcRouter.patch('/inspection-report-cached/:id/', authenticate, requirePermission(['pmc_api.change_inspectionreport']), updateCachedInspectionReport)
+pmcRouter.delete('/inspection-report-cached/:id/', authenticate, requirePermission(['pmc_api.delete_inspectionreport']), deleteCachedInspectionReport)
 pmcRouter.get('/inspection-report-cached/all_other_single_use_plastics/', authenticate, requirePermission(['pmc_api.view_singleuseplasticssnapshot']), allOtherSingleUsePlastics)
 
 // Competition
 pmcRouter.get('/competition/', listCompetitions)
 pmcRouter.get('/competition/:id', getCompetition)
+pmcRouter.get('/competition/register/', authenticate, requirePermission(['pmc_api.view_competitionregistration']), listCompetitionRegistrations)
+pmcRouter.get('/competition/register/:id/', authenticate, requirePermission(['pmc_api.view_competitionregistration']), getCompetitionRegistrationDetails)
 pmcRouter.post('/competition/:competitionId/register/', registerCompetition)
 pmcRouter.post('/competition/register/', registerCompetition)
+pmcRouter.patch('/competition/register/:id/', authenticate, requirePermission(['pmc_api.change_competitionregistration']), updateCompetitionRegistration)
+pmcRouter.delete('/competition/register/:id/', authenticate, requirePermission(['pmc_api.delete_competitionregistration']), deleteCompetitionRegistration)
 pmcRouter.get('/competition/my/registrations', authenticate, getMyRegistrations)
 pmcRouter.post('/competition/:competitionId/registrations/:registrationId/submit', authenticate, submitEntry)
 pmcRouter.post('/competition/:id/submit', authenticate, submitEntry)
@@ -262,7 +325,8 @@ pmcRouter.get('/idm_clubs/all/', clubsGeojsonAllViewset)
 
 // Utilities
 pmcRouter.get('/ping/', ping)
-pmcRouter.get('/verify-chalan/', verifyChalan)
+pmcRouter.post('/verify-chalan/', parseMultipart, verifyChalan)
+pmcRouter.get('/verify-chalan/', verifyChalan) // Backward compatibility for plain query calls
 pmcRouter.get('/confiscation-lookup/', confiscationLookup)
 
 // Media downloads

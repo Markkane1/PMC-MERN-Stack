@@ -15,7 +15,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:4000', // MERN backend
+        // allow backend port to be overridden via env variable for easier
+        // dev setups where API runs on 8000 or another host.
+        target: process.env.VITE_API_PROXY || 'http://127.0.0.1:4000',
         changeOrigin: true,
         secure: false
       }

@@ -176,6 +176,7 @@ export function createApp() {
   app.post('/api/accounts/reset-forgot-password/', loginLimiter)
 
   // API routes
+  app.use('/api', apiRouter)
 
   // Week 5: Monitoring routes (metrics, dashboard, health, etc.)
   app.use('/monitoring', monitoringRouter)
