@@ -29,4 +29,4 @@ ApplicantFieldResponseSchema.pre('save', async function preSave(next) {
   return next()
 })
 
-export const ApplicantFieldResponseModel = mongoose.model<ApplicantFieldResponseDocument>('ApplicantFieldResponse', ApplicantFieldResponseSchema, 'applicantfieldresponses')
+export const ApplicantFieldResponseModel = mongoose.model<ApplicantFieldResponseDocument>('ApplicantFieldResponse', ApplicantFieldResponseSchema, 'ApplicantFieldResponse')

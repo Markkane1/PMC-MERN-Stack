@@ -15,4 +15,4 @@ const DivisionSchema = new Schema<DivisionDocument>(
   { timestamps: true }
 )
 
-export const DivisionModel = mongoose.model<DivisionDocument>('Division', DivisionSchema, 'divisions')
+export const DivisionModel = mongoose.model<DivisionDocument>('Division', DivisionSchema, 'Division')

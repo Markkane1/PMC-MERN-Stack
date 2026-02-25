@@ -186,5 +186,5 @@ ApplicationAssignmentSchema.pre('save', async function (next) {
 export const ApplicationAssignmentModel: Model<ApplicationAssignmentDocument> = mongoose.model<ApplicationAssignmentDocument>(
   'ApplicationAssignment',
   ApplicationAssignmentSchema,
-  'applicationAssignments'
+  'ApplicationAssignment'
 )

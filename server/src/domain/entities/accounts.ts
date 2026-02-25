@@ -1,8 +1,8 @@
-﻿import type { Id, Timestamped } from '../types'
+import type { Id, Timestamped } from '../types'
 
 export type User = Timestamped & {
   id?: Id
-  djangoId?: number
+  sourceId?: number
   username: string
   email?: string
   passwordHash: string
@@ -37,7 +37,7 @@ export type UserProfile = Timestamped & {
 
 export type Permission = Timestamped & {
   id?: Id
-  djangoId?: number
+  sourceId?: number
   name: string
   codename: string
   appLabel?: string
@@ -48,14 +48,14 @@ export type Permission = Timestamped & {
 
 export type Group = Timestamped & {
   id?: Id
-  djangoId?: number
+  sourceId?: number
   name: string
   permissions: string[]
 }
 
 export type UserAuditLog = Timestamped & {
   id?: Id
-  djangoId?: number
+  sourceId?: number
   userId?: number
   username?: string
   firstName?: string

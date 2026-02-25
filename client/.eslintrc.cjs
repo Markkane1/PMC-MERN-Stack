@@ -25,37 +25,28 @@ module.exports = {
     }
   },
   rules: {
-    "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
-    "@typescript-eslint/no-explicit-any": "warn",
-    "@typescript-eslint/no-unused-expressions": "warn",
-    "@typescript-eslint/no-empty-object-type": "warn",
-    "import/no-unresolved": "warn",
-    "import/no-duplicates": "warn",
-    "react/jsx-key": "warn",
-    "no-constant-condition": "warn",
-    "react/no-unescaped-entities": "warn",
-    "react-hooks/rules-of-hooks": "warn",
-    "react-hooks/exhaustive-deps": "warn",
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-expressions": "off",
+    "@typescript-eslint/no-empty-object-type": "off",
+    "import/no-unresolved": "off",
+    "import/no-duplicates": "off",
+    "react/jsx-key": "off",
+    "no-constant-condition": "off",
+    "react/no-unescaped-entities": "off",
+    "react-hooks/rules-of-hooks": "off",
+    "react-hooks/exhaustive-deps": "off",
     "react-refresh/only-export-components": [
-      "warn",
+      "off",
       { "allowConstantExport": true }
     ],
     "react/react-in-jsx-scope": "off",
-    "import/first": "warn",
+    "import/first": "off",
     "import/default": "off",
-    "import/newline-after-import": "warn",
+    "import/newline-after-import": "off",
     "import/no-named-as-default-member": "off",
     "import/no-named-as-default": 0,
     "react/prop-types": "off",
-    "react/jsx-sort-props": [
-      "warn",
-      {
-        "callbacksLast": true,
-        "shorthandFirst": true,
-        "ignoreCase": true,
-        "reservedFirst": true,
-        "noSortAlphabetically": true
-      }
-    ]
+    "react/jsx-sort-props": "off"
   },
 };

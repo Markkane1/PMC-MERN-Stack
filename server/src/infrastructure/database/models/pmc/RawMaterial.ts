@@ -175,7 +175,7 @@ const RawMaterialSchema = new Schema<RawMaterialDocument>(
       sparse: true
     }
   },
-  { timestamps: true, collection: 'rawmaterials' }
+  { timestamps: true, collection: 'RawMaterial' }
 )
 
 // Indexes
@@ -196,5 +196,5 @@ RawMaterialSchema.pre('save', async function preSave(next) {
 export const RawMaterialModel = mongoose.model<RawMaterialDocument>(
   'RawMaterial',
   RawMaterialSchema,
-  'rawmaterials'
+  'RawMaterial'
 )

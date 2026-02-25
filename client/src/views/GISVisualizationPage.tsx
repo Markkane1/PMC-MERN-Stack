@@ -13,7 +13,7 @@ interface LocationMarker {
 }
 
 export default function GISVisualizationPage() {
-    const { locations, loading, fetchLocations, getLocationStats } = useGISAnalytics()
+    const { locations, loading, fetchLocations } = useGISAnalytics()
     const [selectedMarker, setSelectedMarker] = useState<LocationMarker | null>(null)
     const [selectedDistrict, setSelectedDistrict] = useState<string>('')
     const [filterType, setFilterType] = useState<string>('all')

@@ -264,5 +264,5 @@ InspectionReportSchema.pre('save', async function (next) {
 export const InspectionReportModel: Model<InspectionReportDocument> = mongoose.model<InspectionReportDocument>(
   'InspectionReport',
   InspectionReportSchema,
-  'inspectionReports'
+  'InspectionReport'
 )

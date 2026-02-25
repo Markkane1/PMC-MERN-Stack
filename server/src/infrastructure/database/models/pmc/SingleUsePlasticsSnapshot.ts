@@ -14,4 +14,4 @@ const SingleUsePlasticsSnapshotSchema = new Schema<SingleUsePlasticsSnapshotDocu
 export const SingleUsePlasticsSnapshotModel = mongoose.model<SingleUsePlasticsSnapshotDocument>(
   'SingleUsePlasticsSnapshot',
   SingleUsePlasticsSnapshotSchema
-, 'singleuseplasticssnapshots')
+, 'SingleUsePlasticsSnapshot')

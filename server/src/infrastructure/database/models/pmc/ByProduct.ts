@@ -98,7 +98,7 @@ const ByProductSchema = new Schema<ByProductDocument>(
       sparse: true
     }
   },
-  { timestamps: true, collection: 'byproducts' }
+  { timestamps: true, collection: 'ByProduct' }
 )
 
 // Indexes
@@ -118,5 +118,5 @@ ByProductSchema.pre('save', async function preSave(next) {
 export const ByProductModel = mongoose.model<ByProductDocument>(
   'ByProduct',
   ByProductSchema,
-  'byproducts'
+  'ByProduct'
 )

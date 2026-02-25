@@ -33,7 +33,7 @@ const HeaderTemplate = ({ headerText = <></>, children }: HeaderTemplateProps) =
                             alt="GOP Logo"
                             className="header-logo"
                         />
-                        <span className="header-text">PMIS</span>
+                        <span className="header-text">PMC</span>
                     </div>
                 </Link>
                 {headerText && <div className="header-subtext">{headerText}</div>}
@@ -61,7 +61,7 @@ const HeaderTemplate = ({ headerText = <></>, children }: HeaderTemplateProps) =
             <footer className="footer-container">
                 <span className="footer-text">
                     Copyright &copy; {new Date().getFullYear()}{' '}
-                    <span className="font-semibold">PMIS</span> All rights
+                    <span className="font-semibold">PMC</span> All rights
                     reserved.
                     <br />
                     Plastic Management Cell, Strategic Planning &amp;

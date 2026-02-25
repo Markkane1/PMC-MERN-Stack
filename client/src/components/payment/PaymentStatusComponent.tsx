@@ -3,12 +3,13 @@ import { usePaymentAPI } from '../../api/pmc'
 
 interface PaymentStatus {
   applicantId: string
-  totalAmount: number
-  paidAmount: number
-  remainingAmount: number
-  status: string
-  chalanNumber?: string
-  paymentDate?: string
+  totalDue: number
+  totalPaid: number
+  remainingBalance: number
+  status: 'PENDING' | 'PARTIAL' | 'PAID' | 'OVERDUE'
+  paymentPercentage?: number
+  lastPaymentDate?: string
+  nextDueDate?: string
 }
 
 export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ applicantId }) => {
@@ -32,9 +33,17 @@ export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ appl
   }
 
   const handleGenerateChalan = async () => {
+    if (!payment) return
+
     try {
-      const blob = await generateChalan(parseInt(applicantId, 10))
-      // Trigger download
+      const dueDate = payment.nextDueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      const amountDue = payment.remainingBalance > 0 ? payment.remainingBalance : payment.totalDue
+
+      const blob = await generateChalan(parseInt(applicantId, 10), {
+        amountDue,
+        dueDate,
+      })
+
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
@@ -67,31 +76,29 @@ export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ appl
   if (error) return <div className="p-4 text-red-600">Error: {error}</div>
   if (!payment) return <div className="p-4 text-gray-500">No payment data available</div>
 
-  const paymentPercentage = payment.totalAmount > 0 ? (payment.paidAmount / payment.totalAmount) * 100 : 0
+  const paymentPercentage = payment.paymentPercentage ?? (payment.totalDue > 0 ? (payment.totalPaid / payment.totalDue) * 100 : 0)
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-2xl font-bold mb-4">Payment Status</h2>
 
-      {/* Status Summary */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-blue-50 p-4 rounded">
           <p className="text-sm text-gray-600">Total Amount</p>
-          <p className="text-2xl font-bold text-blue-600">Rs {payment.totalAmount.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-blue-600">Rs {payment.totalDue.toLocaleString()}</p>
         </div>
         <div className="bg-green-50 p-4 rounded">
           <p className="text-sm text-gray-600">Paid Amount</p>
-          <p className="text-2xl font-bold text-green-600">Rs {payment.paidAmount.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-green-600">Rs {payment.totalPaid.toLocaleString()}</p>
         </div>
-        <div className={`p-4 rounded ${payment.remainingAmount === 0 ? 'bg-green-50' : 'bg-yellow-50'}`}>
+        <div className={`p-4 rounded ${payment.remainingBalance === 0 ? 'bg-green-50' : 'bg-yellow-50'}`}>
           <p className="text-sm text-gray-600">Remaining</p>
-          <p className={`text-2xl font-bold ${payment.remainingAmount === 0 ? 'text-green-600' : 'text-yellow-600'}`}>
-            Rs {payment.remainingAmount.toLocaleString()}
+          <p className={`text-2xl font-bold ${payment.remainingBalance === 0 ? 'text-green-600' : 'text-yellow-600'}`}>
+            Rs {payment.remainingBalance.toLocaleString()}
           </p>
         </div>
       </div>
 
-      {/* Progress Bar */}
       <div className="mb-6">
         <div className="flex justify-between mb-2">
           <span className="text-sm font-medium">Payment Progress</span>
@@ -105,13 +112,12 @@ export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ appl
         </div>
       </div>
 
-      {/* Status Badge */}
       <div className="mb-6">
         <span
           className={`px-4 py-2 rounded-full text-sm font-semibold ${
-            payment.status === 'COMPLETED'
+            payment.status === 'PAID'
               ? 'bg-green-100 text-green-800'
-              : payment.status === 'PENDING'
+              : payment.status === 'PENDING' || payment.status === 'PARTIAL'
                 ? 'bg-yellow-100 text-yellow-800'
                 : 'bg-red-100 text-red-800'
           }`}
@@ -120,25 +126,23 @@ export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ appl
         </span>
       </div>
 
-      {/* Actions */}
-      {payment.remainingAmount > 0 && (
+      {payment.remainingBalance > 0 && (
         <div className="space-y-3">
           <button
             onClick={handleGenerateChalan}
             disabled={loading}
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
           >
-            📄 Generate & Download Chalan
+            Generate and Download Chalan
           </button>
 
           <button
             onClick={() => setShowVerifyForm(!showVerifyForm)}
             className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors"
           >
-            ✓ Verify Payment
+            Verify Payment
           </button>
 
-          {/* Verify Payment Form */}
           {showVerifyForm && (
             <form onSubmit={handleVerifyPayment} className="mt-4 p-4 bg-gray-50 rounded">
               <div className="mb-3">
@@ -159,7 +163,7 @@ export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ appl
                   value={verifyData.referenceNumber}
                   onChange={(e) => setVerifyData({ ...verifyData, referenceNumber: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded"
-                  placeholder="E.g., Transaction ID or Cheque #"
+                  placeholder="Transaction ID or cheque number"
                   required
                 />
               </div>
@@ -175,14 +179,14 @@ export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ appl
         </div>
       )}
 
-      {payment.remainingAmount === 0 && (
+      {payment.remainingBalance === 0 && (
         <div className="p-4 bg-green-50 border border-green-200 rounded text-green-800">
-          ✓ Payment completed successfully!
+          Payment completed successfully.
         </div>
       )}
 
-      {payment.paymentDate && (
-        <p className="text-xs text-gray-500 mt-4">Last updated: {new Date(payment.paymentDate).toLocaleString()}</p>
+      {payment.lastPaymentDate && (
+        <p className="text-xs text-gray-500 mt-4">Last payment: {new Date(payment.lastPaymentDate).toLocaleString()}</p>
       )}
     </div>
   )

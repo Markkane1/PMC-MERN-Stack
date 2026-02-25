@@ -1,7 +1,7 @@
 import mongoose, { Schema, type Document } from 'mongoose'
 
 export interface UserAuditLogDocument extends Document {
-  djangoId?: number
+  sourceId?: number
   userId?: number
   username?: string
   firstName?: string
@@ -22,7 +22,7 @@ export interface UserAuditLogDocument extends Document {
 
 const UserAuditLogSchema = new Schema<UserAuditLogDocument>(
   {
-    djangoId: { type: Number, index: true },
+    sourceId: { type: Number, index: true },
     userId: { type: Number, index: true },
     username: { type: String },
     firstName: { type: String },
@@ -44,5 +44,5 @@ const UserAuditLogSchema = new Schema<UserAuditLogDocument>(
 export const UserAuditLogModel = mongoose.model<UserAuditLogDocument>(
   'UserAuditLog',
   UserAuditLogSchema,
-  'user_audit_logs'
+  'UserAuditLog'
 )

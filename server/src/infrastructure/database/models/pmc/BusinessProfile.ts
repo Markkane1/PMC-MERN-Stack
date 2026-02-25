@@ -342,7 +342,7 @@ const BusinessProfileSchema = new Schema<BusinessProfileDocument>(
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User' }
   },
-  { timestamps: true, collection: 'businessprofiles' }
+  { timestamps: true, collection: 'BusinessProfile' }
 )
 
 // Indexes for common queries
@@ -413,5 +413,5 @@ BusinessProfileSchema.methods.suspend = function (this: BusinessProfileDocument,
 export const BusinessProfileModel = mongoose.model<BusinessProfileDocument>(
   'BusinessProfile',
   BusinessProfileSchema,
-  'businessprofiles'
+  'BusinessProfile'
 )

@@ -642,7 +642,7 @@ const CustomerEdit = () => {
             if (completedSections.includes('licenseDetailProducer')) {
                 const formData = new FormData()
 
-                // Add fields corresponding to the Django model
+                // Add fields corresponding to the data model
                 formData.append('tracking_number', values.tracking_number || '')
 
                 console.log('number_of_machines:', values.number_of_machines)

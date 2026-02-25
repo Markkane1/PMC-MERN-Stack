@@ -17,4 +17,4 @@ const UserProfileSchema = new Schema<UserProfileDocument>(
   { timestamps: true }
 )
 
-export const UserProfileModel = mongoose.model<UserProfileDocument>('UserProfile', UserProfileSchema, 'userprofiles')
+export const UserProfileModel = mongoose.model<UserProfileDocument>('UserProfile', UserProfileSchema, 'UserProfile')

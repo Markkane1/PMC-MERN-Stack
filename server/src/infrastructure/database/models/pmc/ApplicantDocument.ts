@@ -182,7 +182,7 @@ const ApplicantDocumentSchema = new Schema<ApplicantDocumentDocument>(
       ref: 'User'
     }
   },
-  { timestamps: true, collection: 'applicantdocuments' }
+  { timestamps: true, collection: 'ApplicantDocument' }
 )
 
 // Compound indexes for common queries
@@ -242,5 +242,5 @@ ApplicantDocumentSchema.methods.markAsExpired = function (this: ApplicantDocumen
 export const ApplicantDocumentModel = mongoose.model<ApplicantDocumentDocument>(
   'ApplicantDocument',
   ApplicantDocumentSchema,
-  'applicantdocuments'
+  'ApplicantDocument'
 )

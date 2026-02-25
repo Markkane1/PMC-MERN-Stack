@@ -26,5 +26,5 @@ ExternalServiceTokenSchema.methods.isExpired = function isExpired(this: External
 export const ExternalServiceTokenModel = mongoose.model<ExternalServiceTokenDocument>(
   'ExternalServiceToken',
   ExternalServiceTokenSchema,
-  'external_service_tokens'
+  'ExternalServiceToken'
 )

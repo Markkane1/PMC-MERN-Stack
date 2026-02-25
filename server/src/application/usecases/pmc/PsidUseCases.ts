@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import crypto from 'crypto'
+import mongoose from 'mongoose'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import type {
   ApplicantRepository,
@@ -284,6 +285,22 @@ type ServiceConfig = {
 }
 
 async function getServiceConfig(serviceName: string): Promise<ServiceConfig | null> {
+  const rawConfig = await mongoose.connection.db
+    ?.collection('ServiceConfiguration')
+    .findOne({ $or: [{ service_name: serviceName }, { serviceName }] } as any)
+
+  if (rawConfig) {
+    return {
+      serviceName: (rawConfig as any).serviceName || (rawConfig as any).service_name,
+      authEndpoint: (rawConfig as any).authEndpoint || (rawConfig as any).auth_endpoint,
+      generatePsidEndpoint: (rawConfig as any).generatePsidEndpoint || (rawConfig as any).generate_psid_endpoint,
+      transactionStatusEndpoint:
+        (rawConfig as any).transactionStatusEndpoint || (rawConfig as any).transaction_status_endpoint,
+      clientId: (rawConfig as any).clientId || (rawConfig as any).client_id,
+      clientSecret: (rawConfig as any).clientSecret || (rawConfig as any).client_secret,
+    }
+  }
+
   const config = await ServiceConfigurationModel.findOne({ serviceName }).lean()
   if (config) {
     return {
@@ -310,6 +327,24 @@ async function getServiceConfig(serviceName: string): Promise<ServiceConfig | nu
 }
 
 async function getOrRefreshToken(config: ServiceConfig) {
+  const rawToken = await mongoose.connection.db
+    ?.collection('ExternalServiceToken')
+    .findOne(
+      { $or: [{ service_name: config.serviceName }, { serviceName: config.serviceName }] } as any,
+      { sort: { updated_at: -1, updatedAt: -1, created_at: -1, createdAt: -1 } }
+    )
+
+  const rawAccessToken = (rawToken as any)?.accessToken || (rawToken as any)?.access_token
+  const rawExpiresAt = parseExpiryValue(
+    (rawToken as any)?.expiresAt ??
+      (rawToken as any)?.expires_at ??
+      (rawToken as any)?.expiryDate ??
+      (rawToken as any)?.expiry_date
+  )
+  if (rawAccessToken && rawExpiresAt && rawExpiresAt > new Date()) {
+    return rawAccessToken
+  }
+
   const latest = await ExternalServiceTokenModel.findOne({ serviceName: config.serviceName })
     .sort({ createdAt: -1 })
     .lean()
@@ -340,6 +375,15 @@ async function getOrRefreshToken(config: ServiceConfig) {
     serviceName: config.serviceName,
     accessToken,
     expiresAt,
+  })
+
+  // Keep shared token collection updated with legacy-compatible field names.
+  await mongoose.connection.db?.collection('ExternalServiceToken').insertOne({
+    service_name: config.serviceName,
+    access_token: accessToken,
+    expires_at: expiresAt,
+    created_at: new Date(),
+    updated_at: new Date(),
   })
 
   return created.accessToken

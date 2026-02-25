@@ -87,7 +87,7 @@ export const reportFee = asyncHandler(async (_req: Request, res: Response) => {
 
   if (!feeTimelineInFlight) {
     feeTimelineInFlight = (async () => {
-      const feeCollection = mongoose.connection.db?.collection('applicantfees')
+      const feeCollection = mongoose.connection.db?.collection('ApplicantFee')
       let timeline: FeeTimelineRow[] = []
 
       if (feeCollection) {

@@ -34,4 +34,4 @@ DistrictPlasticCommitteeDocumentSchema.pre('save', async function preSave(next) 
 export const DistrictPlasticCommitteeDocumentModel = mongoose.model<DistrictPlasticCommitteeDocumentDocument>(
   'DistrictPlasticCommitteeDocument',
   DistrictPlasticCommitteeDocumentSchema
-, 'districtplasticcommitteedocuments')
+, 'DistrictPlasticCommitteeDocument')

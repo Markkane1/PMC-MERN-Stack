@@ -7,7 +7,7 @@ export interface UserDocument extends Document {
   firstName?: string
   lastName?: string
   avatar?: string
-  djangoId?: number
+  sourceId?: number
   groups: string[]
   directPermissions?: string[]
   permissions?: string[]
@@ -25,7 +25,7 @@ const UserSchema = new Schema<UserDocument>(
     firstName: { type: String },
     lastName: { type: String },
     avatar: { type: String },
-    djangoId: { type: Number, index: true },
+    sourceId: { type: Number, index: true },
     groups: { type: [String], default: [] },
     directPermissions: { type: [String], default: [] },
     permissions: { type: [String], default: [] },
@@ -35,7 +35,7 @@ const UserSchema = new Schema<UserDocument>(
   { timestamps: true }
 )
 
-export const UserModel = mongoose.model<UserDocument>('User', UserSchema, 'users')
+export const UserModel = mongoose.model<UserDocument>('User', UserSchema, 'User')
 
 // SocialAccount Schema for OAuth provider tracking
 export interface SocialAccountDocument extends Document {
@@ -69,5 +69,5 @@ SocialAccountSchema.index({ provider: 1, providerId: 1 }, { unique: true })
 export const SocialAccountModel = mongoose.model<SocialAccountDocument>(
   'SocialAccount',
   SocialAccountSchema,
-  'socialAccounts'
+  'SocialAccount'
 )

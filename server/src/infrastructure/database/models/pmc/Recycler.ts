@@ -35,4 +35,4 @@ RecyclerSchema.pre('save', async function preSave(next) {
   return next()
 })
 
-export const RecyclerModel = mongoose.model<RecyclerDocument>('Recycler', RecyclerSchema, 'recyclers')
+export const RecyclerModel = mongoose.model<RecyclerDocument>('Recycler', RecyclerSchema, 'Recycler')

@@ -1,4 +1,4 @@
-﻿import mongoose, { Schema, type Document } from 'mongoose'
+import mongoose, { Schema, type Document } from 'mongoose'
 
 export interface SystemConfigDocument extends Document {
   key: string
@@ -18,5 +18,5 @@ const SystemConfigSchema = new Schema<SystemConfigDocument>(
 export const SystemConfigModel = mongoose.model<SystemConfigDocument>(
   'SystemConfig',
   SystemConfigSchema,
-  'system_configs'
+  'SystemConfig'
 )

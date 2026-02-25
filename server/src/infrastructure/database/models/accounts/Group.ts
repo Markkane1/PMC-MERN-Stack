@@ -1,7 +1,7 @@
 import mongoose, { Schema, type Document } from 'mongoose'
 
 export interface GroupDocument extends Document {
-  djangoId?: number
+  sourceId?: number
   name: string
   permissions: string[]
   createdAt: Date
@@ -10,11 +10,11 @@ export interface GroupDocument extends Document {
 
 const GroupSchema = new Schema<GroupDocument>(
   {
-    djangoId: { type: Number, index: true },
+    sourceId: { type: Number, index: true },
     name: { type: String, required: true, unique: true, index: true },
     permissions: { type: [String], default: [] },
   },
   { timestamps: true }
 )
 
-export const GroupModel = mongoose.model<GroupDocument>('Group', GroupSchema, 'groups')
+export const GroupModel = mongoose.model<GroupDocument>('Group', GroupSchema, 'Group')

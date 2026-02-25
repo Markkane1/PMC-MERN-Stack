@@ -261,7 +261,7 @@ export const getSectionWithFields = asyncHandler(async (req: AuthRequest, res: R
  */
 export const adminCreateFieldDefinition = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
-    const hasPermission = req.user?.permissions?.includes('pmc_api.manage_fields')
+    const hasPermission = req.user?.permissions?.includes('pmc.manage_fields')
     if (!hasPermission) {
       return res.status(403).json({ success: false, message: 'Insufficient permissions' })
     }
@@ -305,7 +305,7 @@ export const adminCreateFieldDefinition = asyncHandler(async (req: AuthRequest, 
  */
 export const adminUpdateFieldDefinition = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
-    const hasPermission = req.user?.permissions?.includes('pmc_api.manage_fields')
+    const hasPermission = req.user?.permissions?.includes('pmc.manage_fields')
     if (!hasPermission) {
       return res.status(403).json({ success: false, message: 'Insufficient permissions' })
     }
@@ -333,7 +333,7 @@ export const adminUpdateFieldDefinition = asyncHandler(async (req: AuthRequest, 
  */
 export const adminDeleteFieldDefinition = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
-    const hasPermission = req.user?.permissions?.includes('pmc_api.manage_fields')
+    const hasPermission = req.user?.permissions?.includes('pmc.manage_fields')
     if (!hasPermission) {
       return res.status(403).json({ success: false, message: 'Insufficient permissions' })
     }
@@ -357,7 +357,7 @@ export const adminDeleteFieldDefinition = asyncHandler(async (req: AuthRequest, 
  */
 export const adminBulkUpdateFields = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
-    const hasPermission = req.user?.permissions?.includes('pmc_api.manage_fields')
+    const hasPermission = req.user?.permissions?.includes('pmc.manage_fields')
     if (!hasPermission) {
       return res.status(403).json({ success: false, message: 'Insufficient permissions' })
     }

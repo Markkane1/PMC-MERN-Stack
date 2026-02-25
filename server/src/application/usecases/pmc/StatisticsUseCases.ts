@@ -43,7 +43,7 @@ async function getSubmittedBreakdown(submittedRepo: ApplicationSubmittedReposito
   const moduloCounts: Record<'0' | '1' | '2', number> = { '0': 0, '1': 0, '2': 0 }
   let total = 0
 
-  const rawCollection = mongoose.connection.db?.collection('applicationsubmitteds')
+  const rawCollection = mongoose.connection.db?.collection('ApplicationSubmitted')
   if (rawCollection) {
     const grouped = await rawCollection.aggregate([
       {

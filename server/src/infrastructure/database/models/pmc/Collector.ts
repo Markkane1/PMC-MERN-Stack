@@ -39,4 +39,4 @@ CollectorSchema.pre('save', async function preSave(next) {
   return next()
 })
 
-export const CollectorModel = mongoose.model<CollectorDocument>('Collector', CollectorSchema, 'collectors')
+export const CollectorModel = mongoose.model<CollectorDocument>('Collector', CollectorSchema, 'Collector')

@@ -10,7 +10,7 @@ const CounterSchema = new Schema<CounterDocument>({
   seq: { type: Number, default: 0 },
 })
 
-export const CounterModel = mongoose.model<CounterDocument>('Counter', CounterSchema, 'counters')
+export const CounterModel = mongoose.model<CounterDocument>('Counter', CounterSchema, 'Counter')
 
 export async function getNextSequence(name: string): Promise<number> {
   const counter = await CounterModel.findOneAndUpdate(

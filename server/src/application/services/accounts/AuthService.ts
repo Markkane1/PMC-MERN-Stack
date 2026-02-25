@@ -13,14 +13,14 @@ const defaultDeps: AuthServiceDeps = {
   userRepo: userRepositoryMongo,
 }
 
-type DjangoHash = {
+type Pbkdf2Hash = {
   algorithm: string
   iterations: number
   salt: string
   hash: string
 }
 
-function parseDjangoHash(value: string): DjangoHash | null {
+function parsePbkdf2Hash(value: string): Pbkdf2Hash | null {
   const parts = value.split('$')
   if (parts.length !== 4) return null
   const [algorithm, iterationsStr, salt, hash] = parts
@@ -29,8 +29,8 @@ function parseDjangoHash(value: string): DjangoHash | null {
   return { algorithm, iterations, salt, hash }
 }
 
-function verifyDjangoPbkdf2Sha256(password: string, encoded: string): boolean {
-  const parsed = parseDjangoHash(encoded)
+function verifyPbkdf2Sha256(password: string, encoded: string): boolean {
+  const parsed = parsePbkdf2Hash(encoded)
   if (!parsed || parsed.algorithm !== 'pbkdf2_sha256') return false
   const derived = crypto.pbkdf2Sync(password, parsed.salt, parsed.iterations, 32, 'sha256')
   const derivedB64 = derived.toString('base64')
@@ -63,7 +63,7 @@ export async function createUser(
 export async function validatePassword(user: { passwordHash: string }, password: string): Promise<boolean> {
   const hash = user.passwordHash
   if (hash.startsWith('pbkdf2_sha256$')) {
-    return verifyDjangoPbkdf2Sha256(password, hash)
+    return verifyPbkdf2Sha256(password, hash)
   }
   if (isBcryptHash(hash)) {
     return bcrypt.compare(password, hash)

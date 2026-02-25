@@ -35,4 +35,4 @@ const LicenseSchema = new Schema<LicenseDocument>(
   { timestamps: true }
 )
 
-export const LicenseModel = mongoose.model<LicenseDocument>('License', LicenseSchema, 'licenses')
+export const LicenseModel = mongoose.model<LicenseDocument>('License', LicenseSchema, 'License')

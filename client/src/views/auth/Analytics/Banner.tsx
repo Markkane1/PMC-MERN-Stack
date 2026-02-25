@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Divider } from '@mui/material'
@@ -139,7 +139,7 @@ const Banner = () => {
                         className="header-logo"
                     />
 
-                    <span className="header-text">PMIS</span>
+                    <span className="header-text">PMC</span>
                 </div>
                 <nav className="flex flex-col md:flex-row items-center md:items-start justify-center md:justify-end gap-3">
                     <Link
@@ -201,7 +201,7 @@ const Banner = () => {
             <Link
               to="/sign-up?redirectUrl=/register-competition"
               className="relative text-white bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 text-sm md:text-base font-semibold w-full md:w-auto text-center"
-              // onClick={() => alert("ðŸš§ Coming Soon ðŸš§\nThis feature will be available shortly.")}
+              // onClick={() => alert("🚧 Coming Soon 🚧\nThis feature will be available shortly.")}
 
             >
               Register for Competition
@@ -302,7 +302,7 @@ const Banner = () => {
                         &times;
                     </button>
                     <h2 className="text-lg font-bold mb-2 text-center">
-                        ðŸŽ¨ Competition Announcement
+                        🎨 Competition Announcement
                     </h2>
                     <div className="grid md:grid-cols-2 gap-4">
                         <img
@@ -341,7 +341,7 @@ const Banner = () => {
             <footer className="footer-container">
                 <span className="footer-text">
                     Copyright &copy; {new Date().getFullYear()}{' '}
-                    <span className="font-semibold">PMIS</span> All rights
+                    <span className="font-semibold">PMC</span> All rights
                     reserved. <br />
                     Plastic Management Cell, Strategic Planning & Implementation
                     Unit, Environmental Protection Agency, and Environment

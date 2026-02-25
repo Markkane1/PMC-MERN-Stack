@@ -221,7 +221,7 @@ async function getSubmittedApplicantIds(): Promise<number[]> {
   // Fallback for legacy rows where only applicant_id exists and may not map through schema.
   if (!ids.length) {
     const raw = await mongoose.connection.db
-      ?.collection('applicationsubmitteds')
+      ?.collection('ApplicationSubmitted')
       .find({}, { projection: { applicantId: 1, applicant_id: 1 } })
       .toArray()
     ids = (raw || [])

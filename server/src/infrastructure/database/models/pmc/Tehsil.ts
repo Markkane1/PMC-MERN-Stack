@@ -19,4 +19,4 @@ const TehsilSchema = new Schema<TehsilDocument>(
   { timestamps: true }
 )
 
-export const TehsilModel = mongoose.model<TehsilDocument>('Tehsil', TehsilSchema, 'tehsils')
+export const TehsilModel = mongoose.model<TehsilDocument>('Tehsil', TehsilSchema, 'Tehsil')

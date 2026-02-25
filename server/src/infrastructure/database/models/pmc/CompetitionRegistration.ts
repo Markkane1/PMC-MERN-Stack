@@ -42,5 +42,5 @@ export const CompetitionRegistrationModel =
   mongoose.model<CompetitionRegistrationDocument>(
     'CompetitionRegistration',
     CompetitionRegistrationSchema,
-    'competitionregistrations'
+    'CompetitionRegistration'
   )

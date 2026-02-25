@@ -1,7 +1,7 @@
 import mongoose, { Schema, type Document } from 'mongoose'
 
 export interface PermissionDocument extends Document {
-  djangoId?: number
+  sourceId?: number
   name: string
   codename: string
   appLabel?: string
@@ -14,7 +14,7 @@ export interface PermissionDocument extends Document {
 
 const PermissionSchema = new Schema<PermissionDocument>(
   {
-    djangoId: { type: Number, index: true },
+    sourceId: { type: Number, index: true },
     name: { type: String, required: true },
     codename: { type: String, required: true },
     appLabel: { type: String },
@@ -25,4 +25,4 @@ const PermissionSchema = new Schema<PermissionDocument>(
   { timestamps: true }
 )
 
-export const PermissionModel = mongoose.model<PermissionDocument>('Permission', PermissionSchema, 'permissions')
+export const PermissionModel = mongoose.model<PermissionDocument>('Permission', PermissionSchema, 'Permission')

@@ -29,4 +29,4 @@ const AccessLogSchema = new Schema<AccessLogDocument>(
   { timestamps: true }
 )
 
-export const AccessLogModel = mongoose.model<AccessLogDocument>('AccessLog', AccessLogSchema, 'access_logs')
+export const AccessLogModel = mongoose.model<AccessLogDocument>('AccessLog', AccessLogSchema, 'AccessLog')

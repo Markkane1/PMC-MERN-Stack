@@ -23,4 +23,4 @@ const ApiLogSchema = new Schema<ApiLogDocument>(
   { timestamps: true }
 )
 
-export const ApiLogModel = mongoose.model<ApiLogDocument>('ApiLog', ApiLogSchema, 'api_logs')
+export const ApiLogModel = mongoose.model<ApiLogDocument>('ApiLog', ApiLogSchema, 'ApiLog')

@@ -60,4 +60,4 @@ ApplicantDetailSchema.pre('save', async function preSave(next) {
   return next()
 })
 
-export const ApplicantDetailModel = mongoose.model<ApplicantDetailDocument>('ApplicantDetail', ApplicantDetailSchema, 'applicantdetails')
+export const ApplicantDetailModel = mongoose.model<ApplicantDetailDocument>('ApplicantDetail', ApplicantDetailSchema, 'ApplicantDetail')

@@ -11,4 +11,4 @@ const ApplicationSubmittedSchema = new Schema<ApplicationSubmittedDocument>(
   { timestamps: true }
 )
 
-export const ApplicationSubmittedModel = mongoose.model<ApplicationSubmittedDocument>('ApplicationSubmitted', ApplicationSubmittedSchema, 'applicationsubmitteds')
+export const ApplicationSubmittedModel = mongoose.model<ApplicationSubmittedDocument>('ApplicationSubmitted', ApplicationSubmittedSchema, 'ApplicationSubmitted')

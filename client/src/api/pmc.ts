@@ -1,6 +1,20 @@
 import { useState, useCallback } from 'react'
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api'
+const envApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim()
+const normalizedEnvApiUrl = envApiUrl ? envApiUrl.replace(/\/+$/, '') : ''
+const API_BASE_URL = normalizedEnvApiUrl
+  ? `${normalizedEnvApiUrl}${normalizedEnvApiUrl.endsWith('/api') ? '' : '/api'}`
+  : '/api'
+
+type GenerateChalanPayload = {
+  amountDue: number
+  dueDate: string
+  description?: string
+  bankName?: string
+  bankBranch?: string
+  accountNumber?: string
+  bankCode?: string
+}
 
 // Hook for Payment APIs
 export const usePaymentAPI = () => {
@@ -28,17 +42,22 @@ export const usePaymentAPI = () => {
     }
   }, [])
 
-  const generateChalan = useCallback(async (applicantId: number) => {
+  const generateChalan = useCallback(async (applicantId: number, payload: GenerateChalanPayload) => {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch(`${API_BASE_URL}/pmc/chalan/generate`, {
+      const response = await fetch(`${API_BASE_URL}/pmc/chalan-pdf/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ applicantId }),
+        body: JSON.stringify({ applicantId, ...payload }),
         credentials: 'include',
       })
-      if (!response.ok) throw new Error('Failed to generate chalan')
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => null)
+        throw new Error(data?.message || 'Failed to generate chalan')
+      }
+
       return await response.blob()
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
@@ -53,10 +72,10 @@ export const usePaymentAPI = () => {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch(`${API_BASE_URL}/pmc/verify-payment`, {
+      const response = await fetch(`${API_BASE_URL}/pmc/payment-status/${applicantId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ applicantId, amount, referenceNumber }),
+        body: JSON.stringify({ amountPaid: amount, referenceNumber }),
         credentials: 'include',
       })
       const data = await response.json()

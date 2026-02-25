@@ -16,7 +16,7 @@ const mapUser = (user: any) => ({
   groups: user.groups || [],
   permissions: (user as any).permissions || [],
   directPermissions: (user as any).directPermissions || [],
-  djangoId: (user as any).djangoId,
+  sourceId: (user as any).sourceId,
   isActive: user.isActive,
   isSuperadmin: (user as any).isSuperadmin ?? ((user.groups || []).includes('Super')),
   createdAt: (user as any).createdAt,
@@ -87,7 +87,7 @@ export const userRepositoryMongo: UserRepository = {
       groups: user.groups,
       permissions: (user as any).permissions || [],
       directPermissions: (user as any).directPermissions || [],
-      djangoId: (user as any).djangoId,
+      sourceId: (user as any).sourceId,
       isActive: user.isActive,
     })
     return mapUser(created)
@@ -161,7 +161,7 @@ export const groupRepositoryMongo: GroupRepository = {
     const groups = await GroupModel.find({}).lean()
     return groups.map((group) => ({
       id: group._id.toString(),
-      djangoId: (group as any).djangoId,
+      sourceId: (group as any).sourceId,
       name: group.name,
       permissions: group.permissions || [],
       createdAt: (group as any).createdAt,
@@ -173,7 +173,7 @@ export const groupRepositoryMongo: GroupRepository = {
     const groups = await GroupModel.find({ name: { $in: names } }).lean()
     return groups.map((group) => ({
       id: group._id.toString(),
-      djangoId: (group as any).djangoId,
+      sourceId: (group as any).sourceId,
       name: group.name,
       permissions: group.permissions || [],
       createdAt: (group as any).createdAt,
@@ -186,7 +186,7 @@ export const groupRepositoryMongo: GroupRepository = {
     return group
       ? {
           id: group._id.toString(),
-          djangoId: (group as any).djangoId,
+          sourceId: (group as any).sourceId,
           name: group.name,
           permissions: group.permissions || [],
           createdAt: (group as any).createdAt,
@@ -200,7 +200,7 @@ export const groupRepositoryMongo: GroupRepository = {
     return group
       ? {
           id: group._id.toString(),
-          djangoId: (group as any).djangoId,
+          sourceId: (group as any).sourceId,
           name: group.name,
           permissions: group.permissions || [],
           createdAt: (group as any).createdAt,
@@ -213,11 +213,11 @@ export const groupRepositoryMongo: GroupRepository = {
     const created = await GroupModel.create({
       name: group.name,
       permissions: group.permissions || [],
-      djangoId: (group as any).djangoId,
+      sourceId: (group as any).sourceId,
     })
     return {
       id: created._id.toString(),
-      djangoId: (created as any).djangoId,
+      sourceId: (created as any).sourceId,
       name: created.name,
       permissions: created.permissions || [],
       createdAt: (created as any).createdAt,
@@ -230,7 +230,7 @@ export const groupRepositoryMongo: GroupRepository = {
     return updated
       ? {
           id: updated._id.toString(),
-          djangoId: (updated as any).djangoId,
+          sourceId: (updated as any).sourceId,
           name: updated.name,
           permissions: updated.permissions || [],
           createdAt: (updated as any).createdAt,
@@ -249,7 +249,7 @@ export const permissionRepositoryMongo: PermissionRepository = {
     const permissions = await PermissionModel.find({}).lean()
     return permissions.map((permission) => ({
       id: permission._id.toString(),
-      djangoId: (permission as any).djangoId,
+      sourceId: (permission as any).sourceId,
       name: permission.name,
       codename: permission.codename,
       appLabel: permission.appLabel,
@@ -265,7 +265,7 @@ export const permissionRepositoryMongo: PermissionRepository = {
     const permissions = await PermissionModel.find({ permissionKey: { $in: keys } }).lean()
     return permissions.map((permission) => ({
       id: permission._id.toString(),
-      djangoId: (permission as any).djangoId,
+      sourceId: (permission as any).sourceId,
       name: permission.name,
       codename: permission.codename,
       appLabel: permission.appLabel,
@@ -283,7 +283,7 @@ export const userAuditLogRepositoryMongo: UserAuditLogRepository = {
     const created = await UserAuditLogModel.create(log)
     return {
       id: created._id.toString(),
-      djangoId: (created as any).djangoId,
+      sourceId: (created as any).sourceId,
       userId: (created as any).userId,
       username: created.username,
       firstName: created.firstName,

@@ -295,7 +295,7 @@ export const getAlertDetails = asyncHandler(async (req: AuthRequest, res: Respon
 export const adminCreateAlert = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
     // Check admin permission
-    const hasPermission = req.user?.permissions?.includes('pmc_api.manage_alerts')
+    const hasPermission = req.user?.permissions?.includes('pmc.manage_alerts')
     if (!hasPermission) {
       return res.status(403).json({ success: false, message: 'Insufficient permissions' })
     }
@@ -333,7 +333,7 @@ export const adminCreateAlert = asyncHandler(async (req: AuthRequest, res: Respo
 export const adminGetAllAlerts = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
     // Check admin permission
-    const hasPermission = req.user?.permissions?.includes('pmc_api.manage_alerts')
+    const hasPermission = req.user?.permissions?.includes('pmc.manage_alerts')
     if (!hasPermission) {
       return res.status(403).json({ success: false, message: 'Insufficient permissions' })
     }

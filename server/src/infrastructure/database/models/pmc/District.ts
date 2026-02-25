@@ -23,4 +23,4 @@ const DistrictSchema = new Schema<DistrictDocument>(
   { timestamps: true }
 )
 
-export const DistrictModel = mongoose.model<DistrictDocument>('District', DistrictSchema, 'districts')
+export const DistrictModel = mongoose.model<DistrictDocument>('District', DistrictSchema, 'District')

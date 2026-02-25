@@ -247,8 +247,8 @@ export const downloadLatestApplicantDocument = asyncHandler(async (req: AuthRequ
     (await defaultDeps.applicantRepo.findOne({ createdBy: userId })) ||
     (await defaultDeps.applicantRepo.findOne({ created_by: userId } as any))
 
-  if (!applicant && req.user?.djangoId) {
-    applicant = await defaultDeps.applicantRepo.findOne({ created_by: req.user.djangoId } as any)
+  if (!applicant && req.user?.sourceId) {
+    applicant = await defaultDeps.applicantRepo.findOne({ created_by: req.user.sourceId } as any)
   }
 
   if (!applicant) {

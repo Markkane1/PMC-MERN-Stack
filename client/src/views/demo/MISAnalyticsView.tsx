@@ -680,7 +680,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                             className="header-logo"
                         />
 
-                        <span className="header-text">PMIS</span>
+                        <span className="header-text">PMC</span>
                     </div>
                 </Link>
                 <nav className="banner-nav">
@@ -752,7 +752,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
             <footer className="footer-container ">
                 <span className="footer-text">
                     Copyright &copy; {new Date().getFullYear()}{' '}
-                    <span className="font-semibold">PMIS</span> All rights
+                    <span className="font-semibold">PMC</span> All rights
                     reserved. <br />
                     Plastic Management Cell, Strategic Planning & Implementation
                     Unit, Environmental Protection Agency, and Environment

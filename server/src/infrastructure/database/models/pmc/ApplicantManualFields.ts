@@ -57,4 +57,4 @@ ApplicantManualFieldsSchema.pre('save', async function preSave(next) {
   return next()
 })
 
-export const ApplicantManualFieldsModel = mongoose.model<ApplicantManualFieldsDocument>('ApplicantManualFields', ApplicantManualFieldsSchema, 'applicantmanualfields')
+export const ApplicantManualFieldsModel = mongoose.model<ApplicantManualFieldsDocument>('ApplicantManualFields', ApplicantManualFieldsSchema, 'ApplicantManualFields')

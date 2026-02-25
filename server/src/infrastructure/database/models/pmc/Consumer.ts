@@ -43,4 +43,4 @@ ConsumerSchema.pre('save', async function preSave(next) {
   return next()
 })
 
-export const ConsumerModel = mongoose.model<ConsumerDocument>('Consumer', ConsumerSchema, 'consumers')
+export const ConsumerModel = mongoose.model<ConsumerDocument>('Consumer', ConsumerSchema, 'Consumer')

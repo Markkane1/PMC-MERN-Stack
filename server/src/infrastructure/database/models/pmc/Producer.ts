@@ -47,4 +47,4 @@ ProducerSchema.pre('save', async function preSave(next) {
   return next()
 })
 
-export const ProducerModel = mongoose.model<ProducerDocument>('Producer', ProducerSchema, 'producers')
+export const ProducerModel = mongoose.model<ProducerDocument>('Producer', ProducerSchema, 'Producer')

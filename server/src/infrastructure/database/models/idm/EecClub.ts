@@ -39,4 +39,4 @@ const EecClubSchema = new Schema<EecClubDocument>(
   { timestamps: true }
 )
 
-export const EecClubModel = mongoose.model<EecClubDocument>('EecClub', EecClubSchema, 'eecclubs')
+export const EecClubModel = mongoose.model<EecClubDocument>('EecClub', EecClubSchema, 'EecClub')

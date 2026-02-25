@@ -30,5 +30,5 @@ const ServiceConfigurationSchema = new Schema<ServiceConfigurationDocument>(
 export const ServiceConfigurationModel = mongoose.model<ServiceConfigurationDocument>(
   'ServiceConfiguration',
   ServiceConfigurationSchema,
-  'service_configurations'
+  'ServiceConfiguration'
 )

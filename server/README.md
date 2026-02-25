@@ -1,6 +1,6 @@
 # PMC MERN Backend
 
-This is a MERN (Express + MongoDB) re-implementation of the PMC Django backend. It exposes the same URL structure used by the React frontend (`/api/accounts/*` and `/api/pmc/*`).
+This is a MERN (Express + MongoDB) backend for PMC. It exposes `/api/accounts/*` and `/api/pmc/*` routes for the React frontend.
 
 ## Quick start
 
@@ -61,6 +61,6 @@ The API will run on `http://localhost:4000` by default. The React frontend expec
 
 ## Notes
 
-- Endpoints are aligned with the Django routes used by the frontend.
+- Endpoints are aligned with the frontend route contract.
 - File uploads are stored under `uploads/` and served via `/api/pmc/media/...`.
 - Some complex report/PDF outputs are simplified but compatible with the frontend download flow.

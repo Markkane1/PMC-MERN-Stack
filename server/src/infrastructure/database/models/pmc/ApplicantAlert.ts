@@ -236,5 +236,5 @@ ApplicantAlertSchema.pre('save', async function (next) {
 export const ApplicantAlertModel: Model<ApplicantAlertDocument> = mongoose.model<ApplicantAlertDocument>(
   'ApplicantAlert',
   ApplicantAlertSchema,
-  'applicantAlerts'
+  'ApplicantAlert'
 )

@@ -51,4 +51,4 @@ const PSIDTrackingSchema = new Schema<PSIDTrackingDocument>(
   { timestamps: true }
 )
 
-export const PSIDTrackingModel = mongoose.model<PSIDTrackingDocument>('PSIDTracking', PSIDTrackingSchema, 'psidtrackings')
+export const PSIDTrackingModel = mongoose.model<PSIDTrackingDocument>('PSIDTracking', PSIDTrackingSchema, 'PSIDTracking')

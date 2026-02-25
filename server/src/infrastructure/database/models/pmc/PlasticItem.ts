@@ -129,7 +129,7 @@ const PlasticItemSchema = new Schema<PlasticItemDocument>(
       sparse: true
     }
   },
-  { timestamps: true, collection: 'plasticitems' }
+  { timestamps: true, collection: 'PlasticItem' }
 )
 
 // Indexes
@@ -149,5 +149,5 @@ PlasticItemSchema.pre('save', async function preSave(next) {
 export const PlasticItemModel = mongoose.model<PlasticItemDocument>(
   'PlasticItem',
   PlasticItemSchema,
-  'plasticitems'
+  'PlasticItem'
 )
