@@ -210,13 +210,11 @@ export const listDistricts = asyncHandler(async (_req: Request, res: Response) =
   const cached = await cacheManager.get<any>(cacheKey)
   if (cached) {
     res.set('X-Cache', 'HIT')
-    console.log('✅ Cache HIT: districts')
     return res.json(cached)
   }
 
   // Cache miss - fetch from database
   res.set('X-Cache', 'MISS')
-  console.log('❌ Cache MISS: districts')
   
   const result = await parallelQueriesWithMetadata({
     districts: defaultDeps.districtRepo.list({}, { districtName: 1 }),
@@ -227,7 +225,10 @@ export const listDistricts = asyncHandler(async (_req: Request, res: Response) =
   const statsMap = new Map()
   if (result.stats && Array.isArray(result.stats)) {
     result.stats.forEach((stat: any) => {
-      statsMap.set(stat._id, stat)
+      const districtId = Number(stat?._id)
+      if (Number.isFinite(districtId)) {
+        statsMap.set(districtId, stat)
+      }
     })
   }
 
@@ -294,7 +295,11 @@ export const applicantLocationPublic = asyncHandler(async (_req: Request, res: R
   const fetchApplicants = async () => {
     if (applicantIds.length === 0) return []
     const results = await defaultDeps.applicantRepo.list({
-      $or: [{ numericId: { $in: numericApplicantIds } }, { id: { $in: applicantIds } }],
+      $or: [
+        { numericId: { $in: numericApplicantIds } },
+        { numeric_id: { $in: numericApplicantIds } },
+        { id: { $in: applicantIds } },
+      ],
     })
     if (results.length > 0) return results
     const all = await defaultDeps.applicantRepo.list()
@@ -317,11 +322,23 @@ export const applicantLocationPublic = asyncHandler(async (_req: Request, res: R
   const tehsils = await defaultDeps.tehsilRepo.list()
   const districtMap = new Map(districts.map((d: any) => [d.districtId, d]))
   const tehsilMap = new Map(tehsils.map((t: any) => [t.tehsilId, t]))
+  const manualByApplicant = new Map<string, any>()
+  for (const manual of manualFields as any[]) {
+    const key = getApplicantId(manual)
+    if (!key || manualByApplicant.has(key)) continue
+    manualByApplicant.set(key, manual)
+  }
+  const profileByApplicant = new Map<string, any>()
+  for (const profile of profiles as any[]) {
+    const key = getApplicantId(profile)
+    if (!key || profileByApplicant.has(key)) continue
+    profileByApplicant.set(key, profile)
+  }
 
   const data = applicants.map((a: any) => {
     const applicantKey = getApplicantId(a) ?? String((a as any).numericId ?? (a as any).id ?? '')
-    const manual = manualFields.find((m: any) => getApplicantId(m) === applicantKey)
-    const profile = profiles.find((p: any) => getApplicantId(p) === applicantKey)
+    const manual = applicantKey ? manualByApplicant.get(applicantKey) : null
+    const profile = applicantKey ? profileByApplicant.get(applicantKey) : null
     const districtId = profile?.districtId ?? profile?.district_id ?? null
     const tehsilId = profile?.tehsilId ?? profile?.tehsil_id ?? null
     const district = districtId ? districtMap.get(Number(districtId)) : null
@@ -360,13 +377,11 @@ export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: R
   const cached = await cacheManager.get<any>(cacheKey)
   if (cached) {
     res.set('X-Cache', 'HIT')
-    console.log('✅ Cache HIT: applicant statistics')
     return res.json(cached)
   }
 
   // Cache miss
   res.set('X-Cache', 'MISS')
-  console.log('❌ Cache MISS: applicant statistics')
 
   // Fetch data in parallel: applicants, business profiles, and districts
   const result = await parallelQueriesWithMetadata({
@@ -381,11 +396,18 @@ export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: R
 
   const { applicants, profiles, districts, statsByStatus, statsByDistrict } = result
   const districtMap = new Map(districts.map((d: any) => [d.districtId, d.districtName]))
+  const profileByApplicantId = new Map<number, any>()
+  for (const profile of profiles as any[]) {
+    const applicantId = Number((profile as any)?.applicantId ?? (profile as any)?.applicant_id)
+    if (!Number.isFinite(applicantId) || profileByApplicantId.has(applicantId)) continue
+    profileByApplicantId.set(applicantId, profile)
+  }
 
   // Build district statistics
   const districtData: Record<string, Record<string, number>> = {}
   for (const applicant of applicants) {
-    const profile = profiles.find((p: any) => (p as any).applicantId === (applicant as any).numericId)
+    const applicantId = Number((applicant as any)?.numericId ?? (applicant as any)?.id)
+    const profile = Number.isFinite(applicantId) ? profileByApplicantId.get(applicantId) : null
     const districtName = (profile?.districtId ? districtMap.get(profile.districtId) : null) || 'Unknown'
     const regFor = (applicant as any).registrationFor || (applicant as any).registration_for || 'Unknown'
     districtData[districtName] ||= {}
@@ -416,7 +438,9 @@ export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: R
 export const misApplicantStatistics = applicantStatistics
 
 export const districtPlasticStats = asyncHandler(async (_req: Request, res: Response) => {
-  const districts = await defaultDeps.districtRepo.list()
+  const includeTotals = ['1', 'true', 'yes'].includes(
+    String((_req.query as any)?.include_totals || '').toLowerCase()
+  )
 
   const readNumber = (value: any) => {
     if (value === null || value === undefined || value === '') return 0
@@ -434,106 +458,136 @@ export const districtPlasticStats = asyncHandler(async (_req: Request, res: Resp
     return 0
   }
 
-  const result = []
-  for (const district of districts) {
-    const profiles = await defaultDeps.businessProfileRepo.listByDistrictId((district as any).districtId)
-    const applicantIds = profiles.map((p: any) => (p as any).applicantId).filter(Boolean)
+  const [districts, profiles] = await Promise.all([
+    defaultDeps.districtRepo.list(),
+    defaultDeps.businessProfileRepo.list(),
+  ])
 
-    const producers = await defaultDeps.producerRepo.listByApplicantIds(applicantIds)
-    const consumers = await defaultDeps.consumerRepo.listByApplicantIds(applicantIds)
-    const collectors = await defaultDeps.collectorRepo.listByApplicantIds(applicantIds)
-    const recyclers = await defaultDeps.recyclerRepo.listByApplicantIds(applicantIds)
+  const applicantToDistrictId = new Map<number, number>()
+  for (const profile of profiles as any[]) {
+    const applicantId = Number((profile as any)?.applicantId ?? (profile as any)?.applicant_id)
+    const districtId = Number((profile as any)?.districtId ?? (profile as any)?.district_id)
+    if (Number.isFinite(applicantId) && Number.isFinite(districtId)) {
+      applicantToDistrictId.set(applicantId, districtId)
+    }
+  }
 
-    const produced = producers.reduce(
-      (sum: number, p: any) =>
-        sum +
-        readFromKeys(p, [
-          'totalCapacityValue',
-          'total_capacity_value',
-          'total_capacity',
-          'averageProductionCapacity',
-          'average_production_capacity',
-          'production_capacity',
-          'avg_production_capacity',
-        ]),
-      0
-    )
-    const distributed = consumers.reduce(
-      (sum: number, c: any) =>
-        sum +
-        readFromKeys(c, [
-          'consumption',
-          'averageSale',
-          'average_sale',
-          'average_sale_per_day',
-          'avg_sale',
-          'avg_sale_per_day',
-        ]),
-      0
-    )
-    const collected = collectors.reduce(
-      (sum: number, c: any) =>
-        sum +
-        readFromKeys(c, [
-          'totalCapacityValue',
-          'total_capacity_value',
-          'total_capacity',
-          'averageCollection',
-          'average_collection',
-          'avg_collection',
-        ]),
-      0
-    )
+  const applicantIds = Array.from(applicantToDistrictId.keys())
+  const [producers, consumers, collectors, recyclers] = await Promise.all([
+    applicantIds.length ? defaultDeps.producerRepo.listByApplicantIds(applicantIds) : Promise.resolve([]),
+    applicantIds.length ? defaultDeps.consumerRepo.listByApplicantIds(applicantIds) : Promise.resolve([]),
+    applicantIds.length ? defaultDeps.collectorRepo.listByApplicantIds(applicantIds) : Promise.resolve([]),
+    applicantIds.length ? defaultDeps.recyclerRepo.listByApplicantIds(applicantIds) : Promise.resolve([]),
+  ])
 
-    const wasteCollected = recyclers.reduce((sum: number, r: any) => {
-      const items = Array.isArray((r as any).selectedCategories)
-        ? (r as any).selectedCategories
-        : Array.isArray((r as any).selected_categories)
-            ? (r as any).selected_categories
-            : []
-      return (
-        sum +
-        items.reduce(
-          (s: number, item: any) =>
-            s +
-            readFromKeys(item, [
-              'wasteCollection',
-              'waste_collection',
-              'wasteCollected',
-              'waste_collected',
-            ]),
-          0
-        )
-      )
-    }, 0)
+  type DistrictStats = {
+    produced: number
+    distributed: number
+    collected: number
+    wasteCollected: number
+    wasteDisposed: number
+  }
 
-    const wasteDisposed = recyclers.reduce((sum: number, r: any) => {
-      const items = Array.isArray((r as any).selectedCategories)
-        ? (r as any).selectedCategories
-        : Array.isArray((r as any).selected_categories)
-            ? (r as any).selected_categories
-            : []
-      return (
-        sum +
-        items.reduce(
-          (s: number, item: any) =>
-            s +
-            readFromKeys(item, [
-              'wasteDisposal',
-              'waste_disposal',
-              'wasteDisposed',
-              'waste_disposed',
-            ]),
-          0
-        )
-      )
-    }, 0)
+  const byDistrictId = new Map<number, DistrictStats>()
+  const getStats = (districtId: number): DistrictStats => {
+    let stats = byDistrictId.get(districtId)
+    if (!stats) {
+      stats = { produced: 0, distributed: 0, collected: 0, wasteCollected: 0, wasteDisposed: 0 }
+      byDistrictId.set(districtId, stats)
+    }
+    return stats
+  }
 
+  const resolveDistrictId = (record: any): number | null => {
+    const applicantId = Number((record as any)?.applicantId ?? (record as any)?.applicant_id)
+    if (!Number.isFinite(applicantId)) return null
+    const districtId = applicantToDistrictId.get(applicantId)
+    return districtId !== undefined ? districtId : null
+  }
+
+  for (const producer of producers as any[]) {
+    const districtId = resolveDistrictId(producer)
+    if (districtId === null) continue
+    const stats = getStats(districtId)
+    stats.produced += readFromKeys(producer, [
+      'totalCapacityValue',
+      'total_capacity_value',
+      'total_capacity',
+      'averageProductionCapacity',
+      'average_production_capacity',
+      'production_capacity',
+      'avg_production_capacity',
+    ])
+  }
+
+  for (const consumer of consumers as any[]) {
+    const districtId = resolveDistrictId(consumer)
+    if (districtId === null) continue
+    const stats = getStats(districtId)
+    stats.distributed += readFromKeys(consumer, [
+      'consumption',
+      'averageSale',
+      'average_sale',
+      'average_sale_per_day',
+      'avg_sale',
+      'avg_sale_per_day',
+    ])
+  }
+
+  for (const collector of collectors as any[]) {
+    const districtId = resolveDistrictId(collector)
+    if (districtId === null) continue
+    const stats = getStats(districtId)
+    stats.collected += readFromKeys(collector, [
+      'totalCapacityValue',
+      'total_capacity_value',
+      'total_capacity',
+      'averageCollection',
+      'average_collection',
+      'avg_collection',
+    ])
+  }
+
+  for (const recycler of recyclers as any[]) {
+    const districtId = resolveDistrictId(recycler)
+    if (districtId === null) continue
+    const stats = getStats(districtId)
+    const items = Array.isArray((recycler as any).selectedCategories)
+      ? (recycler as any).selectedCategories
+      : Array.isArray((recycler as any).selected_categories)
+          ? (recycler as any).selected_categories
+          : []
+
+    for (const item of items) {
+      stats.wasteCollected += readFromKeys(item, [
+        'wasteCollection',
+        'waste_collection',
+        'wasteCollected',
+        'waste_collected',
+      ])
+      stats.wasteDisposed += readFromKeys(item, [
+        'wasteDisposal',
+        'waste_disposal',
+        'wasteDisposed',
+        'waste_disposed',
+      ])
+    }
+  }
+
+  const result = (districts as any[]).map((district: any) => {
+    const districtId = Number((district as any).districtId ?? (district as any).district_id)
+    const stats = Number.isFinite(districtId) ? byDistrictId.get(districtId) : null
+    const produced = stats?.produced ?? 0
+    const distributed = stats?.distributed ?? 0
+    const collected = stats?.collected ?? 0
+    const wasteCollected = stats?.wasteCollected ?? 0
+    const wasteDisposed = stats?.wasteDisposed ?? 0
     const maxCollected = Math.max(collected, wasteCollected)
-    const recyclingEfficiency = maxCollected === 0 ? 0 : Math.max(0, Math.round((wasteDisposed / maxCollected) * 10000) / 100)
+    const recyclingEfficiency =
+      maxCollected === 0 ? 0 : Math.max(0, Math.round((wasteDisposed / maxCollected) * 10000) / 100)
     const unmanagedWaste = Math.max(0, maxCollected - wasteDisposed)
 
-    result.push({
+    return {
       district_id: (district as any).districtId,
       district_name: (district as any).districtName,
       produced_kg_per_day: produced,
@@ -543,10 +597,42 @@ export const districtPlasticStats = asyncHandler(async (_req: Request, res: Resp
       waste_collected_kg_per_day: wasteCollected,
       unmanaged_waste_kg_per_day: unmanagedWaste,
       recycling_efficiency: recyclingEfficiency,
-    })
+    }
+  })
+
+  if (!includeTotals) {
+    return res.json(result)
   }
 
-  return res.json(result)
+  const totals = result.reduce(
+    (acc, row: any) => {
+      acc.produced_kg_per_day += readNumber(row.produced_kg_per_day)
+      acc.distributed_kg_per_day += readNumber(row.distributed_kg_per_day)
+      acc.collected_kg_per_day += readNumber(row.collected_kg_per_day)
+      acc.waste_collected_kg_per_day += readNumber(row.waste_collected_kg_per_day)
+      acc.waste_disposed_kg_per_day += readNumber(row.waste_disposed_kg_per_day)
+      acc.unmanaged_waste_kg_per_day += readNumber(row.unmanaged_waste_kg_per_day)
+      return acc
+    },
+    {
+      produced_kg_per_day: 0,
+      distributed_kg_per_day: 0,
+      collected_kg_per_day: 0,
+      waste_collected_kg_per_day: 0,
+      waste_disposed_kg_per_day: 0,
+      unmanaged_waste_kg_per_day: 0,
+      recycling_efficiency: 0,
+    }
+  )
+
+  const maxCollected = Math.max(totals.collected_kg_per_day, totals.waste_collected_kg_per_day)
+  totals.recycling_efficiency =
+    maxCollected === 0 ? 0 : Math.max(0, Math.round((totals.waste_disposed_kg_per_day / maxCollected) * 10000) / 100)
+
+  return res.json({
+    rows: result,
+    totals,
+  })
 })
 
 export const districtByLatLon = asyncHandler(async (req: Request, res: Response) => {
@@ -556,7 +642,12 @@ export const districtByLatLon = asyncHandler(async (req: Request, res: Response)
     return res.status(400).json({ error: 'lat and lon are required' })
   }
 
-  const districts = await defaultDeps.districtRepo.list({ geom: { $ne: null } })
+  const cacheKey = 'districts:geom:v1'
+  let districts = await cacheManager.get<any[]>(cacheKey)
+  if (!Array.isArray(districts)) {
+    districts = await defaultDeps.districtRepo.list({ geom: { $ne: null } })
+    await cacheManager.set(cacheKey, districts, { ttl: 1800 })
+  }
   const point: [number, number] = [lon, lat]
 
   for (const district of districts) {

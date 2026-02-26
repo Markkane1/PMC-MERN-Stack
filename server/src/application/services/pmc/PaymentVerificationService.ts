@@ -2,6 +2,7 @@ import type {
   ApplicantRepository,
   ApplicantFeeRepository,
   PSIDTrackingRepository,
+  BusinessProfileRepository,
 } from '../../../domain/repositories/pmc'
 import { invalidatePmcDashboardCaches } from './DashboardCacheService'
 
@@ -47,7 +48,8 @@ export class PaymentVerificationService {
   constructor(
     private applicantRepo: ApplicantRepository,
     private feeRepo: ApplicantFeeRepository,
-    private psidRepo: PSIDTrackingRepository
+    private psidRepo: PSIDTrackingRepository,
+    private businessProfileRepo?: BusinessProfileRepository
   ) {}
 
   /**
@@ -344,39 +346,120 @@ export class PaymentVerificationService {
     overdueCount: number
   }> {
     try {
-      // Get all applicants (optionally filtered by district)
-      const filter: Record<string, any> = {}
-      if (districtId) {
-        filter.districtId = Number(districtId)
+      const districtNumericId = districtId !== undefined ? Number(districtId) : null
+      const hasDistrictFilter = Number.isFinite(districtNumericId)
+      let targetApplicantIds: number[] | null = null
+
+      if (hasDistrictFilter && this.businessProfileRepo) {
+        const profiles = await this.businessProfileRepo.listByDistrictId(Number(districtNumericId))
+        targetApplicantIds = Array.from(
+          new Set(
+            (profiles || [])
+              .map((profile: any) => Number(profile?.applicantId ?? profile?.applicant_id))
+              .filter((id) => Number.isFinite(id))
+          )
+        )
       }
 
-      const applicants = await this.applicantRepo.list(filter)
-      const totalApplicants = applicants.length
+      const applicantFilter =
+        targetApplicantIds && targetApplicantIds.length
+          ? {
+              $or: [
+                { numericId: { $in: targetApplicantIds } },
+                { numeric_id: { $in: targetApplicantIds } },
+                { id: { $in: targetApplicantIds.map(String) } },
+              ],
+            }
+          : {}
+
+      const applicants = await this.applicantRepo.list(applicantFilter)
+      const applicantIds = Array.from(
+        new Set(
+          applicants
+            .map((applicant: any) => Number((applicant as any)?.numericId ?? (applicant as any)?.id))
+            .filter((id) => Number.isFinite(id))
+        )
+      )
+
+      if (hasDistrictFilter && targetApplicantIds && !targetApplicantIds.length) {
+        return {
+          totalApplicants: 0,
+          totalPaymentRequired: 0,
+          totalPaymentReceived: 0,
+          totalPending: 0,
+          paymentCollectionRate: 0,
+          overdueCount: 0,
+        }
+      }
+
+      const [fees, psidEntries] = await Promise.all([
+        applicantIds.length && this.feeRepo.listByApplicantIds
+          ? this.feeRepo.listByApplicantIds(applicantIds)
+          : this.feeRepo.list(),
+        this.psidRepo.list(),
+      ])
+
+      const applicantIdSet = new Set(applicantIds)
+      const dueByApplicant = new Map<number, number>()
+      for (const fee of fees as any[]) {
+        const applicantId = Number((fee as any)?.applicantId ?? (fee as any)?.applicant_id)
+        if (!Number.isFinite(applicantId) || !applicantIdSet.has(applicantId)) continue
+        const amount = Number((fee as any)?.feeAmount ?? (fee as any)?.fee_amount ?? 0)
+        if (!Number.isFinite(amount)) continue
+        dueByApplicant.set(applicantId, (dueByApplicant.get(applicantId) || 0) + amount)
+      }
+
+      const paidByApplicant = new Map<number, number>()
+      const lastPaidAtByApplicant = new Map<number, Date>()
+      for (const entry of psidEntries as any[]) {
+        const applicantId = Number((entry as any)?.applicantId ?? (entry as any)?.applicant_id)
+        if (!Number.isFinite(applicantId) || !applicantIdSet.has(applicantId)) continue
+
+        const paymentStatus = String((entry as any)?.paymentStatus ?? (entry as any)?.payment_status ?? '').toUpperCase()
+        if (!['PAID', 'CONFIRMED', 'SUCCESS', 'COMPLETED'].includes(paymentStatus)) continue
+
+        const amount = Number((entry as any)?.amountPaid ?? (entry as any)?.amount_paid ?? (entry as any)?.amountWithinDueDate ?? (entry as any)?.amount_within_due_date ?? 0)
+        if (Number.isFinite(amount)) {
+          paidByApplicant.set(applicantId, (paidByApplicant.get(applicantId) || 0) + amount)
+        }
+
+        const paidAtRaw = (entry as any)?.paidDate ?? (entry as any)?.paid_date ?? (entry as any)?.updatedAt ?? (entry as any)?.createdAt
+        const paidAt = paidAtRaw ? new Date(paidAtRaw) : null
+        if (paidAt && Number.isFinite(paidAt.getTime())) {
+          const current = lastPaidAtByApplicant.get(applicantId)
+          if (!current || paidAt.getTime() > current.getTime()) {
+            lastPaidAtByApplicant.set(applicantId, paidAt)
+          }
+        }
+      }
 
       let totalPaymentRequired = 0
       let totalPaymentReceived = 0
       let totalPending = 0
       let overdueCount = 0
 
-      // Calculate aggregates
-      for (const applicant of applicants) {
-        const applicantId = (applicant as any).id || (applicant as any).numericId
-        const status = await this.getPaymentStatus(applicantId)
+      for (const applicantId of applicantIds) {
+        const totalDue = dueByApplicant.get(applicantId) || 0
+        const totalPaid = paidByApplicant.get(applicantId) || 0
+        const remainingBalance = Math.max(0, totalDue - totalPaid)
+        totalPaymentRequired += totalDue
+        totalPaymentReceived += totalPaid
+        totalPending += remainingBalance
 
-        totalPaymentRequired += status.totalDue
-        totalPaymentReceived += status.totalPaid
-        totalPending += status.remainingBalance
-
-        if (status.status === 'OVERDUE') {
-          overdueCount++
+        if (remainingBalance > 0 && totalPaid <= 0) {
+          const dueDate = this.calculateNextDue(lastPaidAtByApplicant.get(applicantId))
+          if (this.calculateDaysOverdue(dueDate) > 0) {
+            overdueCount += 1
+          }
         }
       }
 
-      const paymentCollectionRate =
-        totalPaymentRequired > 0 ? Math.round((totalPaymentReceived / totalPaymentRequired) * 100) : 0
+      const paymentCollectionRate = totalPaymentRequired > 0
+        ? Math.round((totalPaymentReceived / totalPaymentRequired) * 100)
+        : 0
 
       return {
-        totalApplicants,
+        totalApplicants: applicantIds.length,
         totalPaymentRequired,
         totalPaymentReceived,
         totalPending,

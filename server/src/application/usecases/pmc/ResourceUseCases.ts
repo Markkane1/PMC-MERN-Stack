@@ -344,8 +344,33 @@ export const applicationAssignmentController = {
     const assignment = await applicationAssignmentCrudRepo.updateById(req.params.id, payload)
     if (!assignment) return res.status(404).json({ message: 'Not found' })
 
+    const resolvedApplicantId = payload.applicantId || (assignment as any).applicantId
+    const resolvedAssignedGroup = payload.assignedGroup || (assignment as any).assignedGroup
+
+    if (resolvedApplicantId && resolvedAssignedGroup) {
+      await applicantRepositoryMongo.updateOne(
+        { numericId: resolvedApplicantId },
+        { assignedGroup: resolvedAssignedGroup }
+      )
+
+      if (resolvedAssignedGroup !== 'APPLICANT' && resolvedAssignedGroup !== 'Download License') {
+        await applicantRepositoryMongo.updateOne(
+          { numericId: resolvedApplicantId },
+          { applicationStatus: 'In Process', updatedAt: new Date() }
+        )
+      }
+
+      try {
+        await createOrUpdateLicense(resolvedApplicantId, req.user?._id)
+      } catch (error) {
+        console.warn(
+          `Warning: Failed to create/update license for applicant ${resolvedApplicantId}: ${error instanceof Error ? error.message : 'Unknown error'}`
+        )
+      }
+    }
+
     await invalidatePmcDashboardCaches({
-      applicantId: (assignment as any).applicantId,
+      applicantId: resolvedApplicantId || (assignment as any).applicantId,
       includeSubmitted: true,
       includeFees: false,
     })

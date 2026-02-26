@@ -1,63 +1,55 @@
-﻿# PMC MERN Stack
+# PMC Mernstack
 
-This repo contains the MERN backend and React frontend for the PMC system.
+Monorepo for the PMC web application.
 
-## 🔒 SECURITY NOTICE
+- `server`: Express + TypeScript + MongoDB API
+- `client`: React + TypeScript + Vite frontend
 
-This application handles sensitive government data. **IMPORTANT:** Before deploying to production, you MUST:
+## Prerequisites
 
-1. **Read** [SECURITY_AUDIT_REPORT.md](SECURITY_AUDIT_REPORT.md) for detailed security assessment
-2. **Review** [SECURITY_CHANGES_SUMMARY.md](SECURITY_CHANGES_SUMMARY.md) for fixes implemented
-3. **Follow** [SECURITY_HARDENING_GUIDE.md](SECURITY_HARDENING_GUIDE.md) for deployment steps
-
-**Critical Environment Variables Required:**
-- `JWT_SECRET` - MUST be set to a cryptographically random 32+ character string (never 'replace_me')
-- `MONGO_URI` - Must point to MongoDB Atlas or secure instance (never localhost in production)
-- `CORS_ORIGIN` - Must be exact domain (never use `*` wildcard in production)
-- `NODE_ENV` - Must be `production` for production deployments
-
-⚠️ **Security fixes implemented:** Rate limiting, file upload validation, helmet CSP, HTTPS enforcement, permission controls removed, environment validation.
-
-## Structure
-- `server` - Express + MongoDB backend
-- `client` - React (Vite) frontend
+- Node.js 20+
+- npm 10+
+- MongoDB instance
 
 ## Quick Start
 
-### 1) Install dependencies
+1. Install dependencies:
 
 ```powershell
-cd "PMC Mernstack"
 npm install
 npm install --prefix server
 npm install --prefix client
 ```
 
-### 2) Run both apps (dev)
+2. Create environment files:
+
+```powershell
+Copy-Item server/.env.example server/.env
+Copy-Item client/.env.example client/.env
+```
+
+3. Start backend + frontend in development mode:
 
 ```powershell
 npm run dev
 ```
 
-### 3) Run backend only
+## Root Scripts
 
-```powershell
-npm run dev:be
-```
+- `npm run dev`: run backend and frontend together
+- `npm run dev:be`: run backend only
+- `npm run dev:fe`: run frontend only
+- `npm run build`: build backend and frontend
+- `npm run lint`: lint backend and frontend
 
-### 4) Run frontend only
+## Service URLs (Default)
 
-```powershell
-npm run dev:fe
-```
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:4000`
+- API base: `http://localhost:4000/api`
 
-## Notes
-- Frontend API proxy targets `http://127.0.0.1:4000`.
-- Backend runs on port `4000` by default.
-- Configure backend env in `server/.env` (see `.env.example`).
+## Additional Docs
 
-## Build
-
-```powershell
-npm run build
-```
+- [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [PRE_DEPLOYMENT_CHECKLIST.md](PRE_DEPLOYMENT_CHECKLIST.md)

@@ -202,9 +202,16 @@ export const exportApplicant = asyncHandler(async (_req: Request, res: Response)
   const profiles = await defaultDeps.businessProfileRepo.listByApplicantIds(applicants.map((a: any) => (a as any).numericId))
   const districts = await defaultDeps.districtRepo.list()
   const districtMap = new Map(districts.map((d: any) => [d.districtId, d.districtName]))
+  const profileByApplicantId = new Map<number, any>()
+  for (const profile of profiles as any[]) {
+    const applicantId = Number((profile as any)?.applicantId ?? (profile as any)?.applicant_id)
+    if (!Number.isFinite(applicantId) || profileByApplicantId.has(applicantId)) continue
+    profileByApplicantId.set(applicantId, profile)
+  }
 
   for (const applicant of applicants) {
-    const profile = profiles.find((p: any) => (p as any).applicantId === (applicant as any).numericId)
+    const applicantId = Number((applicant as any)?.numericId ?? (applicant as any)?.id)
+    const profile = Number.isFinite(applicantId) ? profileByApplicantId.get(applicantId) : null
     const districtName = profile?.districtId ? districtMap.get(profile.districtId) : ''
     sheet.addRow({
       trackingNumber: (applicant as any).trackingNumber,

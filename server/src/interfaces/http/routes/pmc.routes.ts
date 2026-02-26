@@ -281,23 +281,22 @@ pmcRouter.post('/plmis/webhook/payment-failed', plmisUseCases.plmisPaymentFailed
 
 // Inspection reports
 pmcRouter.get('/inspection-report/', authenticate, requirePermission(['pmc.view_inspectionreport']), listInspectionReports)
-pmcRouter.get('/inspection-report/:id/', authenticate, requirePermission(['pmc.view_inspectionreport']), getInspectionReport)
-pmcRouter.post('/inspection-report/', authenticate, requirePermission(['pmc.add_inspectionreport']), ...createInspectionReport)
-pmcRouter.patch('/inspection-report/:id/', authenticate, requirePermission(['pmc.change_inspectionreport']), ...updateInspectionReport)
-pmcRouter.delete('/inspection-report/:id/', authenticate, requirePermission(['pmc.delete_inspectionreport']), deleteInspectionReport)
-
 pmcRouter.get('/inspection-report/district_summary/', authenticate, requirePermission(['pmc.view_inspectionreport']), districtSummary)
 pmcRouter.get('/inspection-report/export-all-inspections-excel/', authenticate, requirePermission(['pmc.view_inspectionreport']), exportAllInspectionsExcel)
 pmcRouter.get('/inspection-report/export-all-inspections-pdf/', authenticate, requirePermission(['pmc.view_inspectionreport']), exportAllInspectionsPdf)
 pmcRouter.get('/inspection-report/export-district-summary-excel/', authenticate, requirePermission(['pmc.view_inspectionreport']), exportDistrictSummaryExcel)
 pmcRouter.get('/inspection-report/export-district-summary-pdf/', authenticate, requirePermission(['pmc.view_inspectionreport']), exportDistrictSummaryPdf)
+pmcRouter.post('/inspection-report/', authenticate, requirePermission(['pmc.add_inspectionreport']), ...createInspectionReport)
+pmcRouter.get('/inspection-report/:id/', authenticate, requirePermission(['pmc.view_inspectionreport']), getInspectionReport)
+pmcRouter.patch('/inspection-report/:id/', authenticate, requirePermission(['pmc.change_inspectionreport']), ...updateInspectionReport)
+pmcRouter.delete('/inspection-report/:id/', authenticate, requirePermission(['pmc.delete_inspectionreport']), deleteInspectionReport)
 
 pmcRouter.get('/inspection-report-cached/', authenticate, requirePermission(['pmc.view_inspectionreport']), listCachedInspectionReports)
+pmcRouter.get('/inspection-report-cached/all_other_single_use_plastics/', authenticate, requirePermission(['pmc.view_singleuseplasticssnapshot']), allOtherSingleUsePlastics)
 pmcRouter.get('/inspection-report-cached/:id/', authenticate, requirePermission(['pmc.view_inspectionreport']), getCachedInspectionReport)
 pmcRouter.post('/inspection-report-cached/', authenticate, requirePermission(['pmc.add_inspectionreport']), createCachedInspectionReport)
 pmcRouter.patch('/inspection-report-cached/:id/', authenticate, requirePermission(['pmc.change_inspectionreport']), updateCachedInspectionReport)
 pmcRouter.delete('/inspection-report-cached/:id/', authenticate, requirePermission(['pmc.delete_inspectionreport']), deleteCachedInspectionReport)
-pmcRouter.get('/inspection-report-cached/all_other_single_use_plastics/', authenticate, requirePermission(['pmc.view_singleuseplasticssnapshot']), allOtherSingleUsePlastics)
 
 // Competition
 pmcRouter.get('/competition/', listCompetitions)

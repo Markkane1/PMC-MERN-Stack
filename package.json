@@ -14,7 +14,6 @@
     "dev:full": "npm run dev"
   },
   "devDependencies": {
-    "@types/node": "^25.2.3",
     "concurrently": "^9.0.1"
   }
 }

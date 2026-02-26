@@ -665,9 +665,8 @@ const Home = () => {
 
     const handleExport = async () => {
         try {
-            const response = await AxiosBase.post(
+            const response = await AxiosBase.get(
                 '/pmc/export-applicant/',
-                { applicant_ids: flattenedData?.map((row) => row.id) },
                 { responseType: 'blob' },
             )
             const url = window.URL.createObjectURL(new Blob([response.data]))

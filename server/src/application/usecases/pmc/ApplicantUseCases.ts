@@ -135,17 +135,11 @@ const legacyAssignedGroupFilter = (value: string | Record<string, unknown>) => {
     const values = Array.isArray((value as any).$in)
       ? (value as any).$in.map((v: unknown) => String(v))
       : []
-    return {
-      $or: [
-        { assignedGroup: { $in: values } },
-        { assigned_group: { $in: values } },
-      ],
-    }
+    if (!values.length) return { _id: null }
+    return { $or: [{ assignedGroup: { $in: values } }, { assigned_group: { $in: values } }] }
   }
   const normalizedValue = String(value)
-  return {
-    $or: [{ assignedGroup: normalizedValue }, { assigned_group: normalizedValue }],
-  }
+  return { $or: [{ assignedGroup: normalizedValue }, { assigned_group: normalizedValue }] }
 }
 
 const legacyApplicationStatusFilter = (value: string | Record<string, unknown>) => {
@@ -153,57 +147,55 @@ const legacyApplicationStatusFilter = (value: string | Record<string, unknown>) 
     const values = Array.isArray((value as any).$in)
       ? (value as any).$in.map((v: unknown) => String(v))
       : []
-    return {
-      $or: [
-        { applicationStatus: { $in: values } },
-        { application_status: { $in: values } },
-      ],
-    }
+    if (!values.length) return { _id: null }
+    return { $or: [{ applicationStatus: { $in: values } }, { application_status: { $in: values } }] }
   }
   const normalizedValue = String(value)
-  return {
-    $or: [
-      { applicationStatus: normalizedValue },
-      { application_status: normalizedValue },
-    ],
-  }
+  return { $or: [{ applicationStatus: normalizedValue }, { application_status: normalizedValue }] }
 }
 
 const legacyNumericIdFilter = (value: Record<string, unknown> | number[] | number) => {
   if (typeof value === 'object' && value && '$in' in value) {
-    const rawIds = Array.isArray((value as any).$in) ? (value as any).$in : []
+    const rawIds = Array.isArray((value as any).$in)
+      ? (value as any).$in.filter((v: any) => v !== undefined && v !== null && String(v).trim() !== '')
+      : []
+    if (!rawIds.length) return { _id: null }
     const numericIds = rawIds.map((v: any) => Number(v)).filter((v: number) => Number.isFinite(v))
-    const stringIds = rawIds.map((v: any) => String(v))
-    return {
-      $or: [
-        { numericId: { $in: numericIds } },
-        { id: { $in: stringIds } },
-        { numeric_id: { $in: numericIds } },
-      ],
+    const stringIds = Array.from(new Set(rawIds.map((v: any) => String(v).trim())))
+
+    const clauses: any[] = []
+    if (numericIds.length) {
+      clauses.push({ numericId: { $in: numericIds } }, { numeric_id: { $in: numericIds } })
     }
+    if (stringIds.length) {
+      clauses.push({ id: { $in: stringIds } })
+    }
+
+    return clauses.length ? { $or: clauses } : { _id: null }
   }
 
   if (Array.isArray(value)) {
-    const numericIds = value.map((v: any) => Number(v)).filter((v: number) => Number.isFinite(v))
-    const stringIds = value.map((v: any) => String(v))
-    return {
-      $or: [
-        { numericId: { $in: numericIds } },
-        { id: { $in: stringIds } },
-        { numeric_id: { $in: numericIds } },
-      ],
+    const rawIds = value.filter((v: any) => v !== undefined && v !== null && String(v).trim() !== '')
+    if (!rawIds.length) return { _id: null }
+    const numericIds = rawIds.map((v: any) => Number(v)).filter((v: number) => Number.isFinite(v))
+    const stringIds = Array.from(new Set(rawIds.map((v: any) => String(v).trim())))
+    const clauses: any[] = []
+    if (numericIds.length) {
+      clauses.push({ numericId: { $in: numericIds } }, { numeric_id: { $in: numericIds } })
     }
+    if (stringIds.length) {
+      clauses.push({ id: { $in: stringIds } })
+    }
+    return clauses.length ? { $or: clauses } : { _id: null }
   }
 
   const numericId = Number(value)
   const stringId = String(value)
-  return {
-    $or: [
-      { numericId: Number.isFinite(numericId) ? numericId : -1 },
-      { id: stringId },
-      { numeric_id: Number.isFinite(numericId) ? numericId : -1 },
-    ],
+  const clauses: any[] = [{ id: stringId }]
+  if (Number.isFinite(numericId)) {
+    clauses.unshift({ numericId }, { numeric_id: numericId })
   }
+  return { $or: clauses }
 }
 
 async function getSubmittedApplicantIds(): Promise<number[]> {
@@ -289,7 +281,17 @@ async function filterByUserGroups(req: AuthRequest) {
           legacyAssignedGroupFilter({ $in: ['LSO', 'APPLICANT'] }),
           {
             $expr: {
-              $eq: [{ $mod: [{ $ifNull: ['$numericId', 0] }, 3] }, moduloValue],
+              $eq: [
+                {
+                  $mod: [
+                    {
+                      $ifNull: ['$numericId', { $ifNull: ['$numeric_id', 0] }],
+                    },
+                    3,
+                  ],
+                },
+                moduloValue,
+              ],
             },
           },
         ],
@@ -347,13 +349,11 @@ export const getApplicant = asyncHandler(async (req: AuthRequest, res: Response)
   const cached = await cacheManager.get<any>(cacheKey)
   if (cached) {
     res.set('X-Cache', 'HIT')
-    console.log(`✅ Cache HIT: applicant ${applicantId}`)
     return res.json(cached)
   }
 
   // Cache miss
   res.set('X-Cache', 'MISS')
-  console.log(`❌ Cache MISS: applicant ${applicantId}`)
 
   // Fetch applicant, documents, and fees in parallel
   const result = await parallelQueriesWithMetadata({

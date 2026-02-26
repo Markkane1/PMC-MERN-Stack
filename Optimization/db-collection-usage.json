@@ -1,0 +1,546 @@
+{
+  "generatedAt": "2026-02-25T21:24:32.748Z",
+  "allCollections": [
+    "AccessLog",
+    "AdvancedFieldDefinition",
+    "AdvancedFieldResponse",
+    "Alert",
+    "AlertRecipient",
+    "AlertTemplate",
+    "ApiLog",
+    "ApplicantDetail",
+    "ApplicantDocument",
+    "ApplicantFee",
+    "ApplicantFieldResponse",
+    "ApplicantManualFields",
+    "ApplicationSubmitted",
+    "AuditLog",
+    "BusinessProfile",
+    "ByProduct",
+    "Collector",
+    "Consumer",
+    "Counter",
+    "District",
+    "DistrictNew",
+    "DistrictPlasticCommitteeDocument",
+    "Division",
+    "EecClub",
+    "ExternalServiceToken",
+    "FieldResponseAuditLog",
+    "FieldSection",
+    "Group",
+    "License",
+    "PSIDTracking",
+    "Permission",
+    "PlasticItem",
+    "Producer",
+    "Product",
+    "RawMaterial",
+    "Recycler",
+    "ServiceConfiguration",
+    "SingleUsePlasticsSnapshot",
+    "SocialAccount",
+    "SystemConfig",
+    "Tehsil",
+    "User",
+    "UserAuditLog",
+    "UserProfile"
+  ],
+  "usedCollections": [
+    "AccessLog",
+    "AdvancedFieldDefinition",
+    "AdvancedFieldResponse",
+    "Alert",
+    "AlertRecipient",
+    "AlertTemplate",
+    "ApiLog",
+    "ApplicantDetail",
+    "ApplicantDocument",
+    "ApplicantFee",
+    "ApplicantFieldResponse",
+    "ApplicantManualFields",
+    "ApplicationSubmitted",
+    "AuditLog",
+    "BusinessProfile",
+    "ByProduct",
+    "Collector",
+    "Consumer",
+    "Counter",
+    "District",
+    "DistrictNew",
+    "DistrictPlasticCommitteeDocument",
+    "EecClub",
+    "ExternalServiceToken",
+    "FieldResponseAuditLog",
+    "FieldSection",
+    "Group",
+    "License",
+    "PSIDTracking",
+    "Permission",
+    "PlasticItem",
+    "Producer",
+    "Product",
+    "RawMaterial",
+    "Recycler",
+    "ServiceConfiguration",
+    "SingleUsePlasticsSnapshot",
+    "SocialAccount",
+    "SystemConfig",
+    "Tehsil",
+    "User",
+    "UserAuditLog",
+    "UserProfile"
+  ],
+  "unusedCollections": [
+    "Division"
+  ],
+  "usedModels": [
+    {
+      "modelConst": "AccessLogModel",
+      "model": "AccessLog",
+      "collection": "AccessLog",
+      "file": "server/src/infrastructure/database/models/common/AccessLog.ts",
+      "refs": [
+        "server/src/application/services/common/LogService.ts",
+        "server/src/application/usecases/accounts/AdminUseCases.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "AdvancedFieldDefinitionModel",
+      "model": "AdvancedFieldDefinition",
+      "collection": "AdvancedFieldDefinition",
+      "file": "server/src/infrastructure/database/models/pmc/AdvancedFieldResponse.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/AdvancedFieldResponseRepository.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "AdvancedFieldResponseModel",
+      "model": "AdvancedFieldResponse",
+      "collection": "AdvancedFieldResponse",
+      "file": "server/src/infrastructure/database/models/pmc/AdvancedFieldResponse.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/AdvancedFieldResponseRepository.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "AlertModel",
+      "model": "Alert",
+      "collection": "Alert",
+      "file": "server/src/infrastructure/database/models/pmc/Alert.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/AlertRepository.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "AlertRecipientModel",
+      "model": "AlertRecipient",
+      "collection": "AlertRecipient",
+      "file": "server/src/infrastructure/database/models/pmc/Alert.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/AlertRepository.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "AlertTemplateModel",
+      "model": "AlertTemplate",
+      "collection": "AlertTemplate",
+      "file": "server/src/infrastructure/database/models/pmc/Alert.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/AlertRepository.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "ApiLogModel",
+      "model": "ApiLog",
+      "collection": "ApiLog",
+      "file": "server/src/infrastructure/database/models/common/ApiLog.ts",
+      "refs": [
+        "server/src/application/services/common/LogService.ts",
+        "server/src/application/usecases/accounts/AdminUseCases.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "ApplicantDetailModel",
+      "model": "ApplicantDetail",
+      "collection": "ApplicantDetail",
+      "file": "server/src/infrastructure/database/models/pmc/ApplicantDetail.ts",
+      "refs": [
+        "server/src/interfaces/http/examples/aggregation.examples.ts",
+        "server/src/infrastructure/database/repositories/pmc/index.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "ApplicantDocumentModel",
+      "model": "ApplicantDocument",
+      "collection": "ApplicantDocument",
+      "file": "server/src/infrastructure/database/models/pmc/ApplicantDocument.ts",
+      "refs": [
+        "server/src/application/usecases/pmc/QueryHandlers.ts",
+        "server/src/infrastructure/database/repositories/pmc/DocumentRepository.ts",
+        "server/src/infrastructure/database/repositories/pmc/index.ts"
+      ],
+      "refCount": 3
+    },
+    {
+      "modelConst": "ApplicantFeeModel",
+      "model": "ApplicantFee",
+      "collection": "ApplicantFee",
+      "file": "server/src/infrastructure/database/models/pmc/ApplicantFee.ts",
+      "refs": [
+        "server/src/application/usecases/pmc/DocumentsUseCases.ts",
+        "server/src/infrastructure/database/repositories/pmc/index.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "ApplicantFieldResponseModel",
+      "model": "ApplicantFieldResponse",
+      "collection": "ApplicantFieldResponse",
+      "file": "server/src/infrastructure/database/models/pmc/ApplicantFieldResponse.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/index.ts",
+        "server/src/infrastructure/database/repositories/pmc/resources.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "ApplicantManualFieldsModel",
+      "model": "ApplicantManualFields",
+      "collection": "ApplicantManualFields",
+      "file": "server/src/infrastructure/database/models/pmc/ApplicantManualFields.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/index.ts",
+        "server/src/infrastructure/database/repositories/pmc/resources.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "ApplicationSubmittedModel",
+      "model": "ApplicationSubmitted",
+      "collection": "ApplicationSubmitted",
+      "file": "server/src/infrastructure/database/models/pmc/ApplicationSubmitted.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/index.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "AuditLogModel",
+      "model": "AuditLog",
+      "collection": "AuditLog",
+      "file": "server/src/infrastructure/database/models/common/AuditLog.ts",
+      "refs": [
+        "server/src/application/services/common/LogService.ts",
+        "server/src/application/usecases/accounts/AdminUseCases.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "BusinessProfileModel",
+      "model": "BusinessProfile",
+      "collection": "BusinessProfile",
+      "file": "server/src/infrastructure/database/models/pmc/BusinessProfile.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/BusinessProfileRepository.ts",
+        "server/src/infrastructure/database/repositories/pmc/index.ts",
+        "server/src/infrastructure/database/repositories/pmc/resources.ts"
+      ],
+      "refCount": 3
+    },
+    {
+      "modelConst": "ByProductModel",
+      "model": "ByProduct",
+      "collection": "ByProduct",
+      "file": "server/src/infrastructure/database/models/pmc/ByProduct.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/InventoryRepository.ts",
+        "server/src/infrastructure/database/repositories/pmc/resources.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "CollectorModel",
+      "model": "Collector",
+      "collection": "Collector",
+      "file": "server/src/infrastructure/database/models/pmc/Collector.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/index.ts",
+        "server/src/infrastructure/database/repositories/pmc/resources.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "ConsumerModel",
+      "model": "Consumer",
+      "collection": "Consumer",
+      "file": "server/src/infrastructure/database/models/pmc/Consumer.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/index.ts",
+        "server/src/infrastructure/database/repositories/pmc/resources.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "DistrictModel",
+      "model": "District",
+      "collection": "District",
+      "file": "server/src/infrastructure/database/models/pmc/District.ts",
+      "refs": [
+        "server/src/application/usecases/pmc/InspectionUseCases.ts",
+        "server/src/infrastructure/database/repositories/pmc/index.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "DistrictNewModel",
+      "model": "DistrictNew",
+      "collection": "DistrictNew",
+      "file": "server/src/infrastructure/database/models/idm/DistrictNew.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/idm/index.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "DistrictPlasticCommitteeDocumentModel",
+      "model": "DistrictPlasticCommitteeDocument",
+      "collection": "DistrictPlasticCommitteeDocument",
+      "file": "server/src/infrastructure/database/models/pmc/DistrictPlasticCommitteeDocument.ts",
+      "refs": [
+        "server/src/application/usecases/pmc/QueryHandlers.ts",
+        "server/src/infrastructure/database/repositories/pmc/index.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "EecClubModel",
+      "model": "EecClub",
+      "collection": "EecClub",
+      "file": "server/src/infrastructure/database/models/idm/EecClub.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/idm/index.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "ExternalServiceTokenModel",
+      "model": "ExternalServiceToken",
+      "collection": "ExternalServiceToken",
+      "file": "server/src/infrastructure/database/models/common/ExternalServiceToken.ts",
+      "refs": [
+        "server/src/application/usecases/accounts/AdminUseCases.ts",
+        "server/src/application/usecases/pmc/PsidUseCases.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "FieldResponseAuditLogModel",
+      "model": "FieldResponseAuditLog",
+      "collection": "FieldResponseAuditLog",
+      "file": "server/src/infrastructure/database/models/pmc/AdvancedFieldResponse.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/AdvancedFieldResponseRepository.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "FieldSectionModel",
+      "model": "FieldSection",
+      "collection": "FieldSection",
+      "file": "server/src/infrastructure/database/models/pmc/AdvancedFieldResponse.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/AdvancedFieldResponseRepository.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "GroupModel",
+      "model": "Group",
+      "collection": "Group",
+      "file": "server/src/infrastructure/database/models/accounts/Group.ts",
+      "refs": [
+        "server/src/application/usecases/accounts/AdminUseCases.ts",
+        "server/src/infrastructure/database/repositories/accounts/index.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "LicenseModel",
+      "model": "License",
+      "collection": "License",
+      "file": "server/src/infrastructure/database/models/pmc/License.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/index.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "PermissionModel",
+      "model": "Permission",
+      "collection": "Permission",
+      "file": "server/src/infrastructure/database/models/accounts/Permission.ts",
+      "refs": [
+        "server/src/application/usecases/accounts/AdminUseCases.ts",
+        "server/src/infrastructure/database/repositories/accounts/index.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "PlasticItemModel",
+      "model": "PlasticItem",
+      "collection": "PlasticItem",
+      "file": "server/src/infrastructure/database/models/pmc/PlasticItem.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/InventoryRepository.ts",
+        "server/src/infrastructure/database/repositories/pmc/resources.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "ProducerModel",
+      "model": "Producer",
+      "collection": "Producer",
+      "file": "server/src/infrastructure/database/models/pmc/Producer.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/index.ts",
+        "server/src/infrastructure/database/repositories/pmc/resources.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "ProductModel",
+      "model": "Product",
+      "collection": "Product",
+      "file": "server/src/infrastructure/database/models/pmc/Product.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/InventoryRepository.ts",
+        "server/src/infrastructure/database/repositories/pmc/resources.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "PSIDTrackingModel",
+      "model": "PSIDTracking",
+      "collection": "PSIDTracking",
+      "file": "server/src/infrastructure/database/models/pmc/PSIDTracking.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/index.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "RawMaterialModel",
+      "model": "RawMaterial",
+      "collection": "RawMaterial",
+      "file": "server/src/infrastructure/database/models/pmc/RawMaterial.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/InventoryRepository.ts",
+        "server/src/infrastructure/database/repositories/pmc/resources.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "RecyclerModel",
+      "model": "Recycler",
+      "collection": "Recycler",
+      "file": "server/src/infrastructure/database/models/pmc/Recycler.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/index.ts",
+        "server/src/infrastructure/database/repositories/pmc/resources.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "ServiceConfigurationModel",
+      "model": "ServiceConfiguration",
+      "collection": "ServiceConfiguration",
+      "file": "server/src/infrastructure/database/models/common/ServiceConfiguration.ts",
+      "refs": [
+        "server/src/application/usecases/accounts/AdminUseCases.ts",
+        "server/src/application/usecases/pmc/PsidUseCases.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "SingleUsePlasticsSnapshotModel",
+      "model": "SingleUsePlasticsSnapshot",
+      "collection": "SingleUsePlasticsSnapshot",
+      "file": "server/src/infrastructure/database/models/pmc/SingleUsePlasticsSnapshot.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/index.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "SocialAccountModel",
+      "model": "SocialAccount",
+      "collection": "SocialAccount",
+      "file": "server/src/infrastructure/database/models/accounts/User.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/accounts/index.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "SystemConfigModel",
+      "model": "SystemConfig",
+      "collection": "SystemConfig",
+      "file": "server/src/infrastructure/database/models/common/SystemConfig.ts",
+      "refs": [
+        "server/src/application/usecases/accounts/AdminUseCases.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "TehsilModel",
+      "model": "Tehsil",
+      "collection": "Tehsil",
+      "file": "server/src/infrastructure/database/models/pmc/Tehsil.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/pmc/index.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "UserModel",
+      "model": "User",
+      "collection": "User",
+      "file": "server/src/infrastructure/database/models/accounts/User.ts",
+      "refs": [
+        "server/src/application/usecases/accounts/AdminUseCases.ts",
+        "server/src/infrastructure/database/repositories/accounts/index.ts"
+      ],
+      "refCount": 2
+    },
+    {
+      "modelConst": "UserAuditLogModel",
+      "model": "UserAuditLog",
+      "collection": "UserAuditLog",
+      "file": "server/src/infrastructure/database/models/accounts/UserAuditLog.ts",
+      "refs": [
+        "server/src/infrastructure/database/repositories/accounts/index.ts"
+      ],
+      "refCount": 1
+    },
+    {
+      "modelConst": "UserProfileModel",
+      "model": "UserProfile",
+      "collection": "UserProfile",
+      "file": "server/src/infrastructure/database/models/accounts/UserProfile.ts",
+      "refs": [
+        "server/src/application/usecases/accounts/AdminUseCases.ts",
+        "server/src/infrastructure/database/repositories/accounts/index.ts"
+      ],
+      "refCount": 2
+    }
+  ]
+}

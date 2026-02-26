@@ -1,66 +1,53 @@
-# PMC MERN Backend
+# PMC Backend
 
-This is a MERN (Express + MongoDB) backend for PMC. It exposes `/api/accounts/*` and `/api/pmc/*` routes for the React frontend.
+Express + TypeScript + MongoDB backend for the PMC application.
 
-## Quick start
+## Requirements
 
-1. Install dependencies
+- Node.js 20+
+- npm 10+
+- MongoDB database
 
-```bash
-cd pmc_be_mern
+## Setup
+
+1. Install dependencies:
+
+```powershell
 npm install
 ```
 
-2. Configure environment
+2. Create env file:
 
-```bash
-copy .env.example .env
+```powershell
+Copy-Item .env.example .env
 ```
 
-Update `MONGO_URI`, `JWT_SECRET`, and `CORS_ORIGIN` as needed.
+3. Update required environment variables in `.env`:
 
-3. Seed base reference data (divisions + districts)
+- `MONGO_URI`
+- `JWT_SECRET`
+- `CORS_ORIGIN`
 
-```bash
-npm run seed
-```
+## Run
 
-4. Seed tehsils (optional)
+- Development: `npm run dev`
+- Build: `npm run build`
+- Production: `npm run start`
+- Lint: `npm run lint`
 
-```bash
-npm run seed:tehsils
-```
+Default API base URL: `http://localhost:4000/api`
 
-Provide `TEHSILS_JSON` env var pointing to a JSON array file shaped like:
+## Data / Utility Scripts
 
-```json
-[
-  { "tehsil_id": 1, "district_id": 1, "division_id": 1, "tehsil_name": "Lahore City", "tehsil_code": "LHR-1" }
-]
-```
-
-5. Seed IDM data (optional)
-
-```bash
-npm run seed:idm
-```
-
-Provide:
-- `IDM_DISTRICTS_JSON` for districts_new
-- `IDM_CLUBS_JSON` for eec_clubs
-
-Sample files live in `data/`.
-
-6. Run the server
-
-```bash
-npm run dev
-```
-
-The API will run on `http://localhost:4000` by default. The React frontend expects the API under `/api`, so run behind a proxy or update the frontend dev proxy to point `/api` to this server.
+- `npm run seed`: seed base reference data
+- `npm run seed:tehsils`: seed tehsil data
+- `npm run seed:idm`: seed IDM data
+- `npm run db:index`: create database indexes
+- `npm run cleanup:bak`: remove backup collections
+- `npm run ensure:applicant-perms`: normalize applicant permissions
+- `npm run superadmin:static`: create static super admin
 
 ## Notes
 
-- Endpoints are aligned with the frontend route contract.
-- File uploads are stored under `uploads/` and served via `/api/pmc/media/...`.
-- Some complex report/PDF outputs are simplified but compatible with the frontend download flow.
+- Uploaded files are stored in `uploads/`.
+- API docs are available under `docs/`.

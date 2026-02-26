@@ -201,12 +201,12 @@ strong {
 
 .box .banana {
     min-height: 404px;
-    background-image: url('img/banana.png');
+    background-image: linear-gradient(135deg, #24bdd3 0%, #0f766e 100%);
     background-size: cover;
 }
 .box .map {
     min-height: 404px;
-    background-image: url('img/map.png');
+    background-image: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
     background-size: cover;
 }
 .box .cog-icon {

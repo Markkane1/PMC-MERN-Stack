@@ -261,33 +261,283 @@ const mapPSIDTracking = (doc: any) => {
   }
 }
 
+const mapLicense = (doc: any) => {
+  if (!doc) return doc
+  const applicantIdRaw = doc.applicantId ?? doc.applicant_id
+  const applicantId =
+    applicantIdRaw !== undefined && applicantIdRaw !== null
+      ? Number(applicantIdRaw)
+      : undefined
+  return {
+    ...doc,
+    applicantId: Number.isFinite(applicantId) ? applicantId : undefined,
+    licenseFor: doc.licenseFor ?? doc.license_for,
+    licenseNumber: doc.licenseNumber ?? doc.license_number,
+    licenseDuration: doc.licenseDuration ?? doc.license_duration,
+    ownerName: doc.ownerName ?? doc.owner_name,
+    businessName: doc.businessName ?? doc.business_name,
+    typesOfPlastics: doc.typesOfPlastics ?? doc.types_of_plastics,
+    feeAmount: doc.feeAmount ?? doc.fee_amount,
+    dateOfIssue: doc.dateOfIssue ?? doc.date_of_issue,
+    isActive: doc.isActive ?? doc.is_active ?? true,
+    createdAt: doc.createdAt ?? doc.created_at,
+    updatedAt: doc.updatedAt ?? doc.updated_at,
+  }
+}
+
+const mapProducer = (doc: any) => {
+  if (!doc) return doc
+  const applicantIdRaw = doc.applicantId ?? doc.applicant_id
+  const applicantId =
+    applicantIdRaw !== undefined && applicantIdRaw !== null
+      ? Number(applicantIdRaw)
+      : undefined
+  return {
+    ...doc,
+    numericId: doc.numericId ?? (doc.numeric_id !== undefined ? Number(doc.numeric_id) : undefined) ?? (doc.id !== undefined ? Number(doc.id) : undefined),
+    applicantId: Number.isFinite(applicantId) ? applicantId : undefined,
+    trackingNumber: doc.trackingNumber ?? doc.tracking_number,
+    registrationRequiredFor: doc.registrationRequiredFor ?? doc.registration_required_for,
+    registrationRequiredForOther: doc.registrationRequiredForOther ?? doc.registration_required_for_other,
+    plainPlasticSheetsForFoodWrapping: doc.plainPlasticSheetsForFoodWrapping ?? doc.plain_plastic_sheets_for_food_wrapping,
+    packagingItems: doc.packagingItems ?? doc.packaging_items,
+    numberOfMachines: doc.numberOfMachines ?? doc.number_of_machines,
+    totalCapacityValue: doc.totalCapacityValue ?? doc.total_capacity_value,
+    dateOfSettingUp: doc.dateOfSettingUp ?? doc.date_of_setting_up,
+    totalWasteGeneratedValue: doc.totalWasteGeneratedValue ?? doc.total_waste_generated_value,
+    hasWasteStorageCapacity: doc.hasWasteStorageCapacity ?? doc.has_waste_storage_capacity,
+    wasteDisposalProvision: doc.wasteDisposalProvision ?? doc.waste_disposal_provision,
+    registrationRequiredForOtherOtherText:
+      doc.registrationRequiredForOtherOtherText ?? doc.registration_required_for_other_other_text,
+    createdAt: doc.createdAt ?? doc.created_at,
+    updatedAt: doc.updatedAt ?? doc.updated_at,
+    createdBy: doc.createdBy ?? doc.created_by_id,
+    updatedBy: doc.updatedBy ?? doc.updated_by_id,
+  }
+}
+
+const mapConsumer = (doc: any) => {
+  if (!doc) return doc
+  const applicantIdRaw = doc.applicantId ?? doc.applicant_id
+  const applicantId =
+    applicantIdRaw !== undefined && applicantIdRaw !== null
+      ? Number(applicantIdRaw)
+      : undefined
+  return {
+    ...doc,
+    numericId: doc.numericId ?? (doc.numeric_id !== undefined ? Number(doc.numeric_id) : undefined) ?? (doc.id !== undefined ? Number(doc.id) : undefined),
+    applicantId: Number.isFinite(applicantId) ? applicantId : undefined,
+    registrationRequiredFor: doc.registrationRequiredFor ?? doc.registration_required_for,
+    registrationRequiredForOther: doc.registrationRequiredForOther ?? doc.registration_required_for_other,
+    plainPlasticSheetsForFoodWrapping: doc.plainPlasticSheetsForFoodWrapping ?? doc.plain_plastic_sheets_for_food_wrapping,
+    packagingItems: doc.packagingItems ?? doc.packaging_items,
+    consumption: doc.consumption,
+    provisionWasteDisposalBins: doc.provisionWasteDisposalBins ?? doc.provision_waste_disposal_bins,
+    noOfWasteDisposableBins: doc.noOfWasteDisposableBins ?? doc.no_of_waste_disposable_bins,
+    segregatedPlasticsHandedOverToRegisteredRecyclers:
+      doc.segregatedPlasticsHandedOverToRegisteredRecyclers ??
+      doc.segregated_plastics_handed_over_to_registered_recyclers,
+    registrationRequiredForOtherOtherText:
+      doc.registrationRequiredForOtherOtherText ?? doc.registration_required_for_other_other_text,
+    createdAt: doc.createdAt ?? doc.created_at,
+    updatedAt: doc.updatedAt ?? doc.updated_at,
+    createdBy: doc.createdBy ?? doc.created_by_id,
+    updatedBy: doc.updatedBy ?? doc.updated_by_id,
+  }
+}
+
+const mapCollector = (doc: any) => {
+  if (!doc) return doc
+  const applicantIdRaw = doc.applicantId ?? doc.applicant_id
+  const applicantId =
+    applicantIdRaw !== undefined && applicantIdRaw !== null
+      ? Number(applicantIdRaw)
+      : undefined
+  return {
+    ...doc,
+    numericId: doc.numericId ?? (doc.numeric_id !== undefined ? Number(doc.numeric_id) : undefined) ?? (doc.id !== undefined ? Number(doc.id) : undefined),
+    applicantId: Number.isFinite(applicantId) ? applicantId : undefined,
+    registrationRequiredFor: doc.registrationRequiredFor ?? doc.registration_required_for,
+    registrationRequiredForOther: doc.registrationRequiredForOther ?? doc.registration_required_for_other,
+    selectedCategories: doc.selectedCategories ?? doc.selected_categories,
+    totalCapacityValue: doc.totalCapacityValue ?? doc.total_capacity_value,
+    numberOfVehicles: doc.numberOfVehicles ?? doc.number_of_vehicles,
+    numberOfPersons: doc.numberOfPersons ?? doc.number_of_persons,
+    registrationRequiredForOtherOtherText:
+      doc.registrationRequiredForOtherOtherText ?? doc.registration_required_for_other_other_text,
+    createdAt: doc.createdAt ?? doc.created_at,
+    updatedAt: doc.updatedAt ?? doc.updated_at,
+    createdBy: doc.createdBy ?? doc.created_by_id,
+    updatedBy: doc.updatedBy ?? doc.updated_by_id,
+  }
+}
+
+const mapRecycler = (doc: any) => {
+  if (!doc) return doc
+  const applicantIdRaw = doc.applicantId ?? doc.applicant_id
+  const applicantId =
+    applicantIdRaw !== undefined && applicantIdRaw !== null
+      ? Number(applicantIdRaw)
+      : undefined
+  return {
+    ...doc,
+    numericId: doc.numericId ?? (doc.numeric_id !== undefined ? Number(doc.numeric_id) : undefined) ?? (doc.id !== undefined ? Number(doc.id) : undefined),
+    applicantId: Number.isFinite(applicantId) ? applicantId : undefined,
+    selectedCategories: doc.selectedCategories ?? doc.selected_categories,
+    plasticWasteAcquiredThrough: doc.plasticWasteAcquiredThrough ?? doc.plastic_waste_acquired_through,
+    hasAdequatePollutionControlSystems:
+      doc.hasAdequatePollutionControlSystems ?? doc.has_adequate_pollution_control_systems,
+    pollutionControlDetails: doc.pollutionControlDetails ?? doc.pollution_control_details,
+    registrationRequiredForOtherOtherText:
+      doc.registrationRequiredForOtherOtherText ?? doc.registration_required_for_other_other_text,
+    createdAt: doc.createdAt ?? doc.created_at,
+    updatedAt: doc.updatedAt ?? doc.updated_at,
+    createdBy: doc.createdBy ?? doc.created_by_id,
+    updatedBy: doc.updatedBy ?? doc.updated_by_id,
+  }
+}
+
+const mapInspectionReport = (doc: any) => {
+  if (!doc) return doc
+  const districtIdRaw = doc.districtId ?? doc.district_id
+  const districtId =
+    districtIdRaw !== undefined && districtIdRaw !== null ? Number(districtIdRaw) : undefined
+  const numericIdRaw = doc.numericId ?? doc.numeric_id ?? doc.id
+  const numericId =
+    numericIdRaw !== undefined && numericIdRaw !== null ? Number(numericIdRaw) : undefined
+  return {
+    ...doc,
+    numericId: Number.isFinite(numericId) ? numericId : undefined,
+    businessName: doc.businessName ?? doc.business_name,
+    businessType: doc.businessType ?? doc.business_type,
+    licenseNumber: doc.licenseNumber ?? doc.license_number,
+    violationFound: doc.violationFound ?? doc.violation_found,
+    violationType: doc.violationType ?? doc.violation_type,
+    actionTaken: doc.actionTaken ?? doc.action_taken,
+    plasticBagsConfiscation: doc.plasticBagsConfiscation ?? doc.plastic_bags_confiscation,
+    confiscationOtherPlastics: doc.confiscationOtherPlastics ?? doc.confiscation_other_plastics,
+    totalConfiscation: doc.totalConfiscation ?? doc.total_confiscation,
+    otherSingleUseItems: doc.otherSingleUseItems ?? doc.other_single_use_items,
+    inspectionDate: doc.inspectionDate ?? doc.inspection_date ?? doc.actualDate ?? doc.actual_date,
+    fineAmount: doc.fineAmount ?? doc.fine_amount,
+    fineRecoveryStatus: doc.fineRecoveryStatus ?? doc.fine_recovery_status,
+    fineRecoveryDate: doc.fineRecoveryDate ?? doc.fine_recovery_date,
+    recoveryAmount: doc.recoveryAmount ?? doc.recovery_amount,
+    deSealedDate: doc.deSealedDate ?? doc.de_sealed_date,
+    fineRecoveryBreakup: doc.fineRecoveryBreakup ?? doc.fine_recovery_breakup,
+    affidavitPath: doc.affidavitPath ?? doc.affidavit,
+    confiscationReceiptPath: doc.confiscationReceiptPath ?? doc.confiscation_receipt,
+    paymentChallanPath: doc.paymentChallanPath ?? doc.payment_challan,
+    receiptBookNumber: doc.receiptBookNumber ?? doc.receipt_book_number,
+    receiptNumber: doc.receiptNumber ?? doc.receipt_number,
+    districtId: Number.isFinite(districtId) ? districtId : undefined,
+    createdAt: doc.createdAt ?? doc.created_at,
+    updatedAt: doc.updatedAt ?? doc.updated_at,
+    createdBy: doc.createdBy ?? doc.created_by_id,
+    updatedBy: doc.updatedBy ?? doc.updated_by_id,
+  }
+}
+
+function toSnakeCase(input: string) {
+  return input.replace(/[A-Z]/g, (ch) => `_${ch.toLowerCase()}`)
+}
+
+function buildLegacyAwareFilter(filter: Record<string, unknown> = {}) {
+  const clauses: Record<string, unknown>[] = []
+  for (const [key, value] of Object.entries(filter)) {
+    if (key.startsWith('$')) {
+      clauses.push({ [key]: value })
+      continue
+    }
+    const snakeKey = toSnakeCase(key)
+    if (snakeKey !== key) {
+      clauses.push({ $or: [{ [key]: value }, { [snakeKey]: value }] })
+    } else {
+      clauses.push({ [key]: value })
+    }
+  }
+  if (!clauses.length) return {}
+  if (clauses.length === 1) return clauses[0]
+  return { $and: clauses }
+}
+
+function normalizeNumericIds(values: number[]) {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value))
+    )
+  )
+}
+
+function buildNumericIdMatch(numericId: number) {
+  return {
+    $or: [{ numericId }, { numeric_id: numericId }, { id: numericId }, { id: String(numericId) }],
+  } as any
+}
+
+function buildApplicantIdMatch(applicantId: number) {
+  return {
+    $or: [{ applicantId }, { applicant_id: applicantId }, { applicant_id: String(applicantId) }],
+  } as any
+}
+
+function buildApplicantIdsMatch(applicantIds: number[]) {
+  const ids = normalizeNumericIds(applicantIds)
+  const legacyIds = ids.map(String)
+  if (!ids.length) return { _id: null } as any
+  return {
+    $or: [
+      { applicantId: { $in: ids } },
+      { applicant_id: { $in: ids } },
+      { applicant_id: { $in: legacyIds } },
+    ],
+  } as any
+}
+
+function buildDistrictIdMatch(districtId: number) {
+  return {
+    $or: [{ districtId }, { district_id: districtId }, { district_id: String(districtId) }],
+  } as any
+}
+
+function buildTehsilIdMatch(tehsilId: number) {
+  return {
+    $or: [{ tehsilId }, { tehsil_id: tehsilId }, { tehsil_id: String(tehsilId) }],
+  } as any
+}
+
 export const applicantRepositoryMongo: ApplicantRepository = {
   async findByNumericId(numericId: number) {
-    const doc = await ApplicantDetailModel.findOne({ numericId }).lean().maxTimeMS(30000)
-    if (doc) return mapApplicant(doc)
-    const legacy = await ApplicantDetailModel.findOne({ id: String(numericId) }).lean().maxTimeMS(30000)
-    return legacy ? mapApplicant(legacy) : null
+    const doc = await ApplicantDetailModel.findOne(buildNumericIdMatch(numericId)).lean().maxTimeMS(30000)
+    return doc ? mapApplicant(doc) : null
   },
   async findById(id: string) {
     const doc = await ApplicantDetailModel.findById(id).lean().maxTimeMS(30000)
     return doc ? mapApplicant(doc) : null
   },
   async findByTrackingNumber(trackingNumber: string) {
-    const doc = await ApplicantDetailModel.findOne({ trackingNumber }).lean().maxTimeMS(30000)
-    if (doc) return mapApplicant(doc)
-    const legacy = await ApplicantDetailModel.findOne({ tracking_number: trackingNumber }).lean().maxTimeMS(30000)
-    return legacy ? mapApplicant(legacy) : null
+    const doc = await ApplicantDetailModel.findOne({
+      $or: [{ trackingNumber }, { tracking_number: trackingNumber }],
+    } as any)
+      .lean()
+      .maxTimeMS(30000)
+    return doc ? mapApplicant(doc) : null
   },
   async findOne(filter: Record<string, unknown>) {
-    const doc = await ApplicantDetailModel.findOne(filter).lean().maxTimeMS(30000)
+    const doc = await ApplicantDetailModel.findOne(buildLegacyAwareFilter(filter)).lean().maxTimeMS(30000)
     return doc ? mapApplicant(doc) : null
   },
   async findOneWithCreator(filter: Record<string, unknown>) {
-    const doc = await ApplicantDetailModel.findOne(filter).populate('createdBy').lean().maxTimeMS(30000)
+    const doc = await ApplicantDetailModel.findOne(buildLegacyAwareFilter(filter))
+      .populate('createdBy')
+      .lean()
+      .maxTimeMS(30000)
     return doc ? mapApplicant(doc) : null
   },
   async list(filter: Record<string, unknown> = {}) {
-    const docs = await ApplicantDetailModel.find(filter)
+    const docs = await ApplicantDetailModel.find(buildLegacyAwareFilter(filter))
       .lean()
       .maxTimeMS(30000)
       .select('-__v')
@@ -301,7 +551,8 @@ export const applicantRepositoryMongo: ApplicantRepository = {
     projection?: Record<string, 0 | 1>
   ) {
     const skip = (page - 1) * pageSize
-    const query = ApplicantDetailModel.find(filter)
+    const normalizedFilter = buildLegacyAwareFilter(filter)
+    const query = ApplicantDetailModel.find(normalizedFilter)
       .lean()
       .maxTimeMS(30000)
       .sort(sort)
@@ -316,7 +567,7 @@ export const applicantRepositoryMongo: ApplicantRepository = {
 
     const [docs, total] = await Promise.all([
       query,
-      ApplicantDetailModel.countDocuments(filter).maxTimeMS(30000),
+      ApplicantDetailModel.countDocuments(normalizedFilter).maxTimeMS(30000),
     ])
     return {
       data: docs.map(mapApplicant),
@@ -335,10 +586,8 @@ export const applicantRepositoryMongo: ApplicantRepository = {
     return mapApplicant(created.toObject())
   },
   async updateByNumericId(numericId: number, updates: Partial<any>) {
-    const doc = await ApplicantDetailModel.findOneAndUpdate({ numericId }, updates, { new: true }).lean()
-    if (doc) return mapApplicant(doc)
-    const legacy = await ApplicantDetailModel.findOneAndUpdate({ id: String(numericId) }, updates, { new: true }).lean()
-    return legacy ? mapApplicant(legacy) : null
+    const doc = await ApplicantDetailModel.findOneAndUpdate(buildNumericIdMatch(numericId), updates, { new: true }).lean()
+    return doc ? mapApplicant(doc) : null
   },
   async updateOne(filter: Record<string, unknown>, updates: Record<string, unknown>) {
     await ApplicantDetailModel.updateOne(filter, updates)
@@ -347,7 +596,7 @@ export const applicantRepositoryMongo: ApplicantRepository = {
     await ApplicantDetailModel.findOneAndDelete({ numericId })
   },
   async count(filter: Record<string, unknown> = {}) {
-    return ApplicantDetailModel.countDocuments(filter)
+    return ApplicantDetailModel.countDocuments(buildLegacyAwareFilter(filter))
   },
   async aggregate(pipeline: any[]) {
     return ApplicantDetailModel.aggregate(pipeline)
@@ -356,7 +605,7 @@ export const applicantRepositoryMongo: ApplicantRepository = {
     return ApplicantDetailModel.aggregate([
       {
         $group: {
-          _id: '$applicationStatus',
+          _id: { $ifNull: ['$applicationStatus', '$application_status'] },
           count: { $sum: 1 },
         },
       },
@@ -367,16 +616,28 @@ export const applicantRepositoryMongo: ApplicantRepository = {
     return ApplicantDetailModel.aggregate([
       {
         $group: {
-          _id: '$districtId',
+          _id: { $ifNull: ['$districtId', '$district_id'] },
           count: { $sum: 1 },
           approved: {
             $sum: {
-              $cond: [{ $eq: ['$applicationStatus', 'approved'] }, 1, 0],
+              $cond: [
+                {
+                  $eq: [{ $toLower: { $ifNull: ['$applicationStatus', '$application_status'] } }, 'approved'],
+                },
+                1,
+                0,
+              ],
             },
           },
           pending: {
             $sum: {
-              $cond: [{ $eq: ['$applicationStatus', 'pending'] }, 1, 0],
+              $cond: [
+                {
+                  $eq: [{ $toLower: { $ifNull: ['$applicationStatus', '$application_status'] } }, 'pending'],
+                },
+                1,
+                0,
+              ],
             },
           },
         },
@@ -434,38 +695,42 @@ export const applicantRepositoryMongo: ApplicantRepository = {
 
 export const businessProfileRepositoryMongo: BusinessProfileRepository = {
   async findByApplicantId(applicantId: number) {
-    const doc = await BusinessProfileModel.findOne({ applicantId }).lean().maxTimeMS(30000)
-    if (doc) return mapBusinessProfile(doc)
-    const legacy = await BusinessProfileModel.findOne({ applicant_id: String(applicantId) }).lean().maxTimeMS(30000)
-    return legacy ? mapBusinessProfile(legacy) : null
+    const doc = await BusinessProfileModel.findOne(buildApplicantIdMatch(applicantId)).lean().maxTimeMS(30000)
+    return doc ? mapBusinessProfile(doc) : null
   },
   async listByApplicantIds(applicantIds: number[]) {
-    const docs = await BusinessProfileModel.find({ applicantId: { $in: applicantIds } }).lean().select('-__v').maxTimeMS(30000)
-    if (docs.length) return docs.map(mapBusinessProfile)
-    const legacy = await BusinessProfileModel.find({ applicant_id: { $in: applicantIds.map(String) } }).lean().select('-__v').maxTimeMS(30000)
-    return legacy.map(mapBusinessProfile)
+    const docs = await BusinessProfileModel.find(buildApplicantIdsMatch(applicantIds))
+      .lean()
+      .select('-__v')
+      .maxTimeMS(30000)
+    return docs.map(mapBusinessProfile)
   },
   async listByDistrictId(districtId: number) {
-    const docs = await BusinessProfileModel.find({ districtId }).lean().select('-__v').maxTimeMS(30000)
-    if (docs.length) return docs.map(mapBusinessProfile)
-    const legacy = await BusinessProfileModel.find({ district_id: districtId }).lean().select('-__v').maxTimeMS(30000)
-    return legacy.map(mapBusinessProfile)
+    const docs = await BusinessProfileModel.find(buildDistrictIdMatch(districtId))
+      .lean()
+      .select('-__v')
+      .maxTimeMS(30000)
+    return docs.map(mapBusinessProfile)
   },
   async list(filter: Record<string, unknown> = {}) {
-    const docs = await BusinessProfileModel.find(filter).lean().select('-__v').maxTimeMS(30000)
+    const docs = await BusinessProfileModel.find(buildLegacyAwareFilter(filter)).lean().select('-__v').maxTimeMS(30000)
     return docs.map(mapBusinessProfile)
   },
   async searchByBusinessName(regex: RegExp, limit: number) {
-    const docs = await BusinessProfileModel.find({ businessName: regex }).select('-__v').limit(limit).lean().maxTimeMS(30000)
-    if (docs.length) return docs.map(mapBusinessProfile)
-    const legacy = await BusinessProfileModel.find({ business_name: regex }).select('-__v').limit(limit).lean().maxTimeMS(30000)
-    return legacy.map(mapBusinessProfile)
+    const docs = await BusinessProfileModel.find({
+      $or: [{ businessName: regex }, { business_name: regex }],
+    } as any)
+      .select('-__v')
+      .limit(limit)
+      .lean()
+      .maxTimeMS(30000)
+    return docs.map(mapBusinessProfile)
   },
 }
 
 export const districtRepositoryMongo: DistrictRepository = {
   async list(filter: Record<string, unknown> = {}, sort: Record<string, 1 | -1> = {}) {
-    const rows = await DistrictModel.find(filter).lean().select('-__v').maxTimeMS(30000).sort(sort)
+    const rows = await DistrictModel.find(buildLegacyAwareFilter(filter)).lean().select('-__v').maxTimeMS(30000).sort(sort)
     return rows.map(mapDistrict)
   },
   async listPaginated(
@@ -475,15 +740,16 @@ export const districtRepositoryMongo: DistrictRepository = {
     sort: Record<string, 1 | -1> = { districtId: 1 }
   ) {
     const skip = (page - 1) * pageSize
+    const normalizedFilter = buildLegacyAwareFilter(filter)
     const [rows, total] = await Promise.all([
-      DistrictModel.find(filter)
+      DistrictModel.find(normalizedFilter)
         .lean()
         .select('-__v')
         .maxTimeMS(30000)
         .sort(sort)
         .skip(skip)
         .limit(pageSize),
-      DistrictModel.countDocuments(filter).maxTimeMS(30000),
+      DistrictModel.countDocuments(normalizedFilter).maxTimeMS(30000),
     ])
     return {
       data: rows.map(mapDistrict),
@@ -498,23 +764,22 @@ export const districtRepositoryMongo: DistrictRepository = {
     }
   },
   async findByDistrictId(districtId: number) {
-    const doc = await DistrictModel.findOne({ districtId }).lean().maxTimeMS(30000)
-    if (doc) return mapDistrict(doc)
-    // fallback for legacy schema
-    const legacy = await DistrictModel.findOne({ district_id: districtId }).lean().maxTimeMS(30000)
-    return legacy ? mapDistrict(legacy) : null
+    const doc = await DistrictModel.findOne(buildDistrictIdMatch(districtId)).lean().maxTimeMS(30000)
+    return doc ? mapDistrict(doc) : null
   },
   async findByShortName(shortName: string) {
-    const doc = await DistrictModel.findOne({ shortName }).lean().maxTimeMS(30000)
-    if (doc) return mapDistrict(doc)
-    const legacy = await DistrictModel.findOne({ short_name: shortName }).lean().maxTimeMS(30000)
-    return legacy ? mapDistrict(legacy) : null
+    const doc = await DistrictModel.findOne({
+      $or: [{ shortName }, { short_name: shortName }],
+    } as any)
+      .lean()
+      .maxTimeMS(30000)
+    return doc ? mapDistrict(doc) : null
   },
 }
 
 export const tehsilRepositoryMongo: TehsilRepository = {
   async list(filter: Record<string, unknown> = {}, sort: Record<string, 1 | -1> = {}) {
-    const rows = await TehsilModel.find(filter).lean().select('-__v').maxTimeMS(30000).sort(sort)
+    const rows = await TehsilModel.find(buildLegacyAwareFilter(filter)).lean().select('-__v').maxTimeMS(30000).sort(sort)
     return rows.map(mapTehsil)
   },
   async listPaginated(
@@ -524,15 +789,16 @@ export const tehsilRepositoryMongo: TehsilRepository = {
     sort: Record<string, 1 | -1> = { tehsilId: 1 }
   ) {
     const skip = (page - 1) * pageSize
+    const normalizedFilter = buildLegacyAwareFilter(filter)
     const [rows, total] = await Promise.all([
-      TehsilModel.find(filter)
+      TehsilModel.find(normalizedFilter)
         .lean()
         .select('-__v')
         .maxTimeMS(30000)
         .sort(sort)
         .skip(skip)
         .limit(pageSize),
-      TehsilModel.countDocuments(filter).maxTimeMS(30000),
+      TehsilModel.countDocuments(normalizedFilter).maxTimeMS(30000),
     ])
     return {
       data: rows.map(mapTehsil),
@@ -547,54 +813,148 @@ export const tehsilRepositoryMongo: TehsilRepository = {
     }
   },
   async listByDistrictId(districtId?: number) {
-    const rows = districtId ? await TehsilModel.find({ districtId }).lean().select('-__v').maxTimeMS(30000) : await TehsilModel.find().lean().select('-__v').maxTimeMS(30000)
-    if (rows.length) return rows.map(mapTehsil)
-    // fallback for legacy schema
-    const legacy = districtId
-      ? await TehsilModel.find({ district_id: districtId }).lean().select('-__v').maxTimeMS(30000)
+    const rows = districtId
+      ? await TehsilModel.find(buildDistrictIdMatch(districtId)).lean().select('-__v').maxTimeMS(30000)
       : await TehsilModel.find().lean().select('-__v').maxTimeMS(30000)
-    return legacy.map(mapTehsil)
+    return rows.map(mapTehsil)
   },
   async findByTehsilId(tehsilId: number) {
-    const doc = await TehsilModel.findOne({ tehsilId }).lean().maxTimeMS(30000)
-    if (doc) return mapTehsil(doc)
-    const legacy = await TehsilModel.findOne({ tehsil_id: tehsilId }).lean().maxTimeMS(30000)
-    return legacy ? mapTehsil(legacy) : null
+    const doc = await TehsilModel.findOne(buildTehsilIdMatch(tehsilId)).lean().maxTimeMS(30000)
+    return doc ? mapTehsil(doc) : null
   },
 }
 
 export const licenseRepositoryMongo: LicenseRepository = {
   async upsertByApplicantId(applicantId: number, data: Partial<any>) {
-    const doc = await LicenseModel.findOneAndUpdate({ applicantId }, data, { upsert: true, new: true })
-    return doc.toObject()
+    const doc = await LicenseModel.findOneAndUpdate(
+      {
+        $or: [{ applicantId }, { applicant_id: applicantId }, { applicant_id: String(applicantId) }],
+      } as any,
+      data,
+      { upsert: true, new: true }
+    )
+    return mapLicense(doc.toObject())
   },
   async findActiveByLicenseNumber(licenseNumber: string, dateOfIssue?: Date) {
+    const docs = await LicenseModel.find({
+      $and: [
+        { $or: [{ licenseNumber }, { license_number: licenseNumber }] },
+        {
+          $or: [
+            { isActive: true },
+            { is_active: true },
+            { $and: [{ isActive: { $exists: false } }, { is_active: { $exists: false } }] },
+          ],
+        },
+      ],
+    } as any)
+      .sort({ dateOfIssue: -1, date_of_issue: -1, createdAt: -1, created_at: -1 })
+      .lean()
+
+    if (!docs.length) return null
+
     if (dateOfIssue) {
-      return LicenseModel.findOne({ licenseNumber, dateOfIssue, isActive: true }).lean()
+      const target = dateOfIssue.toISOString().slice(0, 10)
+      const matched = docs.find((row: any) => {
+        const rawDate = row?.dateOfIssue ?? row?.date_of_issue
+        if (!rawDate) return false
+        const parsed = new Date(rawDate)
+        return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === target
+      })
+      return mapLicense(matched || docs[0])
     }
-    return LicenseModel.findOne({ licenseNumber, isActive: true }).sort({ dateOfIssue: -1 }).lean()
+    return mapLicense(docs[0])
   },
   async list() {
-    return LicenseModel.find().lean()
+    const docs = await LicenseModel.find()
+      .select({
+        applicantId: 1,
+        applicant_id: 1,
+        licenseFor: 1,
+        license_for: 1,
+        licenseNumber: 1,
+        license_number: 1,
+        licenseDuration: 1,
+        license_duration: 1,
+        ownerName: 1,
+        owner_name: 1,
+        businessName: 1,
+        business_name: 1,
+        typesOfPlastics: 1,
+        types_of_plastics: 1,
+        feeAmount: 1,
+        fee_amount: 1,
+        address: 1,
+        dateOfIssue: 1,
+        date_of_issue: 1,
+        isActive: 1,
+        is_active: 1,
+        createdAt: 1,
+        created_at: 1,
+        updatedAt: 1,
+        updated_at: 1,
+      })
+      .lean()
+    return docs.map(mapLicense)
   },
   async listByApplicantIds(applicantIds: number[]) {
-    return LicenseModel.find({ applicantId: { $in: applicantIds } }).lean()
+    if (!applicantIds.length) return []
+    const docs = await LicenseModel.find(buildApplicantIdsMatch(applicantIds))
+      .select({
+        applicantId: 1,
+        applicant_id: 1,
+        licenseFor: 1,
+        license_for: 1,
+        licenseNumber: 1,
+        license_number: 1,
+        licenseDuration: 1,
+        license_duration: 1,
+        ownerName: 1,
+        owner_name: 1,
+        businessName: 1,
+        business_name: 1,
+        typesOfPlastics: 1,
+        types_of_plastics: 1,
+        feeAmount: 1,
+        fee_amount: 1,
+        address: 1,
+        dateOfIssue: 1,
+        date_of_issue: 1,
+        isActive: 1,
+        is_active: 1,
+        createdAt: 1,
+        created_at: 1,
+        updatedAt: 1,
+        updated_at: 1,
+      })
+      .lean()
+    return docs.map(mapLicense)
   },
 }
 
 export const inspectionReportRepositoryMongo: InspectionReportRepository = {
   async list(filter: Record<string, unknown> = {}) {
-    return InspectionReportModel.find(filter).lean()
+    const docs = await InspectionReportModel.find(buildLegacyAwareFilter(filter)).lean()
+    return docs.map(mapInspectionReport)
   },
   async create(payload: Record<string, unknown>) {
     const created = await InspectionReportModel.create(payload)
-    return created.toObject()
+    return mapInspectionReport(created.toObject())
   },
   async updateByNumericId(numericId: number, updates: Record<string, unknown>) {
-    return InspectionReportModel.findOneAndUpdate({ numericId }, updates, { new: true }).lean()
+    const doc = await InspectionReportModel.findOneAndUpdate(
+      {
+        $or: [{ numericId }, { numeric_id: numericId }, { id: numericId }, { id: String(numericId) }],
+      } as any,
+      updates,
+      { new: true }
+    ).lean()
+    return doc ? mapInspectionReport(doc) : null
   },
   async deleteByNumericId(numericId: number) {
-    await InspectionReportModel.findOneAndDelete({ numericId })
+    await InspectionReportModel.findOneAndDelete({
+      $or: [{ numericId }, { numeric_id: numericId }, { id: numericId }, { id: String(numericId) }],
+    } as any)
   },
 }
 
@@ -668,7 +1028,7 @@ export const districtPlasticCommitteeDocumentRepositoryMongo: DistrictPlasticCom
 export const applicationSubmittedRepositoryMongo: ApplicationSubmittedRepository = {
   async findByApplicantId(applicantId: number) {
     const doc = await ApplicationSubmittedModel.collection.findOne({
-      $or: [{ applicantId }, { applicant_id: String(applicantId) }],
+      $or: [{ applicantId }, { applicant_id: applicantId }, { applicant_id: String(applicantId) }],
     })
     return doc ? mapSubmitted(doc) : null
   },
@@ -677,14 +1037,28 @@ export const applicationSubmittedRepositoryMongo: ApplicationSubmittedRepository
     return mapSubmitted(created.toObject())
   },
   async list() {
-    const docs = await ApplicationSubmittedModel.collection.find({}).toArray()
+    const docs = await ApplicationSubmittedModel.collection
+      .find({})
+      .project({
+        applicantId: 1,
+        applicant_id: 1,
+        createdAt: 1,
+        created_at: 1,
+        updatedAt: 1,
+        updated_at: 1,
+      })
+      .toArray()
     return docs.map(mapSubmitted)
   },
   async listByApplicantIds(applicantIds: number[]) {
     if (!applicantIds.length) return []
     const docs = await ApplicationSubmittedModel.collection
       .find({
-        $or: [{ applicantId: { $in: applicantIds } }, { applicant_id: { $in: applicantIds.map(String) } }],
+        $or: [
+          { applicantId: { $in: applicantIds } },
+          { applicant_id: { $in: applicantIds } },
+          { applicant_id: { $in: applicantIds.map(String) } },
+        ],
       })
       .project({
         applicantId: 1,
@@ -701,7 +1075,7 @@ export const applicationSubmittedRepositoryMongo: ApplicationSubmittedRepository
 
 export const applicationAssignmentRepositoryMongo: ApplicationAssignmentRepository = {
   async listByApplicantIds(applicantIds: number[]) {
-    const docs = await ApplicationAssignmentModel.find({ applicantId: { $in: applicantIds } })
+    const docs = await ApplicationAssignmentModel.find(buildApplicantIdsMatch(applicantIds))
       .sort({ createdAt: -1 })
       .select({
         applicantId: 1,
@@ -715,26 +1089,11 @@ export const applicationAssignmentRepositoryMongo: ApplicationAssignmentReposito
         updated_at: 1,
       })
       .lean()
-    if (docs.length) return docs.map(mapAssignment)
-    const legacy = await ApplicationAssignmentModel.find({ applicant_id: { $in: applicantIds.map(String) } })
-      .sort({ created_at: -1 })
-      .select({
-        applicantId: 1,
-        applicant_id: 1,
-        assignedGroup: 1,
-        assigned_group: 1,
-        remarks: 1,
-        createdAt: 1,
-        created_at: 1,
-        updatedAt: 1,
-        updated_at: 1,
-      })
-      .lean()
-    return legacy.map(mapAssignment)
+    return docs.map(mapAssignment)
   },
   async findLatestByApplicantId(applicantId: number) {
-    const doc = await ApplicationAssignmentModel.findOne({ applicantId })
-      .sort({ createdAt: -1 })
+    const doc = await ApplicationAssignmentModel.findOne(buildApplicantIdMatch(applicantId))
+      .sort({ createdAt: -1, created_at: -1 })
       .select({
         applicantId: 1,
         applicant_id: 1,
@@ -747,25 +1106,12 @@ export const applicationAssignmentRepositoryMongo: ApplicationAssignmentReposito
         updated_at: 1,
       })
       .lean()
-    if (doc) return mapAssignment(doc)
-    const legacy = await ApplicationAssignmentModel.findOne({ applicant_id: String(applicantId) })
-      .sort({ created_at: -1 })
-      .select({
-        applicantId: 1,
-        applicant_id: 1,
-        assignedGroup: 1,
-        assigned_group: 1,
-        remarks: 1,
-        createdAt: 1,
-        created_at: 1,
-        updatedAt: 1,
-        updated_at: 1,
-      })
-      .lean()
-    return legacy ? mapAssignment(legacy) : null
+    return doc ? mapAssignment(doc) : null
   },
   async list(filter: Record<string, unknown> = {}) {
-    const docs = await ApplicationAssignmentModel.find(filter).sort({ createdAt: -1 }).lean()
+    const docs = await ApplicationAssignmentModel.find(buildLegacyAwareFilter(filter))
+      .sort({ createdAt: -1, created_at: -1 })
+      .lean()
     return docs.map(mapAssignment)
   },
   async create(payload: Record<string, unknown>) {
@@ -776,10 +1122,8 @@ export const applicationAssignmentRepositoryMongo: ApplicationAssignmentReposito
 
 export const applicantDocumentRepositoryMongo: ApplicantDocumentRepository = {
   async listByApplicantId(applicantId: number) {
-    const docs = await ApplicantDocumentModel.find({ applicantId }).lean()
-    if (docs.length) return docs.map(mapApplicantDocument)
-    const legacy = await ApplicantDocumentModel.find({ applicant_id: String(applicantId) }).lean()
-    return legacy.map(mapApplicantDocument)
+    const docs = await ApplicantDocumentModel.find(buildApplicantIdMatch(applicantId)).lean()
+    return docs.map(mapApplicantDocument)
   },
   async list() {
     const docs = await ApplicantDocumentModel.find().lean()
@@ -790,35 +1134,29 @@ export const applicantDocumentRepositoryMongo: ApplicantDocumentRepository = {
     return mapApplicantDocument(created.toObject())
   },
   async findLatestByApplicantAndDescription(applicantId: number, description: string) {
-    const doc = await ApplicantDocumentModel.findOne({ applicantId, documentDescription: description })
-      .sort({ createdAt: -1 })
+    const doc = await ApplicantDocumentModel.findOne({
+      $and: [
+        buildApplicantIdMatch(applicantId),
+        { $or: [{ documentDescription: description }, { document_description: description }] },
+      ],
+    } as any)
+      .sort({ createdAt: -1, created_at: -1 })
       .lean()
-    if (doc) return mapApplicantDocument(doc)
-    const legacy = await ApplicantDocumentModel.findOne({
-      applicant_id: String(applicantId),
-      document_description: description,
-    })
-      .sort({ created_at: -1 })
-      .lean()
-    return legacy ? mapApplicantDocument(legacy) : null
+    return doc ? mapApplicantDocument(doc) : null
   },
 }
 
 export const applicantFieldResponseRepositoryMongo: ApplicantFieldResponseRepository = {
   async listByApplicantId(applicantId: number) {
-    const docs = await ApplicantFieldResponseModel.find({ applicantId }).lean()
-    if (docs.length) return docs.map(mapApplicantFieldResponse)
-    const legacy = await ApplicantFieldResponseModel.find({ applicant_id: String(applicantId) }).lean()
-    return legacy.map(mapApplicantFieldResponse)
+    const docs = await ApplicantFieldResponseModel.find(buildApplicantIdMatch(applicantId)).lean()
+    return docs.map(mapApplicantFieldResponse)
   },
 }
 
 export const applicantManualFieldsRepositoryMongo: ApplicantManualFieldsRepository = {
   async findByApplicantId(applicantId: number) {
-    const doc = await ApplicantManualFieldsModel.findOne({ applicantId }).lean()
-    if (doc) return mapApplicantManualFields(doc)
-    const legacy = await ApplicantManualFieldsModel.findOne({ applicant_id: String(applicantId) }).lean()
-    return legacy ? mapApplicantManualFields(legacy) : null
+    const doc = await ApplicantManualFieldsModel.findOne(buildApplicantIdMatch(applicantId)).lean()
+    return doc ? mapApplicantManualFields(doc) : null
   },
   async listWithLatLon() {
     const docs = await ApplicantManualFieldsModel.find({
@@ -828,7 +1166,7 @@ export const applicantManualFieldsRepositoryMongo: ApplicantManualFieldsReposito
     return docs.map(mapApplicantManualFields)
   },
   async list(filter: Record<string, unknown> = {}) {
-    const docs = await ApplicantManualFieldsModel.find(filter).lean()
+    const docs = await ApplicantManualFieldsModel.find(buildLegacyAwareFilter(filter)).lean()
     return docs.map(mapApplicantManualFields)
   },
 }
@@ -843,8 +1181,8 @@ export const applicantFeeRepositoryMongo: ApplicantFeeRepository = {
     return docs.map(mapApplicantFee)
   },
   async listByApplicantId(applicantId: number) {
-    const docs = await ApplicantFeeModel.find({ applicantId })
-      .sort({ createdAt: -1 })
+    const docs = await ApplicantFeeModel.find(buildApplicantIdMatch(applicantId))
+      .sort({ createdAt: -1, created_at: -1 })
       .select({
         applicantId: 1,
         applicant_id: 1,
@@ -860,30 +1198,12 @@ export const applicantFeeRepositoryMongo: ApplicantFeeRepository = {
         updated_at: 1,
       })
       .lean()
-    if (docs.length) return docs.map(mapApplicantFee)
-    const legacy = await ApplicantFeeModel.find({ applicant_id: String(applicantId) })
-      .sort({ created_at: -1 })
-      .select({
-        applicantId: 1,
-        applicant_id: 1,
-        feeAmount: 1,
-        fee_amount: 1,
-        isSettled: 1,
-        is_settled: 1,
-        reason: 1,
-        status: 1,
-        createdAt: 1,
-        created_at: 1,
-        updatedAt: 1,
-        updated_at: 1,
-      })
-      .lean()
-    return legacy.map(mapApplicantFee)
+    return docs.map(mapApplicantFee)
   },
   async listByApplicantIds(applicantIds: number[]) {
     if (!applicantIds.length) return []
-    const docs = await ApplicantFeeModel.find({ applicantId: { $in: applicantIds } })
-      .sort({ createdAt: -1 })
+    const docs = await ApplicantFeeModel.find(buildApplicantIdsMatch(applicantIds))
+      .sort({ createdAt: -1, created_at: -1 })
       .select({
         applicantId: 1,
         applicant_id: 1,
@@ -895,31 +1215,17 @@ export const applicantFeeRepositoryMongo: ApplicantFeeRepository = {
         created_at: 1,
       })
       .lean()
-    if (docs.length) return docs.map(mapApplicantFee)
-    const legacy = await ApplicantFeeModel.find({ applicant_id: { $in: applicantIds.map(String) } })
-      .sort({ created_at: -1 })
-      .select({
-        applicantId: 1,
-        applicant_id: 1,
-        feeAmount: 1,
-        fee_amount: 1,
-        isSettled: 1,
-        is_settled: 1,
-        createdAt: 1,
-        created_at: 1,
-      })
-      .lean()
-    return legacy.map(mapApplicantFee)
+    return docs.map(mapApplicantFee)
   },
   async sumFeeByApplicantId(applicantId: number) {
     const feeAgg = await ApplicantFeeModel.aggregate([
-      { $match: { applicantId } },
-      { $group: { _id: null, total: { $sum: '$feeAmount' } } },
+      { $match: buildApplicantIdMatch(applicantId) },
+      { $group: { _id: null, total: { $sum: { $ifNull: ['$feeAmount', '$fee_amount'] } } } },
     ])
     return feeAgg[0]?.total || 0
   },
   async countByApplicantId(applicantId: number) {
-    return ApplicantFeeModel.countDocuments({ applicantId })
+    return ApplicantFeeModel.countDocuments(buildApplicantIdMatch(applicantId))
   },
   async aggregateBySettlement() {
     return ApplicantFeeModel.aggregate([
@@ -934,36 +1240,39 @@ export const psidTrackingRepositoryMongo: PSIDTrackingRepository = {
     return docs.map(mapPSIDTracking)
   },
   async listPaidByApplicantId(applicantId: number) {
-    const docs = await PSIDTrackingModel.find({ applicantId, paymentStatus: 'PAID' }).lean()
-    if (docs.length) return docs.map(mapPSIDTracking)
-    const legacy = await PSIDTrackingModel.find({ applicant_id: String(applicantId), payment_status: 'PAID' }).lean()
-    return legacy.map(mapPSIDTracking)
+    const docs = await PSIDTrackingModel.find({
+      $and: [
+        buildApplicantIdMatch(applicantId),
+        { $or: [{ paymentStatus: 'PAID' }, { payment_status: 'PAID' }] },
+      ],
+    } as any).lean()
+    return docs.map(mapPSIDTracking)
   },
   async findByConsumerNumber(consumerNumber: string) {
-    const doc = await PSIDTrackingModel.findOne({ consumerNumber }).lean()
-    if (doc) return mapPSIDTracking(doc)
-    const legacy = await PSIDTrackingModel.findOne({ consumer_number: consumerNumber }).lean()
-    return legacy ? mapPSIDTracking(legacy) : null
+    const doc = await PSIDTrackingModel.findOne({
+      $or: [{ consumerNumber }, { consumer_number: consumerNumber }],
+    } as any).lean()
+    return doc ? mapPSIDTracking(doc) : null
   },
   async findByConsumerAndDept(consumerNumber: string, deptTransactionId: string) {
-    const doc = await PSIDTrackingModel.findOne({ consumerNumber, deptTransactionId }).sort({ createdAt: -1 }).lean()
-    if (doc) return mapPSIDTracking(doc)
-    const legacy = await PSIDTrackingModel.findOne({
-      consumer_number: consumerNumber,
-      dept_transaction_id: deptTransactionId,
-    })
-      .sort({ created_at: -1 })
+    const doc = await PSIDTrackingModel.findOne({
+      $or: [
+        { consumerNumber, deptTransactionId },
+        { consumer_number: consumerNumber, dept_transaction_id: deptTransactionId },
+      ],
+    } as any)
+      .sort({ createdAt: -1, created_at: -1 })
       .lean()
-    return legacy ? mapPSIDTracking(legacy) : null
+    return doc ? mapPSIDTracking(doc) : null
   },
   async countByApplicantId(applicantId: number) {
-    return PSIDTrackingModel.countDocuments({ applicantId })
+    return PSIDTrackingModel.countDocuments(buildApplicantIdMatch(applicantId))
   },
   async findLatestByApplicantId(applicantId: number) {
-    const doc = await PSIDTrackingModel.findOne({ applicantId }).sort({ createdAt: -1 }).lean()
-    if (doc) return mapPSIDTracking(doc)
-    const legacy = await PSIDTrackingModel.findOne({ applicant_id: String(applicantId) }).sort({ created_at: -1 }).lean()
-    return legacy ? mapPSIDTracking(legacy) : null
+    const doc = await PSIDTrackingModel.findOne(buildApplicantIdMatch(applicantId))
+      .sort({ createdAt: -1, created_at: -1 })
+      .lean()
+    return doc ? mapPSIDTracking(doc) : null
   },
   async list() {
     const docs = await PSIDTrackingModel.find().lean()
@@ -981,57 +1290,45 @@ export const psidTrackingRepositoryMongo: PSIDTrackingRepository = {
 
 export const producerRepositoryMongo: ProducerRepository = {
   async findByApplicantId(applicantId: number) {
-    const doc = await ProducerModel.findOne({ applicantId }).lean()
-    if (doc) return doc
-    return ProducerModel.findOne({ applicant_id: String(applicantId) } as any).lean()
+    const doc = await ProducerModel.findOne(buildApplicantIdMatch(applicantId)).lean()
+    return doc ? mapProducer(doc) : null
   },
   async listByApplicantIds(applicantIds: number[]) {
-    const docs = await ProducerModel.find({ applicantId: { $in: applicantIds } }).lean()
-    if (docs.length) return docs
-    const legacyIds = applicantIds.map(String)
-    return ProducerModel.find({ applicant_id: { $in: legacyIds } } as any).lean()
+    const docs = await ProducerModel.find(buildApplicantIdsMatch(applicantIds)).lean()
+    return docs.map(mapProducer)
   },
 }
 
 export const consumerRepositoryMongo: ConsumerRepository = {
   async findByApplicantId(applicantId: number) {
-    const doc = await ConsumerModel.findOne({ applicantId }).lean()
-    if (doc) return doc
-    return ConsumerModel.findOne({ applicant_id: String(applicantId) } as any).lean()
+    const doc = await ConsumerModel.findOne(buildApplicantIdMatch(applicantId)).lean()
+    return doc ? mapConsumer(doc) : null
   },
   async listByApplicantIds(applicantIds: number[]) {
-    const docs = await ConsumerModel.find({ applicantId: { $in: applicantIds } }).lean()
-    if (docs.length) return docs
-    const legacyIds = applicantIds.map(String)
-    return ConsumerModel.find({ applicant_id: { $in: legacyIds } } as any).lean()
+    const docs = await ConsumerModel.find(buildApplicantIdsMatch(applicantIds)).lean()
+    return docs.map(mapConsumer)
   },
 }
 
 export const collectorRepositoryMongo: CollectorRepository = {
   async findByApplicantId(applicantId: number) {
-    const doc = await CollectorModel.findOne({ applicantId }).lean()
-    if (doc) return doc
-    return CollectorModel.findOne({ applicant_id: String(applicantId) } as any).lean()
+    const doc = await CollectorModel.findOne(buildApplicantIdMatch(applicantId)).lean()
+    return doc ? mapCollector(doc) : null
   },
   async listByApplicantIds(applicantIds: number[]) {
-    const docs = await CollectorModel.find({ applicantId: { $in: applicantIds } }).lean()
-    if (docs.length) return docs
-    const legacyIds = applicantIds.map(String)
-    return CollectorModel.find({ applicant_id: { $in: legacyIds } } as any).lean()
+    const docs = await CollectorModel.find(buildApplicantIdsMatch(applicantIds)).lean()
+    return docs.map(mapCollector)
   },
 }
 
 export const recyclerRepositoryMongo: RecyclerRepository = {
   async findByApplicantId(applicantId: number) {
-    const doc = await RecyclerModel.findOne({ applicantId }).lean()
-    if (doc) return doc
-    return RecyclerModel.findOne({ applicant_id: String(applicantId) } as any).lean()
+    const doc = await RecyclerModel.findOne(buildApplicantIdMatch(applicantId)).lean()
+    return doc ? mapRecycler(doc) : null
   },
   async listByApplicantIds(applicantIds: number[]) {
-    const docs = await RecyclerModel.find({ applicantId: { $in: applicantIds } }).lean()
-    if (docs.length) return docs
-    const legacyIds = applicantIds.map(String)
-    return RecyclerModel.find({ applicant_id: { $in: legacyIds } } as any).lean()
+    const docs = await RecyclerModel.find(buildApplicantIdsMatch(applicantIds)).lean()
+    return docs.map(mapRecycler)
   },
 }
 

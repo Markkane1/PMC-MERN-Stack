@@ -9,7 +9,8 @@ const deps = buildApplicantServiceDeps()
 const paymentService = new PaymentVerificationService(
   deps.applicantRepo,
   deps.applicantFeeRepo,
-  deps.psidTrackingRepo
+  deps.psidTrackingRepo,
+  deps.businessProfileRepo
 )
 
 /**

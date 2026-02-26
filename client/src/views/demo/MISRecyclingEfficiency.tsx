@@ -6,7 +6,7 @@ import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import GeoJSON from 'ol/format/GeoJSON'
 import OSM from 'ol/source/OSM'
-import { Fill, Stroke, Style } from 'ol/style'
+import { Fill, Stroke, Style, Text } from 'ol/style'
 import CircleStyle from 'ol/style/Circle'
 import Feature from 'ol/Feature'
 import Point from 'ol/geom/Point'
@@ -100,6 +100,28 @@ const tileDefs2 = [
     },
 ]
 
+const numericKeys = [
+    'produced_kg_per_day',
+    'distributed_kg_per_day',
+    'collected_kg_per_day',
+    'waste_disposed_kg_per_day',
+    'waste_collected_kg_per_day',
+    'unmanaged_waste_kg_per_day',
+    'recycling_efficiency',
+] as const
+
+const toNumber = (value: unknown): number => {
+    if (value === null || value === undefined || value === '') return 0
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : 0
+}
+
+const toWholeNumber = (value: unknown): number =>
+    Math.round(toNumber(value))
+
+const formatWholeNumber = (value: unknown): string =>
+    toWholeNumber(value).toLocaleString('en-US')
+
 const MISDirectory = () => {
     const mapRef = useRef<HTMLDivElement | null>(null)
     const [mapInstance, setMapInstance] = useState<any>(null)
@@ -111,6 +133,7 @@ const MISDirectory = () => {
 
     // ---------- Applicant data and filters ----------
     const [applicantData, setApplicantData] = useState<any[]>([])
+    const [summaryTotals, setSummaryTotals] = useState<Record<string, number> | null>(null)
     const [districtOptions, setDistrictOptions] = useState<any[]>([])
 
     const [selectedDistrict, setSelectedDistrict] = useState<string | null>(
@@ -152,6 +175,7 @@ const MISDirectory = () => {
             layers: [
                 new TileLayer({
                     source: new OSM(),
+                    opacity: 0.35,
                 }),
             ],
             view: new View({
@@ -201,10 +225,37 @@ const MISDirectory = () => {
     useEffect(() => {
         const fetchApplicantData = async () => {
             try {
-                const resp = await AxiosBase.get(
-                    '/pmc/mis-district-plastic-stats/',
-                )
-                setApplicantData(resp.data)
+                const resp = await AxiosBase.get('/pmc/mis-district-plastic-stats/', {
+                    params: { include_totals: 1 },
+                })
+                const payload = resp.data
+                const rows = Array.isArray(payload)
+                    ? payload
+                    : Array.isArray(payload?.rows)
+                      ? payload.rows
+                      : []
+                const normalizedRows = rows.map((row: any) => {
+                    const normalized = { ...row }
+                    for (const key of numericKeys) {
+                        normalized[key] = toNumber(row?.[key])
+                    }
+                    return normalized
+                })
+                setApplicantData(normalizedRows)
+                if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+                    const totals = payload?.totals
+                    if (totals && typeof totals === 'object') {
+                        const normalizedTotals: Record<string, number> = {}
+                        for (const key of numericKeys) {
+                            normalizedTotals[key] = toNumber((totals as any)[key])
+                        }
+                        setSummaryTotals(normalizedTotals)
+                    } else {
+                        setSummaryTotals(null)
+                    }
+                } else {
+                    setSummaryTotals(null)
+                }
             } catch (error: any) {
                 console.error('Error fetching applicant data:', error)
             }
@@ -330,6 +381,13 @@ const MISDirectory = () => {
             return new Style({
                 stroke: new Stroke({ color: 'black', width: 1 }),
                 fill: new Fill({ color }),
+                text: new Text({
+                    text: String(feature.get('district_name') || ''),
+                    font: '600 12px "Plus Jakarta Sans", Arial, sans-serif',
+                    fill: new Fill({ color: '#000000' }),
+                    stroke: new Stroke({ color: '#ffffff', width: 2 }),
+                    overflow: true,
+                }),
             })
         })
     }, [vectorLayer, applicantData])
@@ -437,13 +495,13 @@ const MISDirectory = () => {
     function computePlasticFlowStats(dataArray: any[]) {
         return dataArray.reduce(
             (acc, item) => {
-                acc.Produced += item.produced_kg_per_day || 0
-                acc.Distributed += item.distributed_kg_per_day || 0
-                acc.Collected += item.collected_kg_per_day || 0
-                acc['W-Collected'] += item.waste_collected_kg_per_day || 0
-                acc.Recycled += item.waste_disposed_kg_per_day || 0
+                acc.Produced += toNumber(item.produced_kg_per_day)
+                acc.Distributed += toNumber(item.distributed_kg_per_day)
+                acc.Collected += toNumber(item.collected_kg_per_day)
+                acc['W-Collected'] += toNumber(item.waste_collected_kg_per_day)
+                acc.Recycled += toNumber(item.waste_disposed_kg_per_day)
                 // acc.Disposed += item.waste_disposed_kg_per_day || 0;
-                acc['Un-Managed'] += item.unmanaged_waste_kg_per_day || 0
+                acc['Un-Managed'] += toNumber(item.unmanaged_waste_kg_per_day)
 
                 // Get max of collected from collectors and recyclers
                 const maxCollected = Math.max(acc.Collected, acc['W-Collected'])
@@ -453,9 +511,13 @@ const MISDirectory = () => {
                     maxCollected > 0
                         ? Math.max(
                               0,
-                              Number(((acc.Recycled / maxCollected) * 100).toFixed(2)),
+                              Number(
+                                  ((acc.Recycled / maxCollected) * 100).toFixed(
+                                      2,
+                                  ),
+                              ),
                           )
-                        : '0.00'
+                        : 0
 
                 acc.districtCount += 1
 
@@ -477,8 +539,20 @@ const MISDirectory = () => {
     // set district options
 
     // const categoryStats = computeCategoryStats(districtFilteredData);
-    const categoryStats = computePlasticFlowStats(districtFilteredData)
-    console.log(categoryStats)
+    const computedStats = computePlasticFlowStats(districtFilteredData)
+    const categoryStats =
+        !selectedDistrict && summaryTotals
+            ? {
+                  ...computedStats,
+                  Produced: toNumber(summaryTotals.produced_kg_per_day),
+                  Distributed: toNumber(summaryTotals.distributed_kg_per_day),
+                  Collected: toNumber(summaryTotals.collected_kg_per_day),
+                  'W-Collected': toNumber(summaryTotals.waste_collected_kg_per_day),
+                  Recycled: toNumber(summaryTotals.waste_disposed_kg_per_day),
+                  'Un-Managed': toNumber(summaryTotals.unmanaged_waste_kg_per_day),
+                  'Recycling Efficiency': toNumber(summaryTotals.recycling_efficiency),
+              }
+            : computedStats
     const enabledTotal = enabledCategories.reduce(
         (acc: number, cat: any) => acc + (categoryStats[cat as keyof typeof categoryStats] as number),
         0,
@@ -564,7 +638,7 @@ const MISDirectory = () => {
                 <div className="flex justify-center mt-4 mb-4">
                     <div
                         ref={mapRef}
-                        style={{ height: '600px', width: '1000px' }}
+                        style={{ height: '560px', width: '1000px' }}
                         className="mb-4 mt-4"
                     />
                 </div>
@@ -731,8 +805,8 @@ const CategoryTiles = ({
                                 <h2 className="text-lg font-bold text-white">
                                     {tile.key}{' '}
                                     {tile.key === 'Recycling Efficiency'
-                                        ? `${value}%`
-                                        : value.toFixed(0)}
+                                        ? `${toWholeNumber(value)}%`
+                                        : formatWholeNumber(value)}
                                 </h2>
                                 <TablerIcon
                                     name="info-circle"
@@ -804,8 +878,6 @@ const MyDataTable = ({
     onColumnFiltersChange,
     openModal,
 }: any) => {
-    console.log('districtOptions', districtOptions)
-
     const columns = useMemo(
         () => [
             // District Column with a custom "dropdown" filter
@@ -834,6 +906,7 @@ const MyDataTable = ({
                 minSize: 50,
                 maxSize: 50,
                 size: 50,
+                Cell: ({ cell }: any) => formatWholeNumber(cell.getValue()),
             },
             {
                 accessorKey: 'distributed_kg_per_day',
@@ -854,6 +927,7 @@ const MyDataTable = ({
                 minSize: 50,
                 maxSize: 50,
                 size: 50,
+                Cell: ({ cell }: any) => formatWholeNumber(cell.getValue()),
             },
             {
                 accessorKey: 'collected_kg_per_day',
@@ -873,6 +947,7 @@ const MyDataTable = ({
                 minSize: 50,
                 maxSize: 50,
                 size: 50,
+                Cell: ({ cell }: any) => formatWholeNumber(cell.getValue()),
             },
             {
                 accessorKey: 'waste_collected_kg_per_day',
@@ -893,6 +968,7 @@ const MyDataTable = ({
                 minSize: 50,
                 maxSize: 50,
                 size: 50,
+                Cell: ({ cell }: any) => formatWholeNumber(cell.getValue()),
             },
             {
                 accessorKey: 'waste_disposed_kg_per_day',
@@ -913,6 +989,7 @@ const MyDataTable = ({
                 minSize: 50,
                 maxSize: 50,
                 size: 50,
+                Cell: ({ cell }: any) => formatWholeNumber(cell.getValue()),
             },
             {
                 accessorKey: 'unmanaged_waste_kg_per_day',
@@ -933,6 +1010,7 @@ const MyDataTable = ({
                 minSize: 50,
                 maxSize: 50,
                 size: 50,
+                Cell: ({ cell }: any) => formatWholeNumber(cell.getValue()),
             },
             {
                 accessorKey: 'recycling_efficiency',
@@ -957,7 +1035,7 @@ const MyDataTable = ({
                 maxSize: 50,
                 size: 50,
                 Cell: ({ cell }: any) => {
-                    const value = parseFloat(cell.getValue()) || 0
+                    const value = toWholeNumber(cell.getValue())
                     let color = ''
 
                     if (value <= 0) {
@@ -974,7 +1052,7 @@ const MyDataTable = ({
 
                     return (
                         <span style={{ color, fontWeight: 'bold' }}>
-                            {value.toFixed(2)}%
+                            {value}%
                         </span>
                     )
                 },
@@ -988,10 +1066,13 @@ const MyDataTable = ({
         <MaterialReactTable
             columns={columns}
             data={data}
+            enableStickyHeader={false}
+            muiTableContainerProps={{ sx: { maxHeight: 'none' } }}
+            muiTableBodyRowProps={{ sx: { '& td': { py: 1 } } }}
             initialState={{
                 showColumnFilters: false, // Hide column filters by default
-                // density: 'compact', // Set compact view
-                pagination: { pageIndex: 0, pageSize: 10 }, // Set 7 rows per page
+                density: 'compact',
+                pagination: { pageIndex: 0, pageSize: 7 },
             }}
         />
     )

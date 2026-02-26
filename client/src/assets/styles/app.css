@@ -73,7 +73,8 @@
   background: linear-gradient(135deg, #e5f3fb, #f0f5f9);
   padding: 30px 20px 0px;
   width: 100%;
-  height: 1000vh; /* 100% of the viewport height */
+  min-height: 100vh;
+  height: auto;
 }
 
 .banner-header {

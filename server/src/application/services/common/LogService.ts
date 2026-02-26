@@ -10,13 +10,16 @@ export async function logApiCall(params: {
   statusCode?: number
 }) {
   try {
-    await ApiLogModel.create({
+    void ApiLogModel.create({
       serviceName: params.serviceName,
       endpoint: params.endpoint,
       requestData: params.requestData,
       responseData: params.responseData,
       statusCode: params.statusCode,
     })
+      .catch(() => {
+        // best-effort logging
+      })
   } catch {
     // best-effort logging
   }
@@ -33,7 +36,7 @@ export async function logAudit(params: {
   timestamp?: Date
 }) {
   try {
-    await AuditLogModel.create({
+    void AuditLogModel.create({
       userId: params.userId,
       username: params.username,
       action: params.action,
@@ -43,6 +46,9 @@ export async function logAudit(params: {
       ipAddress: params.ipAddress,
       timestamp: params.timestamp || new Date(),
     })
+      .catch(() => {
+        // best-effort logging
+      })
   } catch {
     // best-effort logging
   }
@@ -59,7 +65,7 @@ export async function logAccess(params: {
   timestamp?: Date
 }) {
   try {
-    await AccessLogModel.create({
+    void AccessLogModel.create({
       userId: params.userId,
       username: params.username,
       modelName: params.modelName,
@@ -69,6 +75,9 @@ export async function logAccess(params: {
       endpoint: params.endpoint,
       timestamp: params.timestamp || new Date(),
     })
+      .catch(() => {
+        // best-effort logging
+      })
   } catch {
     // best-effort logging
   }

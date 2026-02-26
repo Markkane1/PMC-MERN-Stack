@@ -26,14 +26,34 @@ import {
 } from './infrastructure/resilience'
 import { haRouter, healthCheckAggregator } from './infrastructure/ha'
 
+function isLocalAddress(value?: string | null): boolean {
+  if (!value) return false
+  const normalized = value.trim().toLowerCase()
+  return (
+    normalized === '::1' ||
+    normalized === '127.0.0.1' ||
+    normalized === '::ffff:127.0.0.1'
+  )
+}
+
+function isLocalRequest(req: Request): boolean {
+  const forwarded = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim()
+  const realIp = req.headers['x-real-ip'] as string | undefined
+  return isLocalAddress(forwarded) || isLocalAddress(realIp) || isLocalAddress(req.ip) || isLocalAddress(req.socket.remoteAddress)
+}
+
 // Rate limiting for different endpoint types
+const authWindowMs = env.nodeEnv === 'production' ? 15 * 60 * 1000 : 60 * 1000
+const authMaxAttempts = env.nodeEnv === 'production' ? 5 : 100
+
 const loginLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // 5 attempts
+  windowMs: authWindowMs,
+  max: authMaxAttempts,
   message: 'Too many login attempts, try again later',
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true, // Don't count successful logins
+  skip: (req) => env.nodeEnv !== 'production' && isLocalRequest(req),
 })
 
 const apiLimiter = rateLimit({

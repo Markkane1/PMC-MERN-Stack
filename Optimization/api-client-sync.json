@@ -1,0 +1,1675 @@
+{
+  "generatedAt": "2026-02-25T21:19:13.511Z",
+  "summary": {
+    "serverEndpoints": 244,
+    "clientEndpoints": 98,
+    "matched": 98,
+    "unmatchedClient": 0,
+    "serverNotUsedByClient": 146
+  },
+  "unmatchedClient": [],
+  "serverNotUsedByClient": [
+    {
+      "method": "DELETE",
+      "path": "/pmc/admin/fields/definitions/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 375
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/alerts/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 350
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/applicant-detail/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 106
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/applicant-documents/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 174
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/business-profiles/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 117
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/by-products/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 136
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/collectors/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 155
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/competition/register/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 310
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/consumers/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 149
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/district-documents/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 186
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/field-responses/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 211
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/inspection-report-cached/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 299
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/inspection-report/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 287
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/manual-fields/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 217
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/plastic-items/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 124
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/producers/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 143
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/products/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 130
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/raw-materials/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 167
+    },
+    {
+      "method": "DELETE",
+      "path": "/pmc/recyclers/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 161
+    },
+    {
+      "method": "GET",
+      "path": "/cache/health",
+      "file": "server/src/interfaces/http/routes/cache.routes.ts",
+      "line": 8
+    },
+    {
+      "method": "GET",
+      "path": "/cache/stats",
+      "file": "server/src/interfaces/http/routes/cache.routes.ts",
+      "line": 29
+    },
+    {
+      "method": "GET",
+      "path": "/notification/count",
+      "file": "server/src/interfaces/http/routes/common.routes.ts",
+      "line": 8
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/admin/alerts/all",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 358
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/alerts",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 345
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/alerts/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 347
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/alerts/preferences",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 351
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/alerts/statistics",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 354
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/alerts/unread-count",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 346
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/applicant-documents",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 170
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/applicant-documents/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 171
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/application-assignment",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 200
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/application-assignment/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 201
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/application-assignment/by_applicant",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 202
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/business-profiles",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 112
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/business-profiles/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 113
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/business-profiles/by_applicant",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 114
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/by-products",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 132
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/by-products/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 133
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/check-psid-payment",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 262
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/collectors",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 151
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/collectors/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 152
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/competition",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 303
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/competition/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 304
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/competition/:param/registrations/:param/generate-label",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 314
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/competition/courier-label/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 317
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/competition/my/registrations",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 311
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/competition/register",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 305
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/competition/register/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 306
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/confiscation-lookup",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 330
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/consumers",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 145
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/consumers/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 146
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/district-documents/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 183
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/DistrictByLatLon",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 227
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/export/applicants-payment",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 337
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/export/competitions",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 338
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/export/courier-labels",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 341
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/export/payments",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 339
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/export/psid-tracking",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 340
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/export/summary-report",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 342
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/field-responses",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 207
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/field-responses/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 208
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/fields/audit-log/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 368
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/fields/completion-status",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 366
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/fields/definitions",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 361
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/fields/definitions/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 362
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/fields/responses",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 365
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/fields/sections",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 369
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/fields/sections/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 370
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/generate-license-pdf",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 248
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/inspection-report",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 283
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/inspection-report-cached",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 295
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/inspection-report-cached/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 296
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/inspection-report/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 284
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/license-eligibility/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 264
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/license-pdf",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 249
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/manual-fields",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 213
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/manual-fields/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 214
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/media/:param/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 333
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/media/:param/:param/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 334
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/payment-history/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 263
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/payment-status/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 260
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/payment-summary",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 267
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/ping",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 327
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/plastic-items",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 120
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/plastic-items/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 121
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/plmis-token",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 245
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/plmis/health",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 276
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/plmis/receipt/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 273
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/plmis/statistics",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 275
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/plmis/status/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 271
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/producers",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 139
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/producers/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 140
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/products",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 126
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/products/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 127
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/raw-materials",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 163
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/raw-materials/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 164
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/recyclers",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 157
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/recyclers/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 158
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/verify-chalan",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 329
+    },
+    {
+      "method": "PATCH",
+      "path": "/accounts/profile",
+      "file": "server/src/interfaces/http/routes/accounts.routes.ts",
+      "line": 55
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/applicant-documents/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 173
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/application-assignment/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 204
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/by-products/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 135
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/competition/register/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 309
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/district-documents/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 185
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/field-responses/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 210
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/inspection-report-cached/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 298
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/plastic-items/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 123
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/products/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 129
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/raw-materials/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 166
+    },
+    {
+      "method": "POST",
+      "path": "/cache/clear",
+      "file": "server/src/interfaces/http/routes/cache.routes.ts",
+      "line": 41
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/admin/alerts/create",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 357
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/admin/fields/bulk-update",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 376
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/admin/fields/definitions",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 373
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/alerts/test",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 353
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/by-products",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 134
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/competition/:param/register",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 307
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/competition/:param/registrations/:param/generate-label",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 315
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/competition/:param/registrations/:param/score",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 318
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/competition/:param/registrations/:param/submit",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 312
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/competition/:param/score",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 319
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/competition/:param/submit",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 313
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/fields/evaluate-conditions",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 367
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/fields/responses",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 364
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/fields/validate",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 363
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/inspection-report-cached",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 297
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/payment-intimation",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 243
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/payment-reminder/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 266
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/payment-status/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 261
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/plastic-items",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 122
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/plmis-token",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 244
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/plmis/cancel/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 274
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/plmis/initiate",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 270
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/plmis/verify",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 272
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/plmis/webhook/payment-confirmed",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 279
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/plmis/webhook/payment-failed",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 280
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/products",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 128
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/raw-materials",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 165
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/receipt-pdf",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 255
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/verify-chalan",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 328
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/verify-chalan-qr",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 257
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/verify-payments",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 265
+    },
+    {
+      "method": "PUT",
+      "path": "/pmc/admin/fields/definitions/:param",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 374
+    },
+    {
+      "method": "PUT",
+      "path": "/pmc/alerts/:param/read",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 348
+    },
+    {
+      "method": "PUT",
+      "path": "/pmc/alerts/mark-read/batch",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 349
+    },
+    {
+      "method": "PUT",
+      "path": "/pmc/alerts/preferences",
+      "file": "server/src/interfaces/http/routes/pmc.routes.ts",
+      "line": 352
+    }
+  ],
+  "matched": [
+    {
+      "method": "DELETE",
+      "path": "/accounts/admin/groups/:param",
+      "rawPath": "/accounts/admin/groups/${id}/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 137,
+      "source": "ApiService"
+    },
+    {
+      "method": "DELETE",
+      "path": "/accounts/admin/superadmins/:param",
+      "rawPath": "/accounts/admin/superadmins/${id}/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 199,
+      "source": "ApiService"
+    },
+    {
+      "method": "DELETE",
+      "path": "/accounts/admin/users/:param",
+      "rawPath": "/accounts/admin/users/${id}/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 156,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/admin/access-logs",
+      "rawPath": "/accounts/admin/access-logs/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 232,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/admin/api-logs",
+      "rawPath": "/accounts/admin/api-logs/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 218,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/admin/audit-logs",
+      "rawPath": "/accounts/admin/audit-logs/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 225,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/admin/external-tokens",
+      "rawPath": "/accounts/admin/external-tokens/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 259,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/admin/groups",
+      "rawPath": "/accounts/admin/groups/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 117,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/admin/permissions",
+      "rawPath": "/accounts/admin/permissions/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 105,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/admin/service-configs",
+      "rawPath": "/accounts/admin/service-configs/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 239,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/admin/superadmins",
+      "rawPath": "/accounts/admin/superadmins/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 169,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/admin/users",
+      "rawPath": "/accounts/admin/users/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 143,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/generate-captcha",
+      "rawPath": "/accounts/generate-captcha/",
+      "file": "client/src/views/auth/SignIn/components/SignInForm.tsx",
+      "line": 73,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/list-inspectors",
+      "rawPath": "/accounts/list-inspectors/",
+      "file": "client/src/views/supid/EPA/FieldInspectors.tsx",
+      "line": 28,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/oauth/github/auth-url",
+      "rawPath": "/accounts/oauth/github/auth-url/",
+      "file": "client/src/services/OAuthService.ts",
+      "line": 67,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/oauth/google/auth-url",
+      "rawPath": "/accounts/oauth/google/auth-url/",
+      "file": "client/src/services/OAuthService.ts",
+      "line": 29,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/profile",
+      "rawPath": "/accounts/profile/",
+      "file": "client/src/store/authStore.ts",
+      "line": 83,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/accounts/role-dashboard",
+      "rawPath": "/accounts/role-dashboard/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 205,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/notification/list",
+      "rawPath": "/notification/list",
+      "file": "client/src/services/CommonService.ts",
+      "line": 11,
+      "source": "ApiService"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/applicant-alerts",
+      "rawPath": "/pmc/applicant-alerts/",
+      "file": "client/src/components/template/Notification/Notification.tsx",
+      "line": 130,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/applicant-detail",
+      "rawPath": "/pmc/applicant-detail/",
+      "file": "client/src/views/Home.tsx",
+      "line": 257,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/applicant-detail-main-do-list",
+      "rawPath": "/pmc/applicant-detail-main-do-list/",
+      "file": "client/src/views/HomeDO.tsx",
+      "line": 329,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/applicant-detail-main-list",
+      "rawPath": "/pmc/applicant-detail-main-list/",
+      "file": "client/src/views/HomeAdmin.tsx",
+      "line": 225,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/applicant-detail/:param",
+      "rawPath": "/pmc/applicant-detail/${id}/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 150,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/applicant-location-public",
+      "rawPath": "/pmc/applicant-location-public/",
+      "file": "client/src/views/demo/MISAnalyticsView2.tsx",
+      "line": 123,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/applicant-statistics",
+      "rawPath": "/pmc/applicant-statistics/",
+      "file": "client/src/views/demo/AnalyticsView.tsx",
+      "line": 107,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/chalan-pdf",
+      "rawPath": "/pmc/chalan-pdf?ApplicantId=${applicantDetail.id}",
+      "file": "client/src/views/supid/DocumentsForm/DocumentSection2.tsx",
+      "line": 180,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/check-psid-status",
+      "rawPath": "/pmc/check-psid-status?applicant_id=${applicantDetail.id}",
+      "file": "client/src/views/supid/DocumentsForm/DocumentSection2.tsx",
+      "line": 272,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/competition/generate-label",
+      "rawPath": "/pmc/competition/generate-label/?registration_id=${result.registration_id}",
+      "file": "client/src/views/auth/competition/CompetitionFormPage.tsx",
+      "line": 127,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/district-documents",
+      "rawPath": "/pmc/district-documents/",
+      "file": "client/src/views/supid/EPA/DocumentsTab.tsx",
+      "line": 55,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/districts",
+      "rawPath": "/pmc/districts/",
+      "file": "client/src/views/supid/BusinessEntityForm/BusinessDetailIndividualSection.tsx",
+      "line": 48,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/districts-public",
+      "rawPath": "/pmc/districts-public",
+      "file": "client/src/views/demo/MISAnalyticsView2.tsx",
+      "line": 185,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/download_latest_document",
+      "rawPath": "/pmc/download_latest_document/?document_description=${encodeURIComponent(\r\n                    description,\r\n                )}",
+      "file": "client/src/views/supid/DocumentsForm/DocumentSection.tsx",
+      "line": 167,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/export-applicant",
+      "rawPath": "/pmc/export-applicant/",
+      "file": "client/src/views/Home.tsx",
+      "line": 346,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/fetch-statistics-do-view-groups",
+      "rawPath": "/pmc/fetch-statistics-do-view-groups/",
+      "file": "client/src/views/HomeDO.tsx",
+      "line": 449,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/fetch-statistics-view-groups",
+      "rawPath": "/pmc/fetch-statistics-view-groups/",
+      "file": "client/src/views/Home.tsx",
+      "line": 311,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/generate-psid",
+      "rawPath": "/pmc/generate-psid?applicant_id=${applicantDetail.id}",
+      "file": "client/src/views/supid/DocumentsForm/DocumentSection2.tsx",
+      "line": 240,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/idm_clubs_geojson_all",
+      "rawPath": "/pmc/idm_clubs_geojson_all/",
+      "file": "client/src/views/demo/ClubDirectory.tsx",
+      "line": 104,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/idm_clubs/all",
+      "rawPath": "/pmc/idm_clubs/all/",
+      "file": "client/src/views/demo/ClubDirectory2.tsx",
+      "line": 117,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/idm_districts-club-counts",
+      "rawPath": "/pmc/idm_districts-club-counts/",
+      "file": "client/src/views/demo/ClubDirectory.tsx",
+      "line": 50,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/inspection-report-cached/all_other_single_use_plastics",
+      "rawPath": "/pmc/inspection-report-cached/all_other_single_use_plastics/",
+      "file": "client/src/views/supid/EPA/InspectionDetailSection.tsx",
+      "line": 176,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/inspection-report/district_summary",
+      "rawPath": "/pmc/inspection-report/district_summary/",
+      "file": "client/src/views/supid/EPA/InspectionDashboard.tsx",
+      "line": 19,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/inspection-report/export-all-inspections-excel",
+      "rawPath": "/pmc/inspection-report/export-all-inspections-excel/",
+      "file": "client/src/views/supid/EPA/InspectionReportsList.tsx",
+      "line": 146,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/inspection-report/export-all-inspections-pdf",
+      "rawPath": "/pmc/inspection-report/export-all-inspections-pdf/",
+      "file": "client/src/views/supid/EPA/InspectionReportsList.tsx",
+      "line": 174,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/inspection-report/export-district-summary-excel",
+      "rawPath": "/pmc/inspection-report/export-district-summary-excel/",
+      "file": "client/src/views/supid/EPA/InspectionDashboard.tsx",
+      "line": 132,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/inspection-report/export-district-summary-pdf",
+      "rawPath": "/pmc/inspection-report/export-district-summary-pdf/",
+      "file": "client/src/views/supid/EPA/InspectionDashboard.tsx",
+      "line": 160,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/license-by-user",
+      "rawPath": "/pmc/license-by-user/",
+      "file": "client/src/views/HomeLicense.tsx",
+      "line": 61,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/mis-applicant-statistics",
+      "rawPath": "/pmc/mis-applicant-statistics/",
+      "file": "client/src/views/demo/MISAnalyticsView.tsx",
+      "line": 109,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/mis-district-plastic-stats",
+      "rawPath": "/pmc/mis-district-plastic-stats/",
+      "file": "client/src/views/demo/MISRecyclingEfficiency.tsx",
+      "line": 204,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/psid-report",
+      "rawPath": "/pmc/psid-report/",
+      "file": "client/src/views/demo/CollapseMenuItemView2.tsx",
+      "line": 69,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/receipt-pdf",
+      "rawPath": "/pmc/receipt-pdf?ApplicantId=${applicantDetail.id}",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 1270,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/report",
+      "rawPath": "/pmc/report/",
+      "file": "client/src/views/demo/CollapseMenuItemView2.tsx",
+      "line": 24,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/report-fee",
+      "rawPath": "/pmc/report-fee/",
+      "file": "client/src/views/HomeDEO.tsx",
+      "line": 525,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/tehsils",
+      "rawPath": "/pmc/tehsils?district_id=${businessDetailIndividual.district || 0}",
+      "file": "client/src/views/supid/BusinessEntityForm/BusinessDetailIndividualSection.tsx",
+      "line": 67,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/track-application",
+      "rawPath": "/pmc/track-application/",
+      "file": "client/src/views/auth/Analytics/Banner.tsx",
+      "line": 27,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/pmc/user-groups",
+      "rawPath": "/pmc/user-groups/",
+      "file": "client/src/store/authStore.ts",
+      "line": 73,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "GET",
+      "path": "/search/query",
+      "rawPath": "/search/query",
+      "file": "client/src/services/CommonService.ts",
+      "line": 31,
+      "source": "ApiService"
+    },
+    {
+      "method": "PATCH",
+      "path": "/accounts/admin/groups/:param",
+      "rawPath": "/accounts/admin/groups/${id}/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 130,
+      "source": "ApiService"
+    },
+    {
+      "method": "PATCH",
+      "path": "/accounts/admin/service-configs/:param",
+      "rawPath": "/accounts/admin/service-configs/${id}/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 252,
+      "source": "ApiService"
+    },
+    {
+      "method": "PATCH",
+      "path": "/accounts/admin/superadmins/:param",
+      "rawPath": "/accounts/admin/superadmins/${id}/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 192,
+      "source": "ApiService"
+    },
+    {
+      "method": "PATCH",
+      "path": "/accounts/admin/users/:param",
+      "rawPath": "/accounts/admin/users/${id}/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 149,
+      "source": "ApiService"
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/applicant-detail/:param",
+      "rawPath": "/pmc/applicant-detail/${applicantDetail.id}/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 411,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/business-profiles/:param",
+      "rawPath": "/pmc/business-profiles/${id}/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 570,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/collectors/:param",
+      "rawPath": "/pmc/collectors/${licenseDetailCollector.id}/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 918,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/consumers/:param",
+      "rawPath": "/pmc/consumers/${licenseDetailConsumer.id}/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 816,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/inspection-report/:param",
+      "rawPath": "/pmc/inspection-report/${report.id}/",
+      "file": "client/src/store/supid/useInspectionStore.ts",
+      "line": 195,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/manual-fields/:param",
+      "rawPath": "/pmc/manual-fields/${manualFields.id}/",
+      "file": "client/src/views/supid/ReviewApplication/ReviewApplicationMain.tsx",
+      "line": 988,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/producers/:param",
+      "rawPath": "/pmc/producers/${licenseDetailProducer.id}/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 708,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "PATCH",
+      "path": "/pmc/recyclers/:param",
+      "rawPath": "/pmc/recyclers/${licenseDetailRecycler.id}/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 1010,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/admin/groups",
+      "rawPath": "/accounts/admin/groups/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 123,
+      "source": "ApiService"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/admin/permissions/reset",
+      "rawPath": "/accounts/admin/permissions/reset/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 111,
+      "source": "ApiService"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/admin/service-configs",
+      "rawPath": "/accounts/admin/service-configs/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 245,
+      "source": "ApiService"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/admin/superadmins",
+      "rawPath": "/accounts/admin/superadmins/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 180,
+      "source": "ApiService"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/admin/users/:param/reset-password",
+      "rawPath": "/accounts/admin/users/${id}/reset-password/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 162,
+      "source": "ApiService"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/create-update-inpsector-user",
+      "rawPath": "/accounts/create-update-inpsector-user/",
+      "file": "client/src/views/supid/EPA/UserForm.tsx",
+      "line": 99,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/find-user",
+      "rawPath": "/accounts/find-user/",
+      "file": "client/src/views/auth/ForgotPassword/ForgotPassword.tsx",
+      "line": 104,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/login",
+      "rawPath": "/accounts/login/",
+      "file": "client/src/services/AuthService.ts",
+      "line": 13,
+      "source": "ApiService"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/logout",
+      "rawPath": "/accounts/logout/",
+      "file": "client/src/services/AuthService.ts",
+      "line": 29,
+      "source": "ApiService"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/oauth/github/callback",
+      "rawPath": "/accounts/oauth/github/callback/",
+      "file": "client/src/services/OAuthService.ts",
+      "line": 88,
+      "source": "ApiService"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/oauth/google/callback",
+      "rawPath": "/accounts/oauth/google/callback/",
+      "file": "client/src/services/OAuthService.ts",
+      "line": 50,
+      "source": "ApiService"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/register",
+      "rawPath": "/accounts/register/",
+      "file": "client/src/services/AuthService.ts",
+      "line": 21,
+      "source": "ApiService"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/reset-forgot-password",
+      "rawPath": "/accounts/reset-forgot-password/",
+      "file": "client/src/services/AuthService.ts",
+      "line": 36,
+      "source": "ApiService"
+    },
+    {
+      "method": "POST",
+      "path": "/accounts/reset-password2",
+      "rawPath": "/accounts/reset-password2/",
+      "file": "client/src/services/AuthService.ts",
+      "line": 44,
+      "source": "ApiService"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/applicant-detail",
+      "rawPath": "/pmc/applicant-detail/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 450,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/applicant-documents",
+      "rawPath": "/pmc/applicant-documents/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 1105,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/application-assignment",
+      "rawPath": "/pmc/application-assignment/",
+      "file": "client/src/views/supid/ReviewApplication/ReviewApplicationMain.tsx",
+      "line": 1038,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/business-profiles",
+      "rawPath": "/pmc/business-profiles/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 600,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/chalan-pdf",
+      "rawPath": "/pmc/chalan-pdf",
+      "file": "client/src/views/GenerateReceiptPage.tsx",
+      "line": 72,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/collectors",
+      "rawPath": "/pmc/collectors/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 932,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/competition/register",
+      "rawPath": "/pmc/competition/register/",
+      "file": "client/src/views/auth/competition/CompetitionFormPage.tsx",
+      "line": 113,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/consumers",
+      "rawPath": "/pmc/consumers/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 830,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/district-documents",
+      "rawPath": "/pmc/district-documents/",
+      "file": "client/src/views/supid/EPA/DocumentsTab.tsx",
+      "line": 77,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/field-responses",
+      "rawPath": "/pmc/field-responses/",
+      "file": "client/src/views/supid/ReviewApplication/ReviewApplicationMain.tsx",
+      "line": 769,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/inspection-report",
+      "rawPath": "/pmc/inspection-report/",
+      "file": "client/src/store/supid/useInspectionStore.ts",
+      "line": 186,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/manual-fields",
+      "rawPath": "/pmc/manual-fields/",
+      "file": "client/src/views/supid/ReviewApplication/ReviewApplicationMain.tsx",
+      "line": 970,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/producers",
+      "rawPath": "/pmc/producers/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 723,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "POST",
+      "path": "/pmc/recyclers",
+      "rawPath": "/pmc/recyclers/",
+      "file": "client/src/views/supid/CreateApplication/CustomerCreate.tsx",
+      "line": 1024,
+      "source": "AxiosBase"
+    },
+    {
+      "method": "PUT",
+      "path": "/accounts/admin/role-dashboard",
+      "rawPath": "/accounts/admin/role-dashboard/",
+      "file": "client/src/services/AdminService.ts",
+      "line": 211,
+      "source": "ApiService"
+    }
+  ]
+}

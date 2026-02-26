@@ -18,11 +18,56 @@ const flattenObject = <T extends Record<string, unknown>>(obj: T): T => {
     return obj
 }
 
+const normalizeLicenseRow = (
+    row: Record<string, unknown>,
+): Record<string, unknown> => {
+    const normalized = { ...row }
+
+    const aliases: Array<[string, string]> = [
+        ['license_number', 'licenseNumber'],
+        ['date_of_issue', 'dateOfIssue'],
+        ['license_for', 'licenseFor'],
+        ['license_duration', 'licenseDuration'],
+        ['owner_name', 'ownerName'],
+        ['business_name', 'businessName'],
+        ['types_of_plastics', 'typesOfPlastics'],
+        ['fee_amount', 'feeAmount'],
+        ['applicant_id', 'applicantId'],
+        ['district_name', 'districtName'],
+        ['tehsil_name', 'tehsilName'],
+        ['city_name', 'cityName'],
+        ['is_active', 'isActive'],
+        ['created_at', 'createdAt'],
+    ]
+
+    aliases.forEach(([snakeKey, camelKey]) => {
+        if (
+            (normalized[snakeKey] === undefined ||
+                normalized[snakeKey] === null ||
+                normalized[snakeKey] === '') &&
+            normalized[camelKey] !== undefined &&
+            normalized[camelKey] !== null &&
+            normalized[camelKey] !== ''
+        ) {
+            normalized[snakeKey] = normalized[camelKey]
+        }
+    })
+
+    return normalized
+}
+
 const sanitizeData = (data: Record<string, unknown>[]): LicenseRow[] => {
     return data.map((record) => {
-        const flattened = flattenObject({ ...record }) as Record<string, unknown>
+        const flattened = flattenObject(
+            normalizeLicenseRow({ ...record }),
+        ) as Record<string, unknown>
         Object.keys(flattened).forEach((key) => {
-            if (flattened[key] === undefined || flattened[key] === null) {
+            if (
+                flattened[key] === undefined ||
+                flattened[key] === null ||
+                (typeof flattened[key] === 'string' &&
+                    flattened[key].trim() === '')
+            ) {
                 flattened[key] = 'N/A'
             }
         })
@@ -94,19 +139,33 @@ const Home = () => {
                         row.original.license_number ?? 'N/A',
                     )
                     const dateOfIssue = String(row.original.date_of_issue ?? 'N/A')
+                    const hasLicenseNumber =
+                        licenseNumber !== 'N/A' && licenseNumber.trim() !== ''
 
-                    const pdfUrl = `/api/pmc/license-pdf?license_number=${encodeURIComponent(licenseNumber)}&date_of_issue=${encodeURIComponent(dateOfIssue)}`
+                    const pdfUrl = hasLicenseNumber
+                        ? `/api/pmc/license-pdf?license_number=${encodeURIComponent(licenseNumber)}${
+                              dateOfIssue !== 'N/A' && dateOfIssue.trim() !== ''
+                                  ? `&date_of_issue=${encodeURIComponent(dateOfIssue)}`
+                                  : ''
+                          }`
+                        : '#'
 
                     return (
                         <a
                             style={{
-                                cursor: 'pointer',
-                                color: '#1d4ed8',
-                                textDecoration: 'underline',
+                                cursor: hasLicenseNumber ? 'pointer' : 'default',
+                                color: hasLicenseNumber ? '#1d4ed8' : '#111827',
+                                textDecoration: hasLicenseNumber
+                                    ? 'underline'
+                                    : 'none',
                             }}
                             href={pdfUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            target={hasLicenseNumber ? '_blank' : undefined}
+                            rel={
+                                hasLicenseNumber
+                                    ? 'noopener noreferrer'
+                                    : undefined
+                            }
                         >
                             {licenseNumber}
                         </a>

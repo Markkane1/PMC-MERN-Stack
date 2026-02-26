@@ -24,9 +24,9 @@ async function start() {
     // eslint-disable-next-line no-console
     console.log(`PMC MERN API running on port ${env.port}`)
     // eslint-disable-next-line no-console
-    console.log('📊 Monitoring enabled - Access metrics at http://localhost:${env.port}/monitoring/health')
+    console.log(`📊 Monitoring enabled - Access metrics at http://localhost:${env.port}/monitoring/health`)
     // eslint-disable-next-line no-console
-    console.log('🚀 HA enabled - Access HA status at http://localhost:${env.port}/ha/status')
+    console.log(`🚀 HA enabled - Access HA status at http://localhost:${env.port}/ha/status`)
   })
 }
 
