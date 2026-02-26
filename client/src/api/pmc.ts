@@ -1,10 +1,7 @@
 import { useState, useCallback } from 'react'
+import { getApiBaseUrl } from '@/utils/apiBaseUrl'
 
-const envApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim()
-const normalizedEnvApiUrl = envApiUrl ? envApiUrl.replace(/\/+$/, '') : ''
-const API_BASE_URL = normalizedEnvApiUrl
-  ? `${normalizedEnvApiUrl}${normalizedEnvApiUrl.endsWith('/api') ? '' : '/api'}`
-  : '/api'
+const API_BASE_URL = getApiBaseUrl()
 
 type GenerateChalanPayload = {
   amountDue: number

@@ -5,13 +5,20 @@
   "scripts": {
     "dev": "concurrently -n BE,FE -c green,cyan \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "dev:all": "npm run dev",
+    "build:be": "npm run build --prefix server",
+    "build:fe": "npm run build --prefix client",
     "build": "npm run build --prefix server && npm run build --prefix client",
+    "verify": "npm run lint && npm run build",
     "lint": "npm run lint --prefix server && npm run lint --prefix client",
     "start": "npm run dev",
     "start:be": "npm run start --prefix server",
     "dev:be": "npm run dev --prefix server",
     "dev:fe": "npm run dev --prefix client",
-    "dev:full": "npm run dev"
+    "dev:full": "npm run dev",
+    "docker:staging:up": "docker compose -f docker-compose.staging.yml up -d --build",
+    "docker:staging:down": "docker compose -f docker-compose.staging.yml down",
+    "docker:prod:up": "docker compose -f docker-compose.production.yml up -d --build",
+    "docker:prod:down": "docker compose -f docker-compose.production.yml down"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"

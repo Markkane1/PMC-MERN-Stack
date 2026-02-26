@@ -24,7 +24,8 @@ Copy-Item .env.example .env
 
 3. Confirm API settings in `.env`:
 
-- `VITE_API_BASE_URL` (default: `http://localhost:4000/api`)
+- `VITE_API_URL` (recommended, default: `http://localhost:4000`)
+- `VITE_API_BASE_URL` (legacy alias, optional)
 
 ## Run
 

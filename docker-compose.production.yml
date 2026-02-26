@@ -1,0 +1,25 @@
+services:
+  pmc-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: pmc-server
+    restart: unless-stopped
+    env_file:
+      - ./server/.env.production
+    ports:
+      - '4000:4000'
+
+  pmc-client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    container_name: pmc-client
+    restart: unless-stopped
+    depends_on:
+      pmc-server:
+        condition: service_healthy
+    ports:
+      - '80:80'

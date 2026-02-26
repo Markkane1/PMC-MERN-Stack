@@ -22,6 +22,11 @@ npm install
 Copy-Item .env.example .env
 ```
 
+For deployment:
+
+- Staging template: `.env.staging.example`
+- Production template: `.env.production.example`
+
 3. Update required environment variables in `.env`:
 
 - `MONGO_URI`

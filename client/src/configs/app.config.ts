@@ -1,3 +1,5 @@
+import { getApiBaseUrl } from '@/utils/apiBaseUrl'
+
 export type AppConfig = {
     apiPrefix: string
     authenticatedEntryPath: string
@@ -8,7 +10,7 @@ export type AppConfig = {
 }
 
 const appConfig: AppConfig = {
-    apiPrefix: '/api',
+    apiPrefix: getApiBaseUrl(),
     authenticatedEntryPath: '/home',
     unAuthenticatedEntryPath: '/pub',
     locale: 'en',

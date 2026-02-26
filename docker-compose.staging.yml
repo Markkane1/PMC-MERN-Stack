@@ -1,0 +1,45 @@
+services:
+  pmc-mongo:
+    image: mongo:7
+    container_name: pmc-mongo
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - pmc_mongo_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', '--eval', 'db.adminCommand("ping").ok']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  pmc-server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: pmc-server
+    restart: unless-stopped
+    env_file:
+      - ./server/.env.staging
+    depends_on:
+      pmc-mongo:
+        condition: service_healthy
+    ports:
+      - '4000:4000'
+
+  pmc-client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    container_name: pmc-client
+    restart: unless-stopped
+    depends_on:
+      pmc-server:
+        condition: service_healthy
+    ports:
+      - '5173:80'
+
+volumes:
+  pmc_mongo_data:

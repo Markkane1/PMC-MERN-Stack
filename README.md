@@ -41,6 +41,11 @@ npm run dev
 - `npm run dev:fe`: run frontend only
 - `npm run build`: build backend and frontend
 - `npm run lint`: lint backend and frontend
+- `npm run verify`: lint + build validation
+- `npm run docker:staging:up`: start staging stack (docker compose)
+- `npm run docker:staging:down`: stop staging stack
+- `npm run docker:prod:up`: start production stack (docker compose)
+- `npm run docker:prod:down`: stop production stack
 
 ## Service URLs (Default)
 
@@ -53,3 +58,4 @@ npm run dev
 - [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
 - [ARCHITECTURE.md](ARCHITECTURE.md)
 - [PRE_DEPLOYMENT_CHECKLIST.md](PRE_DEPLOYMENT_CHECKLIST.md)
+- [DEPLOYMENT.md](DEPLOYMENT.md)
