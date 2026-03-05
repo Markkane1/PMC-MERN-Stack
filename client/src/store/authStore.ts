@@ -1,10 +1,11 @@
-import cookiesStorage from '@/utils/cookiesStorage'
-import appConfig from '@/configs/app.config'
-import { TOKEN_NAME_IN_STORAGE } from '@/constants/api.constant'
 import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
 import type { User } from '@/@types/auth'
 import AxiosBase from '../services/axios/AxiosBase'
+import {
+    clearAccessToken,
+    getAccessToken,
+    setAccessToken,
+} from '@/utils/accessTokenStorage'
 
 type Session = {
     signedIn: boolean
@@ -23,18 +24,6 @@ type AuthAction = {
     fetchDashboardRoutes: () => Promise<void>
 }
 
-const getPersistStorage = () => {
-    if (appConfig.accessTokenPersistStrategy === 'localStorage') {
-        return localStorage
-    }
-
-    if (appConfig.accessTokenPersistStrategy === 'sessionStorage') {
-        return sessionStorage
-    }
-
-    return cookiesStorage
-}
-
 const initialState: AuthState = {
     session: {
         signedIn: false,
@@ -49,120 +38,116 @@ const initialState: AuthState = {
 }
 
 export const useSessionUser = create<AuthState & AuthAction>()(
-    persist(
-        (set) => ({
-            ...initialState,
-            setSessionSignedIn: (payload) =>
-                set((state) => ({
-                    session: {
-                        ...state.session,
-                        signedIn: payload,
-                    },
-                })),
-            setUser: (payload) =>
-                set((state) => ({
-                    user: {
-                        ...state.user,
-                        ...payload,
-                    },
-                })),
-            // Fetch user groups along with district details
-            fetchUserGroups: async () => {
-                try {
-                    if (navigator.onLine) {
-                        const response = await AxiosBase.get(
-                            '/pmc/user-groups/',
-                            {
-                                headers: { 'Content-Type': 'application/json' },
-                            },
-                        )
-                        let groups = response.data || []
+    (set) => ({
+        ...initialState,
+        setSessionSignedIn: (payload) =>
+            set((state) => ({
+                session: {
+                    ...state.session,
+                    signedIn: payload,
+                },
+            })),
+        setUser: (payload) =>
+            set((state) => ({
+                user: {
+                    ...state.user,
+                    ...payload,
+                },
+            })),
+        // Fetch user groups along with district details
+        fetchUserGroups: async () => {
+            try {
+                if (navigator.onLine) {
+                    const response = await AxiosBase.get('/pmc/user-groups/', {
+                        headers: { 'Content-Type': 'application/json' },
+                    })
+                    let groups = response.data || []
 
-                        if (!groups.length) {
-                            try {
-                                const profileResp = await AxiosBase.get(
-                                    '/accounts/profile/',
-                                )
-                                const profileGroups =
-                                    profileResp.data?.groups || []
-                                groups = profileGroups.map((name: string) => ({
-                                    name,
-                                }))
-                            } catch (_err) {
-                                // ignore profile fallback errors
-                            }
+                    if (!groups.length) {
+                        try {
+                            const profileResp =
+                                await AxiosBase.get('/accounts/profile/')
+                            const profileGroups =
+                                profileResp.data?.groups || []
+                            groups = profileGroups.map((name: string) => ({
+                                name,
+                            }))
+                        } catch (_err) {
+                            // ignore profile fallback errors
                         }
-
-                        const districtInfo =
-                            groups.length > 0
-                                ? {
-                                      district_id: groups[0].district_id,
-                                      district_name: groups[0].district_name,
-                                  }
-                                : { district_id: null, district_name: '' }
-
-                        set((state) => ({
-                            user: {
-                                ...state.user,
-                                authority:
-                                    groups.length > 0
-                                        ? groups.map(
-                                              (group: { name: string }) =>
-                                                  group.name,
-                                          )
-                                        : [],
-                                district_id: districtInfo.district_id,
-                                district_name: districtInfo.district_name,
-                            },
-                        }))
                     }
-                } catch (error) {
-                    console.error('Error fetching user groups:', error)
+
+                    const districtInfo =
+                        groups.length > 0
+                            ? {
+                                  district_id: groups[0].district_id,
+                                  district_name: groups[0].district_name,
+                              }
+                            : { district_id: null, district_name: '' }
+
                     set((state) => ({
                         user: {
                             ...state.user,
-                            authority: [],
-                            district_id: null,
-                            district_name: '',
+                            authority:
+                                groups.length > 0
+                                    ? groups.map(
+                                          (group: { name: string }) =>
+                                              group.name,
+                                      )
+                                    : [],
+                            district_id: districtInfo.district_id,
+                            district_name: districtInfo.district_name,
                         },
                     }))
                 }
-            },
-            fetchDashboardRoutes: async () => {
-                try {
-                    if (navigator.onLine) {
-                        const response = await AxiosBase.get(
-                            '/accounts/role-dashboard/',
-                            {
-                                headers: { 'Content-Type': 'application/json' },
-                            },
-                        )
-                        const mappings = response.data?.mappings || {}
-                        set((state) => ({
-                            dashboardRoutes: {
-                                ...state.dashboardRoutes,
-                                ...mappings,
-                            },
-                        }))
-                    }
-                } catch (error) {
-                    console.error('Error fetching role dashboard map:', error)
+            } catch (error) {
+                console.error('Error fetching user groups:', error)
+                set((state) => ({
+                    user: {
+                        ...state.user,
+                        authority: [],
+                        district_id: null,
+                        district_name: '',
+                    },
+                }))
+            }
+        },
+        fetchDashboardRoutes: async () => {
+            try {
+                if (navigator.onLine) {
+                    const response = await AxiosBase.get(
+                        '/accounts/role-dashboard/',
+                        {
+                            headers: { 'Content-Type': 'application/json' },
+                        },
+                    )
+                    const mappings = response.data?.mappings || {}
+                    set((state) => ({
+                        dashboardRoutes: {
+                            ...state.dashboardRoutes,
+                            ...mappings,
+                        },
+                    }))
                 }
-            },
-        }),
-        { name: 'sessionUser', storage: createJSONStorage(() => localStorage) },
-    ),
+            } catch (error) {
+                console.error('Error fetching role dashboard map:', error)
+            }
+        },
+    }),
 )
 
 export const useToken = () => {
-    const storage = getPersistStorage()
-
     const setToken = (token: string) => {
-        storage.setItem(TOKEN_NAME_IN_STORAGE, token)
+        if (!token) {
+            clearAccessToken()
+            return
+        }
+
+        setAccessToken(token)
     }
 
     return {
         setToken,
-        token: storage.getItem(TOKEN_NAME_IN_STORAGE),
+        token: getAccessToken(),
     }
 }

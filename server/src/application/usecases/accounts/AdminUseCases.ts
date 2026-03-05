@@ -1,5 +1,6 @@
 import { Request, Response } from 'express'
 import bcrypt from 'bcryptjs'
+import mongoose from 'mongoose'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import { validatePasswordPolicy } from '../../../shared/utils/passwordPolicy'
 import { SystemConfigModel } from '../../../infrastructure/database/models/common/SystemConfig'
@@ -303,6 +304,10 @@ const defaultDeps: AdminUseCaseDeps = {
 
 const ROLE_DASHBOARD_KEY = 'role_dashboard_map'
 
+function isValidObjectId(value: string): boolean {
+  return mongoose.Types.ObjectId.isValid(value)
+}
+
 function normalizeRoleDashboardMap(raw: any) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
   const cleaned: Record<string, string> = {}
@@ -471,6 +476,10 @@ export const updateGroup = asyncHandler(async (req: AuthRequest, res: Response) 
   const { id } = req.params
   const { name, permissions } = req.body || {}
 
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid group id.' })
+  }
+
   const existing = await defaultDeps.groupRepo.findById(id)
   if (!existing) {
     return res.status(404).json({ message: 'Group not found.' })
@@ -518,6 +527,11 @@ export const updateGroup = asyncHandler(async (req: AuthRequest, res: Response) 
 
 export const deleteGroup = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid group id.' })
+  }
+
   const existing = await defaultDeps.groupRepo.findById(id)
   if (!existing) {
     return res.status(404).json({ message: 'Group not found.' })
@@ -564,6 +578,10 @@ export const listUsers = asyncHandler(async (req: AuthRequest, res: Response) =>
 export const updateUser = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params
   const { groups, direct_permissions, is_active } = req.body || {}
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid user id.' })
+  }
 
   const user = await defaultDeps.userRepo.findById(id)
   if (!user) {
@@ -612,6 +630,10 @@ export const updateUser = asyncHandler(async (req: AuthRequest, res: Response) =
 export const deleteUser = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params
 
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid user id.' })
+  }
+
   const actorGroups: string[] = req.user?.groups || []
   const isActorSuper = actorGroups.includes('Super')
   if (!isActorSuper) {
@@ -637,6 +659,10 @@ export const deleteUser = asyncHandler(async (req: AuthRequest, res: Response) =
 export const resetUserPassword = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params
   const { new_password } = req.body || {}
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid user id.' })
+  }
 
   if (!new_password) {
     return res.status(400).json({ message: 'new_password is required.' })
@@ -743,6 +769,10 @@ export const updateSuperadmin = asyncHandler(async (req: AuthRequest, res: Respo
   const { id } = req.params
   const { first_name, last_name, password, is_active } = req.body || {}
 
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid user id.' })
+  }
+
   const user = await defaultDeps.userRepo.findById(id)
   if (!user || !(user.isSuperadmin || (user.groups || []).includes('Super'))) {
     return res.status(404).json({ message: 'SuperAdmin not found.' })
@@ -788,6 +818,11 @@ export const deleteSuperadmin = asyncHandler(async (req: AuthRequest, res: Respo
   }
 
   const { id } = req.params
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid user id.' })
+  }
+
   const users = await defaultDeps.userRepo.listAll()
   const supers = users.filter((u) => u.isSuperadmin || (u.groups || []).includes('Super'))
   if (supers.length <= 1) {
@@ -941,6 +976,11 @@ export const createServiceConfiguration = asyncHandler(async (req: AuthRequest, 
 export const updateServiceConfiguration = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params
   const payload = req.body || {}
+
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ message: 'Invalid service configuration id.' })
+  }
+
   const updated = await ServiceConfigurationModel.findByIdAndUpdate(
     id,
     {

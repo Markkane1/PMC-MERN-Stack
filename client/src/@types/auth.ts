@@ -6,8 +6,10 @@ export type SignInCredential = {
 }
 
 export type SignInResponse = {
-    token: string
-    user: {
+    token?: string
+    access?: string
+    message?: string
+    user?: {
         userId: string
         userName: string
         authority: string[]

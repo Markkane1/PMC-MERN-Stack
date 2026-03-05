@@ -1,10 +1,10 @@
-﻿import Card from '../../../components/ui/Card'
+import Card from '../../../components/ui/Card'
 import Input from '../../../components/ui/Input'
 import Select from '../../../components/ui/Select'
 import { FormItem } from '../../../components/ui/Form'
 import { Controller } from 'react-hook-form'
 import type { FormSectionBaseProps } from './types'
-import InputMask from 'react-input-mask'
+import InputMask from '@/components/shared/InputMask'
 
 type OverviewSectionProps = FormSectionBaseProps & {
     readOnly?: boolean
@@ -260,3 +260,5 @@ const CompetitionDetailSection = ({
 }
 
 export default CompetitionDetailSection
+
+

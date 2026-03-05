@@ -5,7 +5,7 @@ import { FormItem } from '@/components/ui/Form'
 import NumericInput from '@/components/shared/NumericInput'
 import { Controller } from 'react-hook-form'
 import type { FormSectionBaseProps } from './types'
-import InputMask from 'react-input-mask'
+import InputMask from '@/components/shared/InputMask'
 import React, { useEffect, useState } from 'react'
 import AxiosBase from '../../../services/axios/AxiosBase'
 
@@ -413,6 +413,8 @@ const BusinessDetailSection = ({
 }
 
 export default BusinessDetailSection
+
+
 
 
 

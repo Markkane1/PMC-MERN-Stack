@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import Container from '@/components/shared/Container'
 import Button from '@/components/ui/Button'
 import Notification from '@/components/ui/Notification'
@@ -39,7 +39,6 @@ const CustomerEdit = () => {
     const { id } = useParams()
     const navigate = useNavigate()
     const [step, setStep] = useState(0)
-    console.log('id is:', id)
     const [discardConfirmationOpen, setDiscardConfirmationOpen] =
         useState(false)
     const [goBackConfirmationOpen, setGoBackConfirmationOpen] = useState(false)
@@ -153,7 +152,6 @@ const CustomerEdit = () => {
                 },
             })
                 .then((response) => {
-                    console.log('Data:', response.data)
                     const data_applicantDetail = {
                         firstName: response.data.first_name,
                         lastName: response.data.last_name,
@@ -388,7 +386,6 @@ const CustomerEdit = () => {
     const handleApplicantDetailFormSubmit = async (
         values: ApplicantDetailFormSchema,
     ) => {
-        console.log('Submitted values', values)
         // updateApplicantDetail(values)
         setIsSubmiting(true)
 
@@ -418,7 +415,6 @@ const CustomerEdit = () => {
                     },
                 )
 
-                console.log('Post successful:', response.data)
                 const id = response.data.id
 
                 // Add the ID to the values object
@@ -457,7 +453,6 @@ const CustomerEdit = () => {
                     },
                 )
 
-                console.log('Post successful:', response.data)
                 const resp_id = response.data.id
                 // const tracking_number = `LHR-PRO-${resp_id.toString().padStart(3, '0')}`;
 
@@ -467,7 +462,6 @@ const CustomerEdit = () => {
                     id: resp_id,
                     applicationStatus: 'Created',
                 }
-                console.log('updatedValues:', updatedValues)
                 updateApplicantDetail(updatedValues)
                 // console.log('applicant state:', applicantDetail)
 
@@ -529,10 +523,7 @@ const CustomerEdit = () => {
         formData.append('entity_type', values.businessEntityType)
         formData.append('applicant', applicantDetail.id.toString())
 
-        console.log('Submitted values', values)
-        console.log('updated business entity1:', businessEntity)
         updateBusinessEntity(values as BusinessEntityFields)
-        console.log('updated business entity2:', businessEntity)
         if (completedSections.includes('businessDetail')) {
             updateBusinessDetail(values as BusinessDetailFields)
             formData.append('business_name', values.businessName)
@@ -577,7 +568,6 @@ const CustomerEdit = () => {
                     },
                 )
 
-                console.log('Put successful:', response.data)
 
                 setIsSubmiting(false)
             } catch (error) {
@@ -607,7 +597,6 @@ const CustomerEdit = () => {
                     },
                 )
 
-                console.log('Post successful:', response.data)
 
                 updateBusinessDetailIndividual({
                     ...values,
@@ -645,7 +634,6 @@ const CustomerEdit = () => {
                 // Add fields corresponding to the data model
                 formData.append('tracking_number', values.tracking_number || '')
 
-                console.log('number_of_machines:', values.number_of_machines)
                 formData.append(
                     'registration_required_for',
                     JSON.stringify(values.registration_required_for || []),
@@ -714,7 +702,6 @@ const CustomerEdit = () => {
                             },
                         },
                     )
-                    console.log('Post successful:', response.data)
                     updateLicenseDetailProducer({
                         ...values,
                         id: response.data.id,
@@ -729,7 +716,6 @@ const CustomerEdit = () => {
                             },
                         },
                     )
-                    console.log('Post successful:', response.data)
                     updateLicenseDetailProducer({
                         ...values,
                         id: response.data.id,
@@ -754,7 +740,6 @@ const CustomerEdit = () => {
                     },
                 )
 
-                console.log('Post successful:', response2.data)
 
                 // Add the ID to the values object
                 const updatedValues = { registration_for: 'Producer' }
@@ -763,7 +748,6 @@ const CustomerEdit = () => {
                 updateApplicantDetail(updatedValues)
             }
             if (completedSections.includes('licenseDetailConsumer')) {
-                console.log('values:', values)
                 const formData = new FormData()
 
                 formData.append(
@@ -860,7 +844,6 @@ const CustomerEdit = () => {
                     },
                 )
 
-                console.log('Post successful:', response2.data)
 
                 // Add the ID to the values object
                 const updatedValues = { registration_for: 'Consumer' }
@@ -869,7 +852,6 @@ const CustomerEdit = () => {
                 updateApplicantDetail(updatedValues)
             }
             if (completedSections.includes('licenseDetailCollector')) {
-                console.log('values:', values)
                 const formData = new FormData()
 
                 // Add single-use plastics categories
@@ -958,19 +940,12 @@ const CustomerEdit = () => {
                         },
                     },
                 )
-
-                console.log(
-                    'Applicant Detail Update successful:',
-                    response2.data,
-                )
-
                 // Update local store or state with updated values
                 const updatedValues = { registration_for: 'Collector' }
                 updateApplicantDetail(updatedValues)
 
                 // Update state or local storage with the collector details
             }
-            console.log('completedSections', completedSections)
             if (completedSections.includes('licenseDetailRecycler')) {
                 const formData = new FormData()
 
@@ -1054,7 +1029,6 @@ const CustomerEdit = () => {
                     },
                 )
 
-                console.log('Post successful:', response2.data)
 
                 // Add the ID to the values object
                 const updatedValues = { registration_for: 'Consumer' }
@@ -1064,7 +1038,6 @@ const CustomerEdit = () => {
             }
 
             setIsSubmiting(false)
-            console.log('Submitted values LicenseDetail:', values)
             onNext() // Move to the next step
         } catch (error) {
             console.error(
@@ -1086,7 +1059,6 @@ const CustomerEdit = () => {
     const handleDocumentFormSubmit = async (
         values: LicenseDetailFormSchema,
     ) => {
-        console.log('Submitted values LicenseDetail:', values)
 
         if (!applicantDetail.id) {
             toast.push(
@@ -1120,7 +1092,6 @@ const CustomerEdit = () => {
                     values.flow_diagram2,
                     'Identity Document - 2',
                 )
-                console.log('Post successful:', data)
             } catch (error) {
                 console.error(
                     'Error in POST request:',
@@ -1142,7 +1113,6 @@ const CustomerEdit = () => {
                     values.flow_diagram,
                     'Identity Document',
                 )
-                console.log('Post successful:', data)
             } catch (error) {
                 console.error(
                     'Error in POST request:',
@@ -1215,7 +1185,6 @@ const CustomerEdit = () => {
                         },
                     },
                 )
-                console.log('Post successful:', response.data)
             } catch (error) {
                 console.error(
                     'Error in POST request:',
@@ -1230,9 +1199,7 @@ const CustomerEdit = () => {
                 navigate('/error', { state: { error: errorDetails } })
             }
         }
-        console.log('values.existingFileId', values.existingFileId)
         if (values.existingFileId === 'true' || values.flow_diagram) {
-            console.log('its in if of existingField')
 
             const formData2 = new FormData()
             // Add non-file fields

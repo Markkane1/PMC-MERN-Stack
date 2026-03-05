@@ -10,7 +10,11 @@ import crypto from 'crypto'
  * Generate ETag from data
  */
 export function generateETag(data: any): string {
-  const content = typeof data === 'string' ? data : JSON.stringify(data)
+  const content = Buffer.isBuffer(data)
+    ? data
+    : typeof data === 'string'
+      ? data
+      : JSON.stringify(data ?? '')
   return `"${crypto.createHash('md5').update(content).digest('hex')}"`
 }
 
@@ -23,6 +27,20 @@ export function etagMiddleware(req: Request, res: Response, next: NextFunction) 
   const originalSend = res.send
 
   res.send = ((data: any) => {
+    // Empty-body responses (e.g. 204) should not generate ETags.
+    if (res.statusCode === 204 || res.statusCode === 205 || res.statusCode === 304) {
+      return originalSend.call(res, data)
+    }
+
+    // Restrict ETag generation to safe retrieval methods only.
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      return originalSend.call(res, data)
+    }
+
+    if (data === undefined || data === null) {
+      return originalSend.call(res, data)
+    }
+
     // Generate ETag for response
     const etag = generateETag(data)
     res.setHeader('ETag', etag)

@@ -6,6 +6,13 @@ import { invalidatePmcDashboardCaches } from '../../services/pmc/DashboardCacheS
 
 type AuthRequest = Request & { user?: any }
 
+function isValidPsidNumber(psidNumber: unknown): psidNumber is string {
+  if (typeof psidNumber !== 'string') return false
+  const trimmed = psidNumber.trim()
+  // PSID values are numeric identifiers and should be bounded in length.
+  return /^[0-9]{6,30}$/.test(trimmed)
+}
+
 /**
  * Initiate PLMIS payment
  * POST /api/pmc/plmis/initiate
@@ -84,6 +91,12 @@ export const checkPlmisPaymentStatus = asyncHandler(async (req: AuthRequest, res
       message: 'PSID number is required',
     })
   }
+  if (!isValidPsidNumber(psidNumber)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid PSID number format',
+    })
+  }
 
   try {
     const status = await plmisService.checkPaymentStatus(psidNumber)
@@ -124,6 +137,12 @@ export const verifyPlmisPayment = asyncHandler(async (req: AuthRequest, res: Res
       message: 'PSID number and transaction ID are required',
     })
   }
+  if (!isValidPsidNumber(psidNumber)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid PSID number format',
+    })
+  }
 
   try {
     const verified = await plmisService.verifyPayment(psidNumber, deptTransactionId)
@@ -155,6 +174,12 @@ export const getPlmisReceipt = asyncHandler(async (req: AuthRequest, res: Respon
     return res.status(400).json({
       success: false,
       message: 'PSID number is required',
+    })
+  }
+  if (!isValidPsidNumber(psidNumber)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid PSID number format',
     })
   }
 
@@ -191,6 +216,12 @@ export const cancelPlmisPayment = asyncHandler(async (req: AuthRequest, res: Res
     return res.status(400).json({
       success: false,
       message: 'PSID number is required',
+    })
+  }
+  if (!isValidPsidNumber(psidNumber)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid PSID number format',
     })
   }
 
@@ -271,6 +302,12 @@ export const plmisPaymentConfirmedWebhook = asyncHandler(
       return res.status(400).json({
         success: false,
         message: 'Missing required webhook fields',
+      })
+    }
+    if (!isValidPsidNumber(String(psidNumber))) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid PSID number format',
       })
     }
 
@@ -358,6 +395,12 @@ export const plmisPaymentFailedWebhook = asyncHandler(
       return res.status(400).json({
         success: false,
         message: 'Missing required webhook fields',
+      })
+    }
+    if (!isValidPsidNumber(String(psidNumber))) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid PSID number format',
       })
     }
 

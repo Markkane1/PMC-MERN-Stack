@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 import { env } from '../../../infrastructure/config/env'
 import { userRepositoryMongo } from '../../../infrastructure/database/repositories/accounts'
 import type { UserRepository } from '../../../domain/repositories/accounts'
+import { getRequestAccessToken } from '../utils/authCookies'
 
 export type AuthRequest = Request & { user?: any }
 
@@ -15,12 +16,10 @@ const defaultDeps: AuthDeps = {
 }
 
 export async function authenticate(req: AuthRequest, res: Response, next: NextFunction) {
-  const header = req.headers.authorization
-  if (!header || !header.startsWith('Bearer ')) {
+  const token = getRequestAccessToken(req)
+  if (!token) {
     return res.status(401).json({ message: 'Unauthorized' })
   }
-
-  const token = header.replace('Bearer ', '').trim()
   try {
     const payload = jwt.verify(token, env.jwtSecret) as { userId?: string; type?: string }
     if (!payload?.userId || payload.type === 'refresh') {

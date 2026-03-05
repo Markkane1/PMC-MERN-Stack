@@ -1,4 +1,4 @@
-﻿import { lazy } from 'react'
+import { lazy } from 'react'
 import type { Routes } from '@/@types/routes'
 
 const authRoute: Routes = [
@@ -62,18 +62,6 @@ const authRoute: Routes = [
         key: 'resetPassword',
         path: `/reset-password`,
         component: lazy(() => import('@/views/auth/ResetPassword')),
-        authority: [],
-    },
-    {
-        key: 'googleOAuthCallback',
-        path: `/auth/google/callback`,
-        component: lazy(() => import('@/views/auth/GoogleOAuthCallback')),
-        authority: [],
-    },
-    {
-        key: 'githubOAuthCallback',
-        path: `/auth/github/callback`,
-        component: lazy(() => import('@/views/auth/GitHubOAuthCallback')),
         authority: [],
     },
     {

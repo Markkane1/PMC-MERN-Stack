@@ -1,10 +1,11 @@
-import { useRef, useImperativeHandle, forwardRef } from 'react'
+import { useRef, useImperativeHandle, forwardRef, useEffect } from 'react'
 import AuthContext from './AuthContext'
 import { getDashboardRoute } from '@/utils/roleRoute'
 import appConfig from '@/configs/app.config'
 import { useSessionUser, useToken } from '@/store/authStore'
 import { apiSignIn, apiSignOut, apiSignUp } from '@/services/AuthService'
 import { REDIRECT_URL_KEY } from '@/constants/app.constant'
+import { sanitizeRedirectPath } from '@/utils/safeRedirect'
 import { useNavigate } from 'react-router-dom'
 import type {
     SignInCredential,
@@ -15,6 +16,7 @@ import type {
 } from '@/@types/auth'
 import type { ReactNode } from 'react'
 import type { NavigateFunction } from 'react-router-dom'
+import AxiosBase from '@/services/axios/AxiosBase'
 
 type AuthProviderProps = { children: ReactNode }
 
@@ -43,16 +45,16 @@ function AuthProvider({ children }: AuthProviderProps) {
     const setSessionSignedIn = useSessionUser(
         (state) => state.setSessionSignedIn,
     )
-    const { token, setToken } = useToken()
+    const { setToken } = useToken()
 
-    const authenticated = Boolean(token && signedIn)
+    const authenticated = Boolean(signedIn)
 
     const navigatorRef = useRef<IsolatedNavigatorRef>(null)
 
     const redirect = async () => {
         const search = window.location.search
         const params = new URLSearchParams(search)
-        const redirectUrl = params.get(REDIRECT_URL_KEY)
+        const redirectUrl = sanitizeRedirectPath(params.get(REDIRECT_URL_KEY), '')
 
         if (redirectUrl) {
             navigatorRef.current?.navigate(redirectUrl)
@@ -75,9 +77,28 @@ function AuthProvider({ children }: AuthProviderProps) {
         navigatorRef.current?.navigate(target)
     }
 
-    const handleSignIn = (tokens: Token, user?: User) => {
-        console.log('access token', tokens.accessToken)
-        setToken(tokens.accessToken)
+    const mapProfileToUser = (profile: any): User => ({
+        userId: profile?.id || null,
+        userName: profile?.username || profile?.userName || '',
+        email: profile?.email || '',
+        authority: profile?.groups || profile?.authority || [],
+        avatar: profile?.avatar || '',
+    })
+
+    const hydrateSessionFromProfile = async () => {
+        const profileResp = await AxiosBase.get('/accounts/profile/')
+        const mappedUser = mapProfileToUser(profileResp.data || {})
+        setUser(mappedUser)
+        setSessionSignedIn(true)
+        return mappedUser
+    }
+
+    const handleSignIn = (tokens?: Token, user?: User) => {
+        if (tokens?.accessToken) {
+            setToken(tokens.accessToken)
+        } else {
+            setToken('')
+        }
         setSessionSignedIn(true)
 
         if (user) {
@@ -91,13 +112,43 @@ function AuthProvider({ children }: AuthProviderProps) {
         setSessionSignedIn(false)
     }
 
+    useEffect(() => {
+        let active = true
+
+        const bootstrapSession = async () => {
+            try {
+                if (!navigator.onLine) return
+                const mappedUser = await hydrateSessionFromProfile()
+                if (!active) return
+
+                if (!mappedUser.authority || mappedUser.authority.length === 0) {
+                    await fetchUserGroups()
+                }
+                if (!Object.keys(useSessionUser.getState().dashboardRoutes || {}).length) {
+                    await fetchDashboardRoutes()
+                }
+            } catch (_error) {
+                if (!active) return
+                handleSignOut()
+            }
+        }
+
+        bootstrapSession()
+        return () => {
+            active = false
+        }
+    }, [])
+
     const signIn = async (values: SignInCredential): AuthResult => {
         try {
             const resp = await apiSignIn(values)
             if (resp) {
                 const accessToken =
                     (resp as { access?: string }).access || resp.token
-                handleSignIn({ accessToken }, resp.user)
+                handleSignIn(accessToken ? { accessToken } : undefined, resp.user)
+                if (!resp.user) {
+                    await hydrateSessionFromProfile()
+                }
                 await redirect()
                 return {
                     status: 'success',
@@ -121,7 +172,12 @@ function AuthProvider({ children }: AuthProviderProps) {
         try {
             const resp = await apiSignUp(values)
             if (resp) {
-                handleSignIn({ accessToken: resp.token }, resp.user)
+                const accessToken =
+                    (resp as { access?: string }).access || resp.token
+                handleSignIn(accessToken ? { accessToken } : undefined, resp.user)
+                if (!resp.user) {
+                    await hydrateSessionFromProfile()
+                }
                 await redirect()
                 return {
                     status: 'success',

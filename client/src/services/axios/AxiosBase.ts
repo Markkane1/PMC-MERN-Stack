@@ -7,6 +7,7 @@ import type { AxiosError } from 'axios'
 const AxiosBase = axios.create({
     timeout: 180000,
     baseURL: appConfig.apiPrefix,
+    withCredentials: true,
 })
 
 AxiosBase.interceptors.request.use(

@@ -37,7 +37,7 @@ const UserSchema = new Schema<UserDocument>(
 
 export const UserModel = mongoose.model<UserDocument>('User', UserSchema, 'User')
 
-// SocialAccount Schema for OAuth provider tracking
+// SocialAccount schema for external provider tracking
 export interface SocialAccountDocument extends Document {
   userId: mongoose.Types.ObjectId
   provider: 'google' | 'github'
@@ -63,7 +63,7 @@ const SocialAccountSchema = new Schema<SocialAccountDocument>(
   { timestamps: true }
 )
 
-// Create compound index to prevent duplicate OAuth accounts
+// Create compound index to prevent duplicate social accounts
 SocialAccountSchema.index({ provider: 1, providerId: 1 }, { unique: true })
 
 export const SocialAccountModel = mongoose.model<SocialAccountDocument>(

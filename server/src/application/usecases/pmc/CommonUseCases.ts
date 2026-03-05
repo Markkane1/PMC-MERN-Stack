@@ -1,6 +1,5 @@
 import { Request, Response } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
-import wkx from 'wkx'
 import type { AuthRequest } from '../../../interfaces/http/middlewares/auth'
 import { pointInMultiPolygon, pointInPolygon } from '../../../shared/utils/geo'
 import { parallelQueriesWithMetadata } from '../../../infrastructure/utils/parallelQueries'
@@ -66,38 +65,19 @@ const defaultDeps: CommonDeps = {
 
 function normalizeGeom(geom: any): string | null {
   if (!geom) return null
-  if (Buffer.isBuffer(geom)) {
-    try {
-      const geometry = wkx.Geometry.parse(geom)
-      return `SRID=4326;${geometry.toWkt()}`
-    } catch {
-      return null
-    }
-  }
+  if (Buffer.isBuffer(geom)) return null
 
   if (typeof geom === 'string') {
     const trimmed = geom.trim()
     if (!trimmed) return null
     if (trimmed.startsWith('SRID=')) return trimmed
     const isHex = /^[0-9A-Fa-f]+$/.test(trimmed)
-    if (isHex) {
-      try {
-        const geometry = wkx.Geometry.parse(Buffer.from(trimmed, 'hex'))
-        return `SRID=4326;${geometry.toWkt()}`
-      } catch {
-        return trimmed
-      }
-    }
+    if (isHex) return null
     return trimmed
   }
 
   if (typeof geom === 'object' && geom.type && geom.coordinates) {
-    try {
-      const geometry = wkx.Geometry.parseGeoJSON(geom as any)
-      return `SRID=4326;${geometry.toWkt()}`
-    } catch {
-      return null
-    }
+    return JSON.stringify(geom)
   }
   return null
 }

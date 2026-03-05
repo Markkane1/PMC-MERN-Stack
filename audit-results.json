@@ -1,0 +1,373 @@
+{
+  "generatedAt": "2026-03-04T09:51:37.111Z",
+  "scope": [
+    "root",
+    "server",
+    "client"
+  ],
+  "reports": {
+    "root": {
+      "auditReportVersion": 2,
+      "vulnerabilities": {},
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 0,
+          "moderate": 0,
+          "high": 0,
+          "critical": 0,
+          "total": 0
+        },
+        "dependencies": {
+          "prod": 1,
+          "dev": 428,
+          "optional": 27,
+          "peer": 1,
+          "peerOptional": 0,
+          "total": 428
+        }
+      }
+    },
+    "server": {
+      "auditReportVersion": 2,
+      "vulnerabilities": {},
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 0,
+          "moderate": 0,
+          "high": 0,
+          "critical": 0,
+          "total": 0
+        },
+        "dependencies": {
+          "prod": 373,
+          "dev": 183,
+          "optional": 1,
+          "peer": 0,
+          "peerOptional": 0,
+          "total": 555
+        }
+      }
+    },
+    "client": {
+      "auditReportVersion": 2,
+      "vulnerabilities": {
+        "@rollup/plugin-terser": {
+          "name": "@rollup/plugin-terser",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            "serialize-javascript"
+          ],
+          "effects": [
+            "workbox-build"
+          ],
+          "range": ">=0.2.0",
+          "nodes": [
+            "node_modules/@rollup/plugin-terser"
+          ],
+          "fixAvailable": {
+            "name": "workbox-cli",
+            "version": "7.0.0",
+            "isSemVerMajor": true
+          }
+        },
+        "esbuild": {
+          "name": "esbuild",
+          "severity": "moderate",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1102341,
+              "name": "esbuild",
+              "dependency": "esbuild",
+              "title": "esbuild enables any website to send any requests to the development server and read the response",
+              "url": "https://github.com/advisories/GHSA-67mh-4wv8-2f99",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-346"
+              ],
+              "cvss": {
+                "score": 5.3,
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N"
+              },
+              "range": "<=0.24.2"
+            }
+          ],
+          "effects": [
+            "vite"
+          ],
+          "range": "<=0.24.2",
+          "nodes": [
+            "node_modules/esbuild"
+          ],
+          "fixAvailable": {
+            "name": "vite",
+            "version": "7.3.1",
+            "isSemVerMajor": true
+          }
+        },
+        "external-editor": {
+          "name": "external-editor",
+          "severity": "low",
+          "isDirect": false,
+          "via": [
+            "tmp"
+          ],
+          "effects": [
+            "inquirer"
+          ],
+          "range": ">=1.1.1",
+          "nodes": [
+            "node_modules/external-editor"
+          ],
+          "fixAvailable": {
+            "name": "workbox-cli",
+            "version": "7.0.0",
+            "isSemVerMajor": true
+          }
+        },
+        "inquirer": {
+          "name": "inquirer",
+          "severity": "low",
+          "isDirect": false,
+          "via": [
+            "external-editor"
+          ],
+          "effects": [
+            "workbox-cli"
+          ],
+          "range": "3.0.0 - 8.2.6 || 9.0.0 - 9.3.7",
+          "nodes": [
+            "node_modules/inquirer"
+          ],
+          "fixAvailable": {
+            "name": "workbox-cli",
+            "version": "7.0.0",
+            "isSemVerMajor": true
+          }
+        },
+        "prismjs": {
+          "name": "prismjs",
+          "severity": "moderate",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1105770,
+              "name": "prismjs",
+              "dependency": "prismjs",
+              "title": "PrismJS DOM Clobbering vulnerability",
+              "url": "https://github.com/advisories/GHSA-x7hr-w5r2-h6wg",
+              "severity": "moderate",
+              "cwe": [
+                "CWE-79",
+                "CWE-94"
+              ],
+              "cvss": {
+                "score": 4.9,
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:L/UI:N/S:C/C:L/I:L/A:N"
+              },
+              "range": "<1.30.0"
+            }
+          ],
+          "effects": [
+            "refractor"
+          ],
+          "range": "<1.30.0",
+          "nodes": [
+            "node_modules/refractor/node_modules/prismjs"
+          ],
+          "fixAvailable": {
+            "name": "react-syntax-highlighter",
+            "version": "16.1.1",
+            "isSemVerMajor": true
+          }
+        },
+        "react-syntax-highlighter": {
+          "name": "react-syntax-highlighter",
+          "severity": "moderate",
+          "isDirect": true,
+          "via": [
+            "refractor"
+          ],
+          "effects": [],
+          "range": "6.0.0 - 15.6.6",
+          "nodes": [
+            "node_modules/react-syntax-highlighter"
+          ],
+          "fixAvailable": {
+            "name": "react-syntax-highlighter",
+            "version": "16.1.1",
+            "isSemVerMajor": true
+          }
+        },
+        "refractor": {
+          "name": "refractor",
+          "severity": "moderate",
+          "isDirect": false,
+          "via": [
+            "prismjs"
+          ],
+          "effects": [
+            "react-syntax-highlighter"
+          ],
+          "range": "<=4.6.0",
+          "nodes": [
+            "node_modules/refractor"
+          ],
+          "fixAvailable": {
+            "name": "react-syntax-highlighter",
+            "version": "16.1.1",
+            "isSemVerMajor": true
+          }
+        },
+        "serialize-javascript": {
+          "name": "serialize-javascript",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1113686,
+              "name": "serialize-javascript",
+              "dependency": "serialize-javascript",
+              "title": "Serialize JavaScript is Vulnerable to RCE via RegExp.flags and Date.prototype.toISOString()",
+              "url": "https://github.com/advisories/GHSA-5c6j-r48x-rmvq",
+              "severity": "high",
+              "cwe": [
+                "CWE-96"
+              ],
+              "cvss": {
+                "score": 8.1,
+                "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:H/A:H"
+              },
+              "range": "<=7.0.2"
+            }
+          ],
+          "effects": [
+            "@rollup/plugin-terser"
+          ],
+          "range": "<=7.0.2",
+          "nodes": [
+            "node_modules/serialize-javascript"
+          ],
+          "fixAvailable": {
+            "name": "workbox-cli",
+            "version": "7.0.0",
+            "isSemVerMajor": true
+          }
+        },
+        "tmp": {
+          "name": "tmp",
+          "severity": "low",
+          "isDirect": false,
+          "via": [
+            {
+              "source": 1109537,
+              "name": "tmp",
+              "dependency": "tmp",
+              "title": "tmp allows arbitrary temporary file / directory write via symbolic link `dir` parameter",
+              "url": "https://github.com/advisories/GHSA-52f5-9888-hmc6",
+              "severity": "low",
+              "cwe": [
+                "CWE-59"
+              ],
+              "cvss": {
+                "score": 2.5,
+                "vectorString": "CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:N/I:L/A:N"
+              },
+              "range": "<=0.2.3"
+            }
+          ],
+          "effects": [
+            "external-editor"
+          ],
+          "range": "<=0.2.3",
+          "nodes": [
+            "node_modules/tmp"
+          ],
+          "fixAvailable": {
+            "name": "workbox-cli",
+            "version": "7.0.0",
+            "isSemVerMajor": true
+          }
+        },
+        "vite": {
+          "name": "vite",
+          "severity": "moderate",
+          "isDirect": true,
+          "via": [
+            "esbuild"
+          ],
+          "effects": [],
+          "range": "0.11.0 - 6.1.6",
+          "nodes": [
+            "node_modules/vite"
+          ],
+          "fixAvailable": {
+            "name": "vite",
+            "version": "7.3.1",
+            "isSemVerMajor": true
+          }
+        },
+        "workbox-build": {
+          "name": "workbox-build",
+          "severity": "high",
+          "isDirect": false,
+          "via": [
+            "@rollup/plugin-terser"
+          ],
+          "effects": [
+            "workbox-cli"
+          ],
+          "range": ">=7.1.0",
+          "nodes": [
+            "node_modules/workbox-build"
+          ],
+          "fixAvailable": {
+            "name": "workbox-cli",
+            "version": "7.0.0",
+            "isSemVerMajor": true
+          }
+        },
+        "workbox-cli": {
+          "name": "workbox-cli",
+          "severity": "high",
+          "isDirect": true,
+          "via": [
+            "inquirer",
+            "workbox-build"
+          ],
+          "effects": [],
+          "range": ">=3.0.0-alpha.1",
+          "nodes": [
+            "node_modules/workbox-cli"
+          ],
+          "fixAvailable": {
+            "name": "workbox-cli",
+            "version": "7.0.0",
+            "isSemVerMajor": true
+          }
+        }
+      },
+      "metadata": {
+        "vulnerabilities": {
+          "info": 0,
+          "low": 3,
+          "moderate": 5,
+          "high": 4,
+          "critical": 0,
+          "total": 12
+        },
+        "dependencies": {
+          "prod": 541,
+          "dev": 745,
+          "optional": 51,
+          "peer": 20,
+          "peerOptional": 0,
+          "total": 1306
+        }
+      }
+    }
+  }
+}

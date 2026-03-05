@@ -7,7 +7,7 @@ import { Controller } from 'react-hook-form'
 import type { FormSectionBaseProps } from './types'
 import React, { useEffect, useState } from 'react'
 import AxiosBase from '../../../services/axios/AxiosBase'
-import InputMask from 'react-input-mask'
+import InputMask from '@/components/shared/InputMask'
 import useFormStore from '../../../store/supid/supidStore'
 
 type BusinessDetailSectionIndividualProps = FormSectionBaseProps & {
@@ -425,6 +425,8 @@ const BusinessDetailSectionIndividual = ({
 }
 
 export default BusinessDetailSectionIndividual
+
+
 
 
 

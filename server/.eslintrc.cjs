@@ -10,8 +10,8 @@ module.exports = {
     sourceType: 'module',
     project: './tsconfig.json',
   },
-  plugins: ['@typescript-eslint'],
-  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'],
+  plugins: ['@typescript-eslint', 'security'],
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'plugin:security/recommended-legacy', 'prettier'],
   ignorePatterns: ['dist/', 'node_modules/', 'uploads/', 'data/', '*.js', 'tmp-*.ts'],
   rules: {
     '@typescript-eslint/no-explicit-any': 'off',

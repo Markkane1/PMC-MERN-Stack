@@ -1,6 +1,5 @@
 import { Request, Response } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
-import wkx from 'wkx'
 import type { DistrictNewRepository, EecClubRepository } from '../../../domain/repositories/idm'
 import { districtNewRepositoryMongo, eecClubRepositoryMongo } from '../../../infrastructure/database/repositories/idm'
 
@@ -19,25 +18,21 @@ const defaultDeps: IdmUseCaseDeps = {
 
 function normalizeGeomToGeoJSON(geom: any): any | null {
   if (!geom) return null
-  if (Buffer.isBuffer(geom)) {
-    try {
-      return wkx.Geometry.parse(geom).toGeoJSON()
-    } catch {
-      return null
-    }
-  }
+  if (Buffer.isBuffer(geom)) return null
   if (typeof geom === 'string') {
     const trimmed = geom.trim()
     if (!trimmed) return null
     const isHex = /^[0-9A-Fa-f]+$/.test(trimmed)
-    if (isHex) {
-      try {
-        return wkx.Geometry.parse(Buffer.from(trimmed, 'hex')).toGeoJSON()
-      } catch {
-        return null
+    if (isHex) return null
+    try {
+      const parsed = JSON.parse(trimmed)
+      if (parsed?.type && parsed?.coordinates) {
+        return parsed
       }
+      return null
+    } catch {
+      return null
     }
-    return null
   }
   if (typeof geom === 'object' && geom.type && geom.coordinates) {
     return geom

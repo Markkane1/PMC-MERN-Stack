@@ -4,7 +4,7 @@ import Select, { Option as DefaultOption } from '@/components/ui/Select'
 import { FormItem } from '@/components/ui/Form'
 import { Controller } from 'react-hook-form'
 import type { FormSectionBaseProps } from './types'
-import InputMask from 'react-input-mask'
+import InputMask from '@/components/shared/InputMask'
 
 type OverviewSectionProps = FormSectionBaseProps & {
     readOnly?: boolean // Add this prop
@@ -208,3 +208,5 @@ const ApplicantDetailSection = ({
 }
 
 export default ApplicantDetailSection
+
+

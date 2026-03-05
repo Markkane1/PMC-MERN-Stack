@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import AxiosBase from '../../services/axios/AxiosBase'
 
 // ✅ Define Report Type
@@ -48,11 +47,10 @@ interface InspectionStore {
 
 // ✅ Create Zustand Store with TypeScript
 const useInspectionStore = create<InspectionStore>()(
-    persist(
-        (set, get) => ({
-            reports: [],
-            loading: false,
-            error: null,
+    (set, get) => ({
+        reports: [],
+        loading: false,
+        error: null,
 
             // ✅ Fetch Reports from API (Only if All Data is Synced)
             fetchReports: async () => {
@@ -219,13 +217,8 @@ const useInspectionStore = create<InspectionStore>()(
             },
 
             // ✅ Reset Store (Optional)
-            resetReports: () => set({ reports: [] }),
-        }),
-        {
-            name: 'inspection-reports',
-            getStorage: () => localStorage,
-        },
-    ),
+        resetReports: () => set({ reports: [] }),
+    }),
 )
 
 // ✅ Add Event Listener for Syncing When Online

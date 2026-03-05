@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 
 export default function PaymentDashboard() {
     const { applicantId = '' } = useParams<{ applicantId?: string }>()
-    const finalApplicantId = applicantId || localStorage.getItem('applicantId') || ''
+    const finalApplicantId = applicantId || ''
 
     if (!finalApplicantId) {
         return (

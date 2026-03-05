@@ -14,7 +14,7 @@ interface StepConfig {
 export default function ApplicationFormPage() {
     const { applicantId } = useParams<{ applicantId: string }>()
     const [currentStep, setCurrentStep] = useState<FormStep>('personal')
-    const finalApplicantId = applicantId || localStorage.getItem('applicantId') || ''
+    const finalApplicantId = applicantId || ''
 
     const steps: StepConfig[] = [
         { id: 'personal', label: 'Personal Info', section: 'personal-information', icon: '👤' },

@@ -1,11 +1,14 @@
 import path from 'path'
 import fs from 'fs'
 import { Request, Response } from 'express'
+import jwt from 'jsonwebtoken'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
-import { createUploader } from '../../../interfaces/http/middlewares/upload'
+import { createUploader, validateAndSanitizeUploadedFile } from '../../../interfaces/http/middlewares/upload'
 import { env } from '../../../infrastructure/config/env'
 import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
 import { ApplicantFeeModel } from '../../../infrastructure/database/models/pmc/ApplicantFee'
+import { ApplicantDocumentModel } from '../../../infrastructure/database/models/pmc/ApplicantDocument'
+import { DistrictPlasticCommitteeDocumentModel } from '../../../infrastructure/database/models/pmc/DistrictPlasticCommitteeDocument'
 import { invalidatePmcDashboardCaches } from '../../services/pmc/DashboardCacheService'
 import type {
   ApplicantDocumentRepository,
@@ -86,6 +89,8 @@ export const uploadApplicantDocument = [
     if (!req.file) {
       return res.status(400).json({ message: 'document is required' })
     }
+
+    validateAndSanitizeUploadedFile(req.file.path, req.file.originalname, req.file.mimetype)
 
     const applicantId = parsePositiveInt(req.body.applicant || req.body.applicant_id)
     if (!applicantId) {
@@ -169,6 +174,8 @@ export const uploadDistrictDocument = [
     if (!req.file) {
       return res.status(400).json({ message: 'document is required' })
     }
+
+    validateAndSanitizeUploadedFile(req.file.path, req.file.originalname, req.file.mimetype)
 
     const districtId = parsePositiveInt(req.body.district || req.body.district_id)
     if (!districtId) {
@@ -299,6 +306,53 @@ export const downloadMedia = asyncHandler(async (req: Request, res: Response) =>
   }
   if (!fs.statSync(filePath).isFile()) {
     return res.status(404).json({ message: 'File not found' })
+  }
+
+  // If an auth token is provided, enforce ownership checks for private upload paths.
+  const authHeader = req.headers.authorization
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.replace('Bearer ', '').trim()
+    let authenticatedUserId: string | null = null
+    let authenticatedIsSuperadmin = false
+
+    try {
+      const payload = jwt.verify(token, env.jwtSecret) as { userId?: string; type?: string }
+      if (!payload?.userId || payload.type === 'refresh') {
+        return res.status(401).json({ message: 'Unauthorized' })
+      }
+      const user = await defaultDeps.userRepo.findById(payload.userId)
+      if (!user || user.isActive === false) {
+        return res.status(401).json({ message: 'Unauthorized' })
+      }
+      authenticatedUserId = String(user.id)
+      authenticatedIsSuperadmin = Boolean(user.isSuperadmin || user.groups?.includes('Super'))
+    } catch {
+      return res.status(401).json({ message: 'Unauthorized' })
+    }
+
+    const relativePath = parts.join('/')
+    if (relativePath.startsWith('media/plastic_committee/') || relativePath.startsWith('media/documents/')) {
+      let ownerId: string | null = null
+      const districtDoc = await DistrictPlasticCommitteeDocumentModel.findOne({
+        documentPath: relativePath,
+      }).lean()
+      if (districtDoc?.uploadedBy) {
+        ownerId = String(districtDoc.uploadedBy)
+      }
+
+      if (!ownerId) {
+        const applicantDoc = await ApplicantDocumentModel.findOne({
+          documentPath: relativePath,
+        }).lean()
+        if (applicantDoc?.createdBy) {
+          ownerId = String(applicantDoc.createdBy)
+        }
+      }
+
+      if (ownerId && authenticatedUserId && ownerId !== authenticatedUserId && !authenticatedIsSuperadmin) {
+        return res.status(403).json({ message: 'Forbidden' })
+      }
+    }
   }
 
   return res.sendFile(filePath, { dotfiles: 'deny', lastModified: true, cacheControl: true })

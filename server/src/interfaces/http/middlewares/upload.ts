@@ -53,6 +53,9 @@ export const IMAGE_PDF_EXTENSIONS = new Set([
   '.gif',
   '.webp',
 ])
+
+const SUSPICIOUS_CONTENT_PATTERN = /<script|javascript:|onerror=|onload=/i
+
 function ensureDir(dirPath: string) {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true })
@@ -92,16 +95,12 @@ export function createFileFilter(
 ) {
   return (_req: unknown, file: Express.Multer.File, cb: FileFilterCallback) => {
     if (!allowedMimetypes.has(file.mimetype)) {
-      return cb(
-        new Error(
-          'File type not allowed. Supported types: PDF, Images (JPEG, PNG, GIF, WebP), Office Documents (Word, Excel, PowerPoint), CSV'
-        )
-      )
+      return cb(null, false)
     }
 
     const ext = path.extname(file.originalname).toLowerCase()
     if (!allowedExtensions.has(ext)) {
-      return cb(new Error(`File extension not allowed: ${ext || '(none)'}`))
+      return cb(null, false)
     }
 
     cb(null, true)
@@ -130,4 +129,90 @@ export function createUploader(subDir: string) {
     },
     fileFilter: createFileFilter(DOCUMENT_MIMETYPES, DOCUMENT_EXTENSIONS),
   })
+}
+
+function matchesSignature(buffer: Buffer, ext: string): boolean {
+  if (ext === '.pdf') {
+    return buffer.length >= 5 && buffer.subarray(0, 5).toString('utf8') === '%PDF-'
+  }
+  if (ext === '.jpg' || ext === '.jpeg') {
+    return buffer.length >= 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff
+  }
+  if (ext === '.png') {
+    return (
+      buffer.length >= 8 &&
+      buffer[0] === 0x89 &&
+      buffer[1] === 0x50 &&
+      buffer[2] === 0x4e &&
+      buffer[3] === 0x47 &&
+      buffer[4] === 0x0d &&
+      buffer[5] === 0x0a &&
+      buffer[6] === 0x1a &&
+      buffer[7] === 0x0a
+    )
+  }
+  if (ext === '.gif') {
+    const sig = buffer.subarray(0, 6).toString('ascii')
+    return sig === 'GIF87a' || sig === 'GIF89a'
+  }
+  if (ext === '.webp') {
+    return (
+      buffer.length >= 12 &&
+      buffer.subarray(0, 4).toString('ascii') === 'RIFF' &&
+      buffer.subarray(8, 12).toString('ascii') === 'WEBP'
+    )
+  }
+  return true
+}
+
+function throwUploadValidationError(message: string, statusCode = 400): never {
+  const err = new Error(message) as Error & { statusCode?: number }
+  err.statusCode = statusCode
+  throw err
+}
+
+function cleanupInvalidUpload(filePath: string) {
+  try {
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath)
+    }
+  } catch {
+    // Best-effort cleanup for rejected uploads.
+  }
+}
+
+function sanitizeImagePayload(content: Buffer): Buffer {
+  const sanitizedBinary = content
+    .toString('binary')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/onerror=/gi, '')
+    .replace(/onload=/gi, '')
+  return Buffer.from(sanitizedBinary, 'binary')
+}
+
+export function validateAndSanitizeUploadedFile(
+  filePath: string,
+  originalName: string,
+  mimeType: string
+) {
+  const ext = path.extname(originalName || '').toLowerCase()
+  const content = fs.readFileSync(filePath)
+
+  if (!matchesSignature(content, ext)) {
+    cleanupInvalidUpload(filePath)
+    throwUploadValidationError('File content validation failed')
+  }
+
+  const containsSuspiciousContent = SUSPICIOUS_CONTENT_PATTERN.test(content.toString('utf8'))
+  if (containsSuspiciousContent) {
+    if (mimeType.startsWith('image/')) {
+      const sanitized = sanitizeImagePayload(content)
+      fs.writeFileSync(filePath, sanitized)
+      return
+    }
+
+    cleanupInvalidUpload(filePath)
+    throwUploadValidationError('File content validation failed')
+  }
 }

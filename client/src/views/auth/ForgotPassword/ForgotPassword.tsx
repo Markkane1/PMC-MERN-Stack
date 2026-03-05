@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import Logo from '@/components/template/Logo'
 import Alert from '@/components/ui/Alert'
 import Button from '@/components/ui/Button'
@@ -6,7 +6,7 @@ import Input from '@/components/ui/Input'
 import PasswordInput from '@/components/shared/PasswordInput'
 import Steps from '@/components/ui/Steps'
 import { Divider } from '@mui/material'
-import InputMask from 'react-input-mask'
+import InputMask from '@/components/shared/InputMask'
 import useTimeOutMessage from '@/utils/hooks/useTimeOutMessage'
 import ActionLink from '@/components/shared/ActionLink'
 import AxiosBase from '../../../services/axios/AxiosBase'
@@ -381,3 +381,5 @@ const ForgotPassword = () => {
 }
 
 export default ForgotPassword
+
+

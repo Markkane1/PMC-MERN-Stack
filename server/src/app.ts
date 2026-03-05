@@ -1,14 +1,15 @@
 import express, { type Request, Response, NextFunction } from 'express'
 import cors from 'cors'
+import cookieParser from 'cookie-parser'
 import helmet from 'helmet'
 import compression from 'compression'
 import morgan from 'morgan'
 import rateLimit from 'express-rate-limit'
-import hpp from 'hpp'
 import mongoSanitize from 'express-mongo-sanitize'
 import { env } from './infrastructure/config/env'
 import { errorHandler } from './interfaces/http/middlewares/error'
 import { apiRouter } from './interfaces/http/routes'
+import { normalizeQueryParameters, sanitizeRequestInput } from './interfaces/http/middlewares/securityInput'
 import { RequestTracker, ConnectionPoolMonitor } from './interfaces/http/middlewares/concurrency'
 import { ResponseTimeMonitor } from './interfaces/http/middlewares/performanceMonitor'
 import { cacheHeadersMiddleware } from './interfaces/http/middleware/cacheHeaders'
@@ -26,25 +27,9 @@ import {
 } from './infrastructure/resilience'
 import { haRouter, healthCheckAggregator } from './infrastructure/ha'
 
-function isLocalAddress(value?: string | null): boolean {
-  if (!value) return false
-  const normalized = value.trim().toLowerCase()
-  return (
-    normalized === '::1' ||
-    normalized === '127.0.0.1' ||
-    normalized === '::ffff:127.0.0.1'
-  )
-}
-
-function isLocalRequest(req: Request): boolean {
-  const forwarded = (req.headers['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim()
-  const realIp = req.headers['x-real-ip'] as string | undefined
-  return isLocalAddress(forwarded) || isLocalAddress(realIp) || isLocalAddress(req.ip) || isLocalAddress(req.socket.remoteAddress)
-}
-
 // Rate limiting for different endpoint types
-const authWindowMs = env.nodeEnv === 'production' ? 15 * 60 * 1000 : 60 * 1000
-const authMaxAttempts = env.nodeEnv === 'production' ? 5 : 100
+const authWindowMs = 15 * 60 * 1000
+const authMaxAttempts = 10
 
 const loginLimiter = rateLimit({
   windowMs: authWindowMs,
@@ -52,8 +37,6 @@ const loginLimiter = rateLimit({
   message: 'Too many login attempts, try again later',
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: true, // Don't count successful logins
-  skip: (req) => env.nodeEnv !== 'production' && isLocalRequest(req),
 })
 
 const apiLimiter = rateLimit({
@@ -86,17 +69,6 @@ export function createApp() {
     groupByPath: true,
   })
   
-  const cspDirectives = {
-    defaultSrc: ["'self'"],
-    scriptSrc: ["'self'"],
-    styleSrc: ["'self'", "'unsafe-inline'"],
-    imgSrc: ["'self'", 'data:', 'https:'],
-    connectSrc: ["'self'", ...env.corsOrigins],
-    frameSrc: ["'none'"],
-    objectSrc: ["'none'"],
-    ...(env.nodeEnv === 'production' ? { upgradeInsecureRequests: [] } : {}),
-  }
-
   // Security: hide framework signature header
   app.disable('x-powered-by')
 
@@ -108,20 +80,8 @@ export function createApp() {
   // HTTPS enforcement (production)
   app.use(httpsRedirect)
 
-  // Security headers with comprehensive helmet configuration
-  app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: cspDirectives,
-      },
-      hsts: {
-        maxAge: 31536000, // 1 year in seconds
-        includeSubDomains: true,
-        preload: true,
-      },
-      referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-    })
-  )
+  // Security headers with strict defaults
+  app.use(helmet())
 
   // CORS with strict validation
   app.use(
@@ -132,12 +92,34 @@ export function createApp() {
         return callback(new Error('Not allowed by CORS'))
       },
       credentials: true,
-      optionsSuccessStatus: 200,
+      optionsSuccessStatus: 204,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
       allowedHeaders: ['Content-Type', 'Authorization'],
       maxAge: 86400, // 24 hours
     })
   )
+
+  // Parse cookies for httpOnly auth-token flow.
+  app.use(cookieParser())
+
+  // Harden unexpected HTTP verbs on API surface.
+  app.use('/api', (req: Request, res: Response, next: NextFunction) => {
+    const method = req.method.toUpperCase()
+
+    if (method === 'TRACE' || method === 'HEAD') {
+      return res.status(405).set('Allow', 'GET, POST, PUT, PATCH, DELETE, OPTIONS').json({
+        message: 'Method Not Allowed',
+      })
+    }
+
+    if (!['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'].includes(method)) {
+      return res.status(405).set('Allow', 'GET, POST, PUT, PATCH, DELETE, OPTIONS').json({
+        message: 'Method Not Allowed',
+      })
+    }
+
+    return next()
+  })
 
   app.use(compression())
 
@@ -166,9 +148,12 @@ export function createApp() {
   // User-based rate limiting (for authenticated requests)
   app.use(userRateLimitingMiddleware)
 
-  // Reduced JSON and URL-encoded payload limits
-  app.use(express.json({ limit: '1mb' }))
-  app.use(express.urlencoded({ extended: true, limit: '1mb' }))
+  // Enforce strict request body limits to reduce abuse risk.
+  app.use(express.json({ limit: '10kb' }))
+  app.use(express.urlencoded({ extended: true, limit: '10kb' }))
+  app.use(mongoSanitize())
+  app.use(sanitizeRequestInput)
+  app.use(normalizeQueryParameters)
 
   // Request logging
   app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'))
@@ -184,16 +169,24 @@ export function createApp() {
   app.use('/api/', apiLimiter)
 
   // Apply strict rate limiting to auth endpoints
-  app.post('/api/accounts/login', loginLimiter)
-  app.post('/api/accounts/login/', loginLimiter)
-  app.post('/api/accounts/register', loginLimiter)
-  app.post('/api/accounts/register/', loginLimiter)
-  app.post('/api/accounts/forgotten-password', loginLimiter)
-  app.post('/api/accounts/forgotten-password/', loginLimiter)
-  app.post('/api/accounts/find-user', loginLimiter)
-  app.post('/api/accounts/find-user/', loginLimiter)
-  app.post('/api/accounts/reset-forgot-password', loginLimiter)
-  app.post('/api/accounts/reset-forgot-password/', loginLimiter)
+  const authRoutes = [
+    '/api/accounts/login',
+    '/api/accounts/login/',
+    '/api/accounts/register',
+    '/api/accounts/register/',
+    '/api/accounts/logout',
+    '/api/accounts/logout/',
+    '/api/accounts/find-user',
+    '/api/accounts/find-user/',
+    '/api/accounts/reset-forgot-password',
+    '/api/accounts/reset-forgot-password/',
+    '/api/accounts/generate-captcha',
+    '/api/accounts/generate-captcha/',
+  ]
+
+  authRoutes.forEach((route) => {
+    app.use(route, loginLimiter)
+  })
 
   // API routes
   app.use('/api', apiRouter)
@@ -212,3 +205,4 @@ export function createApp() {
 
   return app
 }
+

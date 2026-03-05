@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import Container from '@/components/shared/Container'
 import Button from '@/components/ui/Button'
 import Notification from '@/components/ui/Notification'
@@ -60,7 +60,6 @@ const CustomerEdit = () => {
 
 
     useEffect(() => {
-        console.log('its here1')
         if (id) {
             loadData(id);
         }else{
@@ -109,7 +108,6 @@ const CustomerEdit = () => {
                 'Content-Type': 'multipart/form-data',
             },
         }).then((response) => {
-            console.log('Data:', response.data);
             const data_applicantDetail = {
                 trackingNumber:response.data.tracking_number,
                 firstName:response.data.first_name,
@@ -289,7 +287,6 @@ const CustomerEdit = () => {
     const handleApplicantDetailFormSubmit = async (values: ApplicantDetailFormSchema) => {
 
 
-    console.log('Submitted values', values)
     // updateApplicantDetail(values)
     setIsSubmiting(true)
 
@@ -315,7 +312,6 @@ const CustomerEdit = () => {
                 },
             });
 
-            console.log('Post successful:', response.data);
             const id = response.data.id;
 
             // Add the ID to the values object
@@ -341,7 +337,6 @@ const CustomerEdit = () => {
                 },
             });
 
-            console.log('Post successful:', response.data);
             const id = response.data.id;
             const tracking_number = `LHR-PRO-${id.toString().padStart(3, '0')}`;
 
@@ -358,7 +353,6 @@ const CustomerEdit = () => {
                     },
                 });
     
-                console.log('Post successful:', response.data);
                 const id = response.data.id;
     
                 // Add the ID to the values object
@@ -392,10 +386,7 @@ const CustomerEdit = () => {
         formData.append('entity_type', (values.businessEntityType));
         formData.append('applicant', applicantDetail.id.toString());
 
-        console.log('Submitted values', values)
-        console.log('updated business entity1:', businessEntity)
             updateBusinessEntity(values as BusinessEntityFields)
-        console.log('updated business entity2:', businessEntity)
         if (completedSections.includes('businessDetail')){
             updateBusinessDetail(values as BusinessDetailFields)
             formData.append('business_name', (values.businessName));
@@ -421,7 +412,6 @@ const CustomerEdit = () => {
                     },
                 });
 
-                console.log('Put successful:', response.data);
 
                 setIsSubmiting(false);
             } catch (error) {
@@ -437,7 +427,6 @@ const CustomerEdit = () => {
                     },
                 });
 
-                console.log('Post successful:', response.data);
 
                 setIsSubmiting(false);
             } catch (error) {
@@ -450,13 +439,11 @@ const CustomerEdit = () => {
     }
 
     const handleLicenseDetailFormSubmit = async (values: LicenseDetailFormSchema) => {
-        console.log('Submitted values LicenseDetail', values);
         onNext();
         // setIsSubmiting(true);
     
         // Create FormData object
         const formData = new FormData();
-        console.log('registration_required_for', values.registration_required_for)
     
         // formData.append('registration_required_for', JSON.stringify(values.registration_required_for))
         formData.append('is_carry_bags', values.registration_required_for.includes('Carry bags').toString());
@@ -499,7 +486,6 @@ const CustomerEdit = () => {
                 },
             });
     
-            console.log('Post successful:', response.data);
     
             // Call update functions
             updateLicenseDetail(values as LicenseDetailFields);
@@ -558,7 +544,6 @@ const CustomerEdit = () => {
     const handleSubmitResponses = async () => {
         if(!applicantDetail.readOnly){       
             // console.log('fieldResponses', applicantDetail.fieldResponses)
-            console.log('readOnly', applicantDetail.readOnly)
             const payload = Object.entries(applicantDetail.fieldResponses).map(([key, value]) => ({
             field_key: key,
             response: value.response,
@@ -570,7 +555,6 @@ const CustomerEdit = () => {
             const response = await AxiosBase.post("/pmc/field-responses/", payload, {
                 headers: { "Content-Type": "application/json" },
             });
-            console.log("Responses submitted:", response.data);
             } catch (error) {
             console.error("Error submitting responses:", error);
             navigate('/error');
@@ -586,7 +570,7 @@ const CustomerEdit = () => {
         const formData = new FormData();
         formData.append("applicant", applicantDetail.id);
       
-      // Example fields — update/add/remove these as per your model
+      // Example fields â€” update/add/remove these as per your model
         formData.append("latitude", (manualFields.latitude ? parseFloat(manualFields.latitude).toFixed(6) : ""));
         formData.append("longitude", (manualFields.longitude ? parseFloat(manualFields.longitude).toFixed(6) : ""));      
         formData.append("list_of_products", manualFields.list_of_products || "");
@@ -620,7 +604,6 @@ const CustomerEdit = () => {
                     },
                 });
 
-                console.log('Post successful:', response.data);
             } catch (error) {
                 console.error('Error in POST request:', error.response || error.message);
                 navigate('/error');
@@ -641,7 +624,6 @@ const CustomerEdit = () => {
                     },
                 });
 
-                console.log('Post successful:', response.data);
             } catch (error) {
                 console.error('Error in POST request:', error.response || error.message);
                 navigate('/error');
@@ -662,7 +644,6 @@ const CustomerEdit = () => {
                     },
                 });
 
-                console.log('Post successful:', response.data);
             } catch (error) {
                 console.error('Error in POST request:', error.response || error.message);
                 navigate('/error');
@@ -682,7 +663,6 @@ const CustomerEdit = () => {
                   },
               });
 
-              console.log('Post successful:', response.data);
           } catch (error) {
               console.error('Error in POST request:', error.response || error.message);
               navigate('/error');
@@ -697,7 +677,6 @@ const CustomerEdit = () => {
             const response = await AxiosBase.post("/pmc/manual-fields/", formData, {
               headers: { "Content-Type": "multipart/form-data" },
             });
-            console.log("POST success:", response.data);
             alert("Data is saved!")
             // Update local/manualFields state with newly created ID
             // updateManualFields({ id: response.data.id });
@@ -714,7 +693,6 @@ const CustomerEdit = () => {
                 { headers: { "Content-Type": "multipart/form-data" } }
                 );
                 alert("Data is saved!")
-                console.log("PATCH success:", response.data);
             } catch (error) {
                 console.error("Error PATCHing manual fields:", error);
                 navigate('/error');
@@ -752,7 +730,6 @@ const CustomerEdit = () => {
                     formData2.append('applicant', applicantDetail.id.toString())
                     formData2.append('assigned_group', (applicantDetail.assignedGroup2));
                     formData2.append('remarks', applicantDetail.remarks);
-                    console.log(applicantDetail.remarks)
                     await AxiosBase.post(`/pmc/application-assignment/`, formData2, {
                         headers: {
                             'Content-Type': 'multipart/form-data',
@@ -818,12 +795,9 @@ const groups = [
     ]
 
 const groupList = fnGroupList(applicantDetail.assignedGroup)
-console.log('assignedGroup:',applicantDetail.assignedGroup)
-console.log('groupList', groupList)
 
 
 function fnGroupList(group) {
-    console.log(group)
     const index = groups.indexOf(group);
     if (index === -1) {
         // throw new Error(`Group "${group}" not found in the list.`);

@@ -1,0 +1,17 @@
+[
+  "POST /api/pmc/applicant-detail/",
+  "POST /api/pmc/application-assignment/",
+  "POST /api/pmc/business-profiles/",
+  "POST /api/pmc/by-products/",
+  "POST /api/pmc/collectors/",
+  "POST /api/pmc/consumers/",
+  "POST /api/pmc/field-responses/",
+  "POST /api/pmc/inspection-report/",
+  "POST /api/pmc/manual-fields/",
+  "POST /api/pmc/plastic-items/",
+  "POST /api/pmc/plmis-token/",
+  "POST /api/pmc/producers/",
+  "POST /api/pmc/products/",
+  "POST /api/pmc/raw-materials/",
+  "POST /api/pmc/recyclers/"
+]

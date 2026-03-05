@@ -1,6 +1,7 @@
 import multer from 'multer'
 import PDFDocument from 'pdfkit'
 import { Request, Response } from 'express'
+import mongoose from 'mongoose'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import type {
   CompetitionRepository,
@@ -107,6 +108,13 @@ export const getCompetition = asyncHandler(async (req: AuthRequest, res: Respons
     })
   }
 
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid competition id',
+    })
+  }
+
   const competition = await defaultDeps.competitionRepo.findById(id)
   if (!competition) {
     return res.status(404).json({
@@ -171,6 +179,7 @@ export const registerCompetition = [
       [institute ? `Institute: ${institute}` : null, grade ? `Grade: ${grade}` : null, category ? `Category: ${category}` : null]
         .filter(Boolean)
         .join(' | ')
+    const createdBy = (req as any).user?.id || (req as any).user?._id
 
     if (!applicantId || !resolvedParticipantName || !resolvedEmail) {
       return res.status(400).json({
@@ -243,6 +252,7 @@ export const registerCompetition = [
       submissionTitle: resolvedSubmissionTitle,
       submissionDescription: resolvedSubmissionDescription,
       submissionFiles: allFiles,
+      createdBy: createdBy ? String(createdBy) : undefined,
       status: 'REGISTERED',
       registeredAt: new Date(),
     })

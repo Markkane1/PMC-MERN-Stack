@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import mongoose from 'mongoose'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import {
   businessProfileRepositoryMongo,
@@ -10,6 +11,26 @@ import { ApplicantDocumentModel } from '../../../infrastructure/database/models/
 import { DistrictPlasticCommitteeDocumentModel } from '../../../infrastructure/database/models/pmc/DistrictPlasticCommitteeDocument'
 
 type AuthRequest = Request & { user?: any }
+
+function getAuthenticatedUserId(req: AuthRequest): string | null {
+  const rawUserId = req.user?.id || req.user?._id
+  if (!rawUserId) return null
+  return String(rawUserId)
+}
+
+function isSuperadmin(req: AuthRequest): boolean {
+  return Boolean(req.user?.isSuperadmin || req.user?.groups?.includes('Super'))
+}
+
+function isRegistrationOwner(req: AuthRequest, registration: any): boolean {
+  if (isSuperadmin(req)) {
+    return true
+  }
+
+  const userId = getAuthenticatedUserId(req)
+  const ownerId = registration?.createdBy ? String(registration.createdBy) : null
+  return Boolean(userId && ownerId && userId === ownerId)
+}
 
 /**
  * GET /business-profiles/by_applicant/?applicant_id=X
@@ -60,6 +81,10 @@ export const getApplicationAssignmentByApplicant = asyncHandler(async (req: Auth
 export const getApplicantDocument = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
     const documentId = req.params.id
+    if (!mongoose.Types.ObjectId.isValid(documentId)) {
+      return res.status(400).json({ message: 'Invalid document id' })
+    }
+
     const document = await ApplicantDocumentModel.findById(documentId).lean()
     
     if (!document) {
@@ -80,6 +105,10 @@ export const getApplicantDocument = asyncHandler(async (req: AuthRequest, res: R
 export const updateApplicantDocument = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
     const documentId = req.params.id
+    if (!mongoose.Types.ObjectId.isValid(documentId)) {
+      return res.status(400).json({ message: 'Invalid document id' })
+    }
+
     const updated = await ApplicantDocumentModel.findByIdAndUpdate(documentId, req.body, { new: true }).lean()
     
     if (!updated) {
@@ -100,6 +129,10 @@ export const updateApplicantDocument = asyncHandler(async (req: AuthRequest, res
 export const deleteApplicantDocument = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
     const documentId = req.params.id
+    if (!mongoose.Types.ObjectId.isValid(documentId)) {
+      return res.status(400).json({ message: 'Invalid document id' })
+    }
+
     const deleted = await ApplicantDocumentModel.findByIdAndDelete(documentId)
     
     if (!deleted) {
@@ -120,6 +153,10 @@ export const deleteApplicantDocument = asyncHandler(async (req: AuthRequest, res
 export const getDistrictDocument = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
     const documentId = req.params.id
+    if (!mongoose.Types.ObjectId.isValid(documentId)) {
+      return res.status(400).json({ message: 'Invalid district document id' })
+    }
+
     const document = await DistrictPlasticCommitteeDocumentModel.findById(documentId).lean()
     
     if (!document) {
@@ -140,6 +177,10 @@ export const getDistrictDocument = asyncHandler(async (req: AuthRequest, res: Re
 export const updateDistrictDocument = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
     const documentId = req.params.id
+    if (!mongoose.Types.ObjectId.isValid(documentId)) {
+      return res.status(400).json({ message: 'Invalid district document id' })
+    }
+
     const updated = await DistrictPlasticCommitteeDocumentModel.findByIdAndUpdate(
       documentId,
       req.body,
@@ -164,6 +205,10 @@ export const updateDistrictDocument = asyncHandler(async (req: AuthRequest, res:
 export const deleteDistrictDocument = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
     const documentId = req.params.id
+    if (!mongoose.Types.ObjectId.isValid(documentId)) {
+      return res.status(400).json({ message: 'Invalid district document id' })
+    }
+
     const deleted = await DistrictPlasticCommitteeDocumentModel.findByIdAndDelete(documentId)
     
     if (!deleted) {
@@ -245,7 +290,20 @@ export const deleteCachedInspectionReport = asyncHandler(async (req: AuthRequest
 export const listCompetitionRegistrations = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
     const registrations = await competitionRegistrationRepositoryMongo.findAll()
-    return res.json(registrations || [])
+    if (isSuperadmin(req)) {
+      return res.json(registrations || [])
+    }
+
+    const userId = getAuthenticatedUserId(req)
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' })
+    }
+
+    const ownedRegistrations = (registrations || []).filter(
+      (registration: any) =>
+        registration?.createdBy && String(registration.createdBy) === userId
+    )
+    return res.json(ownedRegistrations)
   } catch (error) {
     console.error('Error listing competition registrations:', error)
     return res.status(500).json({ message: 'Failed to list competition registrations' })
@@ -255,10 +313,18 @@ export const listCompetitionRegistrations = asyncHandler(async (req: AuthRequest
 export const getCompetitionRegistrationDetails = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
     const registrationId = req.params.id
+    if (!mongoose.Types.ObjectId.isValid(registrationId)) {
+      return res.status(400).json({ message: 'Invalid competition registration id' })
+    }
+
     const registration = await competitionRegistrationRepositoryMongo.findById(registrationId)
     
     if (!registration) {
       return res.status(404).json({ message: 'Competition registration not found' })
+    }
+
+    if (!isRegistrationOwner(req, registration)) {
+      return res.status(403).json({ message: 'Forbidden' })
     }
     
     return res.json(registration)
@@ -271,6 +337,19 @@ export const getCompetitionRegistrationDetails = asyncHandler(async (req: AuthRe
 export const updateCompetitionRegistration = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
     const registrationId = req.params.id
+    if (!mongoose.Types.ObjectId.isValid(registrationId)) {
+      return res.status(400).json({ message: 'Invalid competition registration id' })
+    }
+
+    const existing = await competitionRegistrationRepositoryMongo.findById(registrationId)
+    if (!existing) {
+      return res.status(404).json({ message: 'Competition registration not found' })
+    }
+
+    if (!isRegistrationOwner(req, existing)) {
+      return res.status(403).json({ message: 'Forbidden' })
+    }
+
     const updated = await competitionRegistrationRepositoryMongo.update(registrationId, req.body)
     
     if (!updated) {
@@ -287,6 +366,19 @@ export const updateCompetitionRegistration = asyncHandler(async (req: AuthReques
 export const deleteCompetitionRegistration = asyncHandler(async (req: AuthRequest, res: Response) => {
   try {
     const registrationId = req.params.id
+    if (!mongoose.Types.ObjectId.isValid(registrationId)) {
+      return res.status(400).json({ message: 'Invalid competition registration id' })
+    }
+
+    const existing = await competitionRegistrationRepositoryMongo.findById(registrationId)
+    if (!existing) {
+      return res.status(404).json({ message: 'Competition registration not found' })
+    }
+
+    if (!isRegistrationOwner(req, existing)) {
+      return res.status(403).json({ message: 'Forbidden' })
+    }
+
     const deleted = await competitionRegistrationRepositoryMongo.delete(registrationId)
     
     if (!deleted) {

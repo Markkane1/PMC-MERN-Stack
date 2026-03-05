@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
 import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
-import svgCaptcha from 'svg-captcha'
 import NodeCache from 'node-cache'
 import { logAudit } from '../../services/common/LogService'
 import { createUser, signTokens, validatePassword } from '../../services/accounts/AuthService'
@@ -20,8 +19,41 @@ import {
   psidTrackingRepositoryMongo,
   districtRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
+import { setAuthCookie, clearAuthCookie } from '../../../interfaces/http/utils/authCookies'
 
 const captchaCache = new NodeCache({ stdTTL: 300 })
+const CAPTCHA_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+
+function generateCaptchaText(length: number): string {
+  let out = ''
+  for (let i = 0; i < length; i += 1) {
+    const idx = Math.floor(Math.random() * CAPTCHA_ALPHABET.length)
+    out += CAPTCHA_ALPHABET[idx]
+  }
+  return out
+}
+
+function generateCaptchaSvg(text: string): string {
+  const width = 170
+  const height = 56
+  const chars = text
+    .split('')
+    .map((char, i) => {
+      const x = 16 + i * 28
+      const y = 36 + ((i % 2 === 0 ? -1 : 1) * (4 + (i % 3)))
+      const rotate = (Math.random() * 20 - 10).toFixed(2)
+      return `<text x="${x}" y="${y}" font-size="28" font-family="Arial, sans-serif" font-weight="700" fill="#111827" transform="rotate(${rotate} ${x} ${y})">${char}</text>`
+    })
+    .join('')
+
+  const noiseLines = Array.from({ length: 5 }, (_v, i) => {
+    const y1 = 8 + i * 9
+    const y2 = 12 + i * 9
+    return `<line x1="0" y1="${y1}" x2="${width}" y2="${y2}" stroke="#d1d5db" stroke-width="1" />`
+  }).join('')
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"><rect width="100%" height="100%" fill="#ffffff"/>${noiseLines}${chars}</svg>`
+}
 
 function verifyCaptcha(captchaToken: unknown, captchaInput: unknown): boolean {
   const token = typeof captchaToken === 'string' ? captchaToken.trim() : ''
@@ -94,9 +126,13 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const { username, password, captcha_input, captcha_token } = req.body || {}
-  const normalizedUsername = typeof username === 'string' ? username.trim() : ''
+  if (typeof username !== 'string' || typeof password !== 'string') {
+    return res.status(401).json({ error: 'Invalid credentials' })
+  }
+
+  const normalizedUsername = username.trim()
   if (!normalizedUsername || !password) {
-    return res.status(400).json({ error: 'Username and password are required.' })
+    return res.status(401).json({ error: 'Invalid credentials' })
   }
 
   if (!verifyCaptcha(captcha_token, captcha_input)) {
@@ -105,7 +141,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   const user = await defaultDeps.userRepo.findByUsername(normalizedUsername)
   if (!user) {
-    return res.status(400).json({ error: 'Invalid credentials' })
+    return res.status(401).json({ error: 'Invalid credentials' })
   }
 
   let valid = await validatePassword(user, password)
@@ -116,10 +152,11 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     }
   }
   if (!valid) {
-    return res.status(400).json({ error: 'Invalid credentials' })
+    return res.status(401).json({ error: 'Invalid credentials' })
   }
 
   const tokens = signTokens(String(user.id))
+  setAuthCookie(res, tokens.access)
   await logAudit({
     userId: String(user.id),
     username: user.username,
@@ -129,7 +166,16 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     description: 'User logged in',
     ipAddress: req.ip,
   })
-  return res.json(tokens)
+  return res.json({
+    message: 'Signed in',
+    user: {
+      userId: String(user.id),
+      userName: user.username,
+      username: user.username,
+      authority: user.groups || [],
+      avatar: user.avatar || '',
+    },
+  })
 })
 
 export const profile = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -200,11 +246,12 @@ export const resetPassword = asyncHandler(async (req: AuthRequest, res: Response
 })
 
 export const generateCaptcha = asyncHandler(async (_req: Request, res: Response) => {
-  const captcha = svgCaptcha.create({ size: 5, noise: 2, background: '#ffffff' })
+  const captchaText = generateCaptchaText(5)
   const token = crypto.randomBytes(16).toString('hex')
-  captchaCache.set(token, captcha.text)
+  captchaCache.set(token, captchaText)
 
-  const image = Buffer.from(captcha.data).toString('base64')
+  const svg = generateCaptchaSvg(captchaText)
+  const image = Buffer.from(svg).toString('base64')
   return res.json({
     captcha_image: `data:image/svg+xml;base64,${image}`,
     captcha_token: token,
@@ -212,6 +259,7 @@ export const generateCaptcha = asyncHandler(async (_req: Request, res: Response)
 })
 
 export const logout = asyncHandler(async (req: AuthRequest, res: Response) => {
+  clearAuthCookie(res)
   const user = req.user
   if (user) {
     await logAudit({
@@ -228,10 +276,27 @@ export const logout = asyncHandler(async (req: AuthRequest, res: Response) => {
 })
 
 export const findUser = asyncHandler(async (req: Request, res: Response) => {
-  const trackingNumber = req.body.tracking_number
-  const psid = req.body.psid
-  const mobileNumber = req.body.mobile_number
-  const cnic = req.body.cnic
+  const rawTrackingNumber = req.body?.tracking_number
+  const rawPsid = req.body?.psid
+  const rawMobileNumber = req.body?.mobile_number
+  const rawCnic = req.body?.cnic
+
+  const invalidTypedInput =
+    (rawMobileNumber !== undefined && typeof rawMobileNumber !== 'string') ||
+    (rawCnic !== undefined && typeof rawCnic !== 'string')
+
+  if (invalidTypedInput) {
+    return res.status(400).json({ detail: 'Invalid input format.' })
+  }
+
+  const trackingNumber = typeof rawTrackingNumber === 'string'
+    ? rawTrackingNumber.trim()
+    : rawTrackingNumber != null
+      ? String(rawTrackingNumber)
+      : ''
+  const psid = typeof rawPsid === 'string' ? rawPsid.trim() : rawPsid != null ? String(rawPsid) : ''
+  const mobileNumber = typeof rawMobileNumber === 'string' ? rawMobileNumber.trim() : ''
+  const cnic = typeof rawCnic === 'string' ? rawCnic.trim() : ''
 
   if (!mobileNumber || !cnic || (!trackingNumber && !psid)) {
     return res.status(400).json({ detail: 'Please provide Tracking Number or PSID, along with Mobile Number and CNIC.' })
@@ -265,12 +330,33 @@ export const findUser = asyncHandler(async (req: Request, res: Response) => {
 })
 
 export const resetForgotPassword = asyncHandler(async (req: Request, res: Response) => {
-  const trackingNumber = req.body.tracking_number
-  const psid = req.body.psid
-  const mobileNumber = req.body.mobile_number
-  const cnic = req.body.cnic
-  const pUsername = req.body.username
-  const newPassword = req.body.new_password
+  const rawTrackingNumber = req.body?.tracking_number
+  const rawPsid = req.body?.psid
+  const rawMobileNumber = req.body?.mobile_number
+  const rawCnic = req.body?.cnic
+  const rawUsername = req.body?.username
+  const rawNewPassword = req.body?.new_password
+
+  const invalidTypedInput =
+    (rawMobileNumber !== undefined && typeof rawMobileNumber !== 'string') ||
+    (rawCnic !== undefined && typeof rawCnic !== 'string') ||
+    (rawUsername !== undefined && typeof rawUsername !== 'string') ||
+    (rawNewPassword !== undefined && typeof rawNewPassword !== 'string')
+
+  if (invalidTypedInput) {
+    return res.status(400).json({ detail: 'Invalid input format.' })
+  }
+
+  const trackingNumber = typeof rawTrackingNumber === 'string'
+    ? rawTrackingNumber.trim()
+    : rawTrackingNumber != null
+      ? String(rawTrackingNumber)
+      : ''
+  const psid = typeof rawPsid === 'string' ? rawPsid.trim() : rawPsid != null ? String(rawPsid) : ''
+  const mobileNumber = typeof rawMobileNumber === 'string' ? rawMobileNumber.trim() : ''
+  const cnic = typeof rawCnic === 'string' ? rawCnic.trim() : ''
+  const pUsername = typeof rawUsername === 'string' ? rawUsername.trim() : ''
+  const newPassword = typeof rawNewPassword === 'string' ? rawNewPassword : ''
 
   if (!mobileNumber || !cnic || (!trackingNumber && !psid) || !pUsername) {
     return res.status(400).json({ detail: 'Please provide Tracking Number or PSID, along with Mobile Number and CNIC.' })

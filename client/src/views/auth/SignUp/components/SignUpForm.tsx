@@ -11,6 +11,7 @@ import { useSessionUser, useToken } from '@/store/authStore'
 import { useNavigate, useLocation } from 'react-router-dom' // Import useNavigate and useLocation
 import AxiosBase from '../../../../services/axios/AxiosBase'
 import axios from 'axios'
+import { sanitizeRedirectPath } from '@/utils/safeRedirect'
 
 interface SignUpFormProps extends CommonProps {
     disableSubmit?: boolean
@@ -109,7 +110,7 @@ const SignUpForm = (props: SignUpFormProps) => {
 
     // Extract redirectUrl from query parameters
     const searchParams = new URLSearchParams(location.search)
-    const redirectUrl = searchParams.get('redirectUrl') || '/' // Fallback to a default path if not provided
+    const redirectUrl = sanitizeRedirectPath(searchParams.get('redirectUrl'))
 
     const onSignUp = async (values: SignUpFormSchema) => {
         const { password, email, captcha_input, captcha_token } = values
@@ -129,7 +130,6 @@ const SignUpForm = (props: SignUpFormProps) => {
                     captcha_input,
                     captcha_token,
                 })
-                console.log(result)
                 // Simulate successful signup
                 if (result?.status === 'failed') {
                     if (result.message.includes('400')) {

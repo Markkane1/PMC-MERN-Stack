@@ -213,17 +213,26 @@ export const paymentIntimation = asyncHandler(async (req: Request, res: Response
 
 export const plmisToken = asyncHandler(async (_req: Request, res: Response) => {
   const { clientId, clientSecretKey, grant_type } = (_req as any).body || {}
+  if (typeof clientId !== 'string' || typeof clientSecretKey !== 'string') {
+    return res.status(400).json({ error: 'Invalid credentials payload.' })
+  }
+
   const config = await getServiceConfig('ePay')
   if (!config?.authEndpoint) {
-    return res.status(500).json({ error: 'Auth endpoint not configured.' })
+    return res.status(503).json({ error: 'Service temporarily unavailable.' })
   }
   const payload = {
-    clientId,
-    clientSecretKey,
+    clientId: clientId.trim(),
+    clientSecretKey: clientSecretKey.trim(),
     grant_type: grant_type || 'client_credentials',
   }
 
-  const response = await postJson(config.authEndpoint, payload)
+  let response
+  try {
+    response = await postJson(config.authEndpoint, payload)
+  } catch {
+    return res.status(503).json({ error: 'Service temporarily unavailable.' })
+  }
   const content = response.data?.content?.[0]
   const tokenInfo = content?.token || {}
   const expiresAt = content?.expiryDate

@@ -41,7 +41,7 @@ export const getApplicantAlerts = asyncHandler(async (req: AuthRequest, res: Res
       },
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: (error as Error).message })
+    res.status(500).json({ success: false, message: 'An error occurred' })
   }
 })
 
@@ -63,7 +63,7 @@ export const getUnreadCount = asyncHandler(async (req: AuthRequest, res: Respons
       data: { unreadCount: count },
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: (error as Error).message })
+    res.status(500).json({ success: false, message: 'An error occurred' })
   }
 })
 
@@ -86,7 +86,7 @@ export const markAlertAsRead = asyncHandler(async (req: AuthRequest, res: Respon
       data: alert,
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: (error as Error).message })
+    res.status(500).json({ success: false, message: 'An error occurred' })
   }
 })
 
@@ -110,7 +110,7 @@ export const markMultipleAsRead = asyncHandler(async (req: AuthRequest, res: Res
       data: { markedCount: count },
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: (error as Error).message })
+    res.status(500).json({ success: false, message: 'An error occurred' })
   }
 })
 
@@ -132,7 +132,7 @@ export const deleteAlert = asyncHandler(async (req: AuthRequest, res: Response) 
       message: 'Alert deleted successfully',
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: (error as Error).message })
+    res.status(500).json({ success: false, message: 'An error occurred' })
   }
 })
 
@@ -158,7 +158,7 @@ export const getNotificationPreferences = asyncHandler(async (req: AuthRequest, 
       data: recipient.preferences,
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: (error as Error).message })
+    res.status(500).json({ success: false, message: 'An error occurred' })
   }
 })
 
@@ -187,7 +187,7 @@ export const updateNotificationPreferences = asyncHandler(async (req: AuthReques
       data: updated.preferences,
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: (error as Error).message })
+    res.status(500).json({ success: false, message: 'An error occurred' })
   }
 })
 
@@ -218,7 +218,7 @@ export const sendTestAlert = asyncHandler(async (req: AuthRequest, res: Response
       data: testAlert,
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: (error as Error).message })
+    res.status(500).json({ success: false, message: 'An error occurred' })
   }
 })
 
@@ -257,7 +257,7 @@ export const getAlertStatistics = asyncHandler(async (req: AuthRequest, res: Res
       data: stats,
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: (error as Error).message })
+    res.status(500).json({ success: false, message: 'An error occurred' })
   }
 })
 
@@ -284,7 +284,7 @@ export const getAlertDetails = asyncHandler(async (req: AuthRequest, res: Respon
       data: alert,
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: (error as Error).message })
+    res.status(500).json({ success: false, message: 'An error occurred' })
   }
 })
 
@@ -322,7 +322,7 @@ export const adminCreateAlert = asyncHandler(async (req: AuthRequest, res: Respo
       data: alert,
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: (error as Error).message })
+    res.status(500).json({ success: false, message: 'An error occurred' })
   }
 })
 
@@ -360,6 +360,6 @@ export const adminGetAllAlerts = asyncHandler(async (req: AuthRequest, res: Resp
       },
     })
   } catch (error) {
-    res.status(500).json({ success: false, message: (error as Error).message })
+    res.status(500).json({ success: false, message: 'An error occurred' })
   }
 })

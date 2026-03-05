@@ -1,0 +1,3155 @@
+{
+  "summary": {
+    "generatedAt": "2026-03-04T09:58:07.529Z",
+    "totalDirectPackages": 146,
+    "staleOver2YearsCount": 10,
+    "zeroDownloadsCount": 0,
+    "archivedRepoCount": 2
+  },
+  "results": [
+    {
+      "package": "@floating-ui/react",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^0.26.23"
+        }
+      ],
+      "latestVersion": "0.27.19",
+      "npmModified": "2026-03-03T03:02:09.960Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 49952490,
+      "zeroDownloads": false,
+      "repository": "https://github.com/floating-ui/floating-ui",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@fluentui/react-components",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^9.73.0"
+        }
+      ],
+      "latestVersion": "9.73.2",
+      "npmModified": "2026-03-04T04:27:43.316Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 1076426,
+      "zeroDownloads": false,
+      "repository": "https://github.com/microsoft/fluentui",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@fluentui/react-icons",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^2.0.319"
+        }
+      ],
+      "latestVersion": "2.0.320",
+      "npmModified": "2026-02-27T15:26:33.085Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 1698741,
+      "zeroDownloads": false,
+      "repository": "https://github.com/microsoft/fluentui-system-icons",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@fullcalendar/core",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^6.1.15"
+        }
+      ],
+      "latestVersion": "6.1.20",
+      "npmModified": "2026-02-03T23:20:21.240Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 6268989,
+      "zeroDownloads": false,
+      "repository": "https://github.com/fullcalendar/fullcalendar",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@fullcalendar/daygrid",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^6.1.15"
+        }
+      ],
+      "latestVersion": "6.1.20",
+      "npmModified": "2025-12-31T21:35:53.155Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 6322439,
+      "zeroDownloads": false,
+      "repository": "https://github.com/fullcalendar/fullcalendar",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@fullcalendar/interaction",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^6.1.15"
+        }
+      ],
+      "latestVersion": "6.1.20",
+      "npmModified": "2025-12-31T21:35:53.747Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 5490872,
+      "zeroDownloads": false,
+      "repository": "https://github.com/fullcalendar/fullcalendar",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@fullcalendar/react",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^6.1.15"
+        }
+      ],
+      "latestVersion": "6.1.20",
+      "npmModified": "2026-02-03T23:20:27.291Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 3838745,
+      "zeroDownloads": false,
+      "repository": "https://github.com/fullcalendar/fullcalendar-react",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@fullcalendar/timegrid",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^6.1.15"
+        }
+      ],
+      "latestVersion": "6.1.20",
+      "npmModified": "2025-12-31T21:35:59.631Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 5029148,
+      "zeroDownloads": false,
+      "repository": "https://github.com/fullcalendar/fullcalendar",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@hello-pangea/dnd",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^16.6.0"
+        }
+      ],
+      "latestVersion": "18.0.1",
+      "npmModified": "2025-02-09T18:51:28.888Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 6828152,
+      "zeroDownloads": false,
+      "repository": "https://github.com/hello-pangea/dnd",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@hookform/resolvers",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^3.9.0"
+        }
+      ],
+      "latestVersion": "5.2.2",
+      "npmModified": "2025-09-14T08:30:01.130Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 60174133,
+      "zeroDownloads": false,
+      "repository": "https://github.com/react-hook-form/resolvers",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@playwright/test",
+      "scopes": [
+        "root"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "root",
+          "bucket": "devDependencies",
+          "versionSpec": "^1.58.2"
+        }
+      ],
+      "latestVersion": "1.58.2",
+      "npmModified": "2026-03-04T05:31:06.941Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 83840738,
+      "zeroDownloads": false,
+      "repository": "https://github.com/microsoft/playwright",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@react-google-maps/api",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^2.20.3"
+        }
+      ],
+      "latestVersion": "2.20.8",
+      "npmModified": "2025-12-16T13:05:37.000Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 5852896,
+      "zeroDownloads": false,
+      "repository": "https://github.com/JustFly1984/react-google-maps-api",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@tailwindcss/typography",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^0.5.15"
+        }
+      ],
+      "latestVersion": "0.5.19",
+      "npmModified": "2026-01-07T04:14:02.457Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 32869366,
+      "zeroDownloads": false,
+      "repository": "https://github.com/tailwindlabs/tailwindcss-typography",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@tanstack/react-table",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^8.20.5"
+        }
+      ],
+      "latestVersion": "8.21.3",
+      "npmModified": "2026-03-01T18:07:55.653Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 35497218,
+      "zeroDownloads": false,
+      "repository": "https://github.com/TanStack/table",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@tiptap/react",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^2.6.6"
+        }
+      ],
+      "latestVersion": "3.20.0",
+      "npmModified": "2026-02-18T10:05:47.136Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 18772741,
+      "zeroDownloads": false,
+      "repository": "https://github.com/ueberdosis/tiptap",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@tiptap/starter-kit",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^2.6.6"
+        }
+      ],
+      "latestVersion": "3.20.0",
+      "npmModified": "2026-02-18T10:05:46.715Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 19621878,
+      "zeroDownloads": false,
+      "repository": "https://github.com/ueberdosis/tiptap",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/babel__generator",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^7.27.0"
+        }
+      ],
+      "latestVersion": "7.27.0",
+      "npmModified": "2025-08-03T06:25:51.120Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 234514578,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/babel__traverse",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^7.28.0"
+        }
+      ],
+      "latestVersion": "7.28.0",
+      "npmModified": "2025-08-03T06:25:57.773Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 243050958,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/bcryptjs",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^2.4.6"
+        }
+      ],
+      "latestVersion": "3.0.0",
+      "npmModified": "2025-03-14T00:04:00.753Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 11697368,
+      "zeroDownloads": false,
+      "repository": null,
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/compression",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^1.8.1"
+        }
+      ],
+      "latestVersion": "1.8.1",
+      "npmModified": "2025-08-03T06:32:52.174Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 11707993,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/cors",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^2.8.17"
+        }
+      ],
+      "latestVersion": "2.8.19",
+      "npmModified": "2025-08-03T06:34:12.244Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 69758189,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/d3-fetch",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^3.0.7"
+        }
+      ],
+      "latestVersion": "3.0.7",
+      "npmModified": "2025-08-03T08:03:14.132Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 28126005,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/d3-scale",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^4.0.8"
+        }
+      ],
+      "latestVersion": "4.0.9",
+      "npmModified": "2025-08-03T08:03:21.207Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 92465021,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/estree-jsx",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^1.0.5"
+        }
+      ],
+      "latestVersion": "1.0.5",
+      "npmModified": "2025-08-03T06:41:30.765Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 55647860,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/express",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^4.17.21"
+        }
+      ],
+      "latestVersion": "5.0.6",
+      "npmModified": "2025-12-01T20:35:57.841Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 198313954,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/geojson",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^7946.0.16"
+        }
+      ],
+      "latestVersion": "7946.0.16",
+      "npmModified": "2025-08-03T06:52:48.323Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 65693426,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/google.maps",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^3.58.1"
+        }
+      ],
+      "latestVersion": "3.58.1",
+      "npmModified": "2025-08-03T06:54:35.430Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 22055687,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/hast",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^3.0.4"
+        }
+      ],
+      "latestVersion": "3.0.4",
+      "npmModified": "2025-08-03T08:04:05.116Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 120865263,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/js-cookie",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^3.0.6"
+        }
+      ],
+      "latestVersion": "3.0.6",
+      "npmModified": "2025-08-03T07:04:53.713Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 28899098,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/jsonwebtoken",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^9.0.7"
+        }
+      ],
+      "latestVersion": "9.0.10",
+      "npmModified": "2025-08-03T07:06:22.447Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 88759159,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/lodash",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^4.17.23"
+        }
+      ],
+      "latestVersion": "4.17.24",
+      "npmModified": "2026-02-23T05:30:34.842Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 157287531,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/mdast",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^4.0.4"
+        }
+      ],
+      "latestVersion": "4.0.4",
+      "npmModified": "2025-08-03T08:04:25.190Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 111844542,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/morgan",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^1.9.9"
+        }
+      ],
+      "latestVersion": "1.9.10",
+      "npmModified": "2025-08-03T07:19:40.842Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 7722931,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/multer",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^1.4.12"
+        }
+      ],
+      "latestVersion": "2.0.0",
+      "npmModified": "2025-08-03T07:20:06.514Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 21984943,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/node",
+      "scopes": [
+        "server",
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^22.8.7"
+        },
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^22.5.4"
+        }
+      ],
+      "latestVersion": "25.3.3",
+      "npmModified": "2026-02-28T20:39:30.043Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 1033889329,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/pdfkit",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^0.13.9"
+        }
+      ],
+      "latestVersion": "0.17.5",
+      "npmModified": "2026-02-11T22:42:18.581Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 7313476,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/qrcode",
+      "scopes": [
+        "server",
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^1.5.6"
+        },
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^1.5.6"
+        }
+      ],
+      "latestVersion": "1.5.6",
+      "npmModified": "2025-10-24T04:28:50.008Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 13796224,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/react",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^18.3.5"
+        }
+      ],
+      "latestVersion": "19.2.14",
+      "npmModified": "2026-02-11T11:45:07.106Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 331223130,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/react-csv",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^1.1.10"
+        }
+      ],
+      "latestVersion": "1.1.10",
+      "npmModified": "2025-08-03T07:34:52.564Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/react-dom",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^18.3.0"
+        }
+      ],
+      "latestVersion": "19.2.3",
+      "npmModified": "2025-11-12T04:37:45.678Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 227084051,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/react-highlight-words",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^0.20.0"
+        }
+      ],
+      "latestVersion": "0.20.1",
+      "npmModified": "2025-12-16T13:43:30.786Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/react-input-mask",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^3.0.6"
+        }
+      ],
+      "latestVersion": "3.0.6",
+      "npmModified": "2025-08-03T08:04:52.643Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/react-modal",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^3.16.3"
+        }
+      ],
+      "latestVersion": "3.16.3",
+      "npmModified": "2025-08-03T07:36:35.636Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/react-portal",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^4.0.7"
+        }
+      ],
+      "latestVersion": "4.0.7",
+      "npmModified": "2025-08-03T08:04:56.802Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/react-scroll",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^1.8.10"
+        }
+      ],
+      "latestVersion": "1.8.10",
+      "npmModified": "2025-08-03T07:38:54.516Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/react-simple-maps",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^3.0.6"
+        }
+      ],
+      "latestVersion": "3.0.6",
+      "npmModified": "2025-08-03T07:39:05.730Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/react-syntax-highlighter",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^15.5.13"
+        }
+      ],
+      "latestVersion": "15.5.13",
+      "npmModified": "2025-08-03T07:39:33.098Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/react-window",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^1.8.8"
+        }
+      ],
+      "latestVersion": "2.0.0",
+      "npmModified": "2025-09-16T21:33:14.447Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 10546770,
+      "zeroDownloads": false,
+      "repository": null,
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/unist",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^3.0.3"
+        }
+      ],
+      "latestVersion": "3.0.3",
+      "npmModified": "2025-08-03T08:05:35.940Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/DefinitelyTyped/DefinitelyTyped",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@types/uuid",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^10.0.0"
+        }
+      ],
+      "latestVersion": "11.0.0",
+      "npmModified": "2025-09-16T21:33:16.014Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": null,
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@typescript-eslint/eslint-plugin",
+      "scopes": [
+        "server",
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^8.56.1"
+        },
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^8.24.1"
+        }
+      ],
+      "latestVersion": "8.56.1",
+      "npmModified": "2026-02-24T07:10:33.120Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/typescript-eslint/typescript-eslint",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@typescript-eslint/parser",
+      "scopes": [
+        "server",
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^8.56.1"
+        },
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^8.24.1"
+        }
+      ],
+      "latestVersion": "8.56.1",
+      "npmModified": "2026-02-24T07:10:14.502Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/typescript-eslint/typescript-eslint",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@visx/pattern",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^3.3.0"
+        }
+      ],
+      "latestVersion": "3.12.0",
+      "npmModified": "2025-11-11T17:35:34.427Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/airbnb/visx",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "@vitejs/plugin-react",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^4.3.1"
+        }
+      ],
+      "latestVersion": "5.1.4",
+      "npmModified": "2026-03-03T06:52:07.025Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 104383792,
+      "zeroDownloads": false,
+      "repository": "https://github.com/vitejs/vite-plugin-react",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "autoprefixer",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^10.4.20"
+        }
+      ],
+      "latestVersion": "10.4.27",
+      "npmModified": "2026-02-25T19:33:36.680Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/postcss/autoprefixer",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "axios",
+      "scopes": [
+        "server",
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^1.13.5"
+        },
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^1.7.7"
+        }
+      ],
+      "latestVersion": "1.13.6",
+      "npmModified": "2026-02-27T15:35:52.392Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/axios/axios",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "axios-mock-adapter",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^2.0.0"
+        }
+      ],
+      "latestVersion": "2.1.0",
+      "npmModified": "2024-10-09T15:30:57.356Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/ctimmerm/axios-mock-adapter",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "bcryptjs",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^2.4.3"
+        }
+      ],
+      "latestVersion": "3.0.3",
+      "npmModified": "2025-11-02T22:09:44.005Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/dcodeIO/bcrypt.js",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "bwip-js",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^4.8.0"
+        }
+      ],
+      "latestVersion": "4.8.0",
+      "npmModified": "2025-11-11T23:26:16.538Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 1364476,
+      "zeroDownloads": false,
+      "repository": "https://github.com/metafloor/bwip-js",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "classnames",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^2.5.1"
+        }
+      ],
+      "latestVersion": "2.5.1",
+      "npmModified": "2024-12-13T19:05:50.587Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 91303065,
+      "zeroDownloads": false,
+      "repository": "https://github.com/JedWatson/classnames",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "color",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^4.2.3"
+        }
+      ],
+      "latestVersion": "5.0.3",
+      "npmModified": "2025-11-14T18:41:59.735Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 154081274,
+      "zeroDownloads": false,
+      "repository": "https://github.com/Qix-/color",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "compression",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^1.7.4"
+        }
+      ],
+      "latestVersion": "1.8.1",
+      "npmModified": "2025-07-17T17:36:13.458Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/expressjs/compression",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "concurrently",
+      "scopes": [
+        "root"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "root",
+          "bucket": "devDependencies",
+          "versionSpec": "^9.0.1"
+        }
+      ],
+      "latestVersion": "9.2.1",
+      "npmModified": "2025-10-20T15:48:18.346Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/open-cli-tools/concurrently",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "cors",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^2.8.5"
+        }
+      ],
+      "latestVersion": "2.8.6",
+      "npmModified": "2026-01-22T14:41:30.379Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/expressjs/cors",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "date-fns",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^4.1.0"
+        }
+      ],
+      "latestVersion": "4.1.0",
+      "npmModified": "2025-08-03T13:10:27.925Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/date-fns/date-fns",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "dayjs",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^1.11.13"
+        }
+      ],
+      "latestVersion": "1.11.19",
+      "npmModified": "2025-10-31T05:07:51.075Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/iamkun/dayjs",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "dotenv",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^16.4.5"
+        }
+      ],
+      "latestVersion": "17.3.1",
+      "npmModified": "2026-02-12T22:10:15.341Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/motdotla/dotenv",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "eslint",
+      "scopes": [
+        "server",
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^8.57.1"
+        },
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^8.57.1"
+        }
+      ],
+      "latestVersion": "10.0.2",
+      "npmModified": "2026-02-23T21:43:39.061Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/eslint/eslint",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "eslint-config-prettier",
+      "scopes": [
+        "server",
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^9.1.0"
+        },
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^9.1.0"
+        }
+      ],
+      "latestVersion": "10.1.8",
+      "npmModified": "2025-07-20T23:16:08.192Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/prettier/eslint-config-prettier",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "eslint-import-resolver-alias",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^1.1.2"
+        }
+      ],
+      "latestVersion": "1.1.2",
+      "npmModified": "2022-06-17T20:24:49.703Z",
+      "staleOver2Years": true,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/johvin/eslint-import-resolver-alias",
+      "githubArchived": false,
+      "githubPushedAt": "2022-08-03T08:06:04Z"
+    },
+    {
+      "package": "eslint-import-resolver-typescript",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^3.6.3"
+        }
+      ],
+      "latestVersion": "4.4.4",
+      "npmModified": "2025-06-25T17:46:33.663Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/import-js/eslint-import-resolver-typescript",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "eslint-plugin-import",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^2.31.0"
+        }
+      ],
+      "latestVersion": "2.32.0",
+      "npmModified": "2025-06-20T21:59:10.022Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/import-js/eslint-plugin-import",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "eslint-plugin-jsx-a11y",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^6.10.0"
+        }
+      ],
+      "latestVersion": "6.10.2",
+      "npmModified": "2024-10-26T04:45:18.259Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/jsx-eslint/eslint-plugin-jsx-a11y",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "eslint-plugin-react",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^7.37.4"
+        }
+      ],
+      "latestVersion": "7.37.5",
+      "npmModified": "2025-04-03T20:01:16.154Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/jsx-eslint/eslint-plugin-react",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "eslint-plugin-react-hooks",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^4.6.2"
+        }
+      ],
+      "latestVersion": "7.0.1",
+      "npmModified": "2026-03-03T16:29:27.896Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/facebook/react",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "eslint-plugin-react-refresh",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^0.4.11"
+        }
+      ],
+      "latestVersion": "0.5.2",
+      "npmModified": "2026-02-23T19:49:32.682Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/ArnaudBarre/eslint-plugin-react-refresh",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "eslint-plugin-security",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^4.0.0"
+        }
+      ],
+      "latestVersion": "4.0.0",
+      "npmModified": "2026-02-19T15:08:53.524Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/eslint-community/eslint-plugin-security",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "exceljs",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^4.4.0"
+        }
+      ],
+      "latestVersion": "4.4.0",
+      "npmModified": "2024-12-20T09:47:37.162Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/exceljs/exceljs",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "express",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^4.19.2"
+        }
+      ],
+      "latestVersion": "5.2.1",
+      "npmModified": "2026-03-03T20:27:29.918Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/expressjs/express",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "express-mongo-sanitize",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^2.2.0"
+        }
+      ],
+      "latestVersion": "2.2.0",
+      "npmModified": "2025-01-11T15:55:54.932Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/fiznool/express-mongo-sanitize",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "express-rate-limit",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^7.4.1"
+        }
+      ],
+      "latestVersion": "8.2.1",
+      "npmModified": "2025-10-31T18:48:12.932Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/express-rate-limit/express-rate-limit",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "framer-motion",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^11.13.1"
+        }
+      ],
+      "latestVersion": "12.34.5",
+      "npmModified": "2026-03-03T12:13:16.572Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/motiondivision/motion",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "gantt-task-react",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^0.3.9"
+        }
+      ],
+      "latestVersion": "0.3.9",
+      "npmModified": "2022-07-10T12:55:26.102Z",
+      "staleOver2Years": true,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/MaTeMaTuK/gantt-task-react",
+      "githubArchived": false,
+      "githubPushedAt": "2024-08-12T09:05:56Z"
+    },
+    {
+      "package": "helmet",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^7.1.0"
+        }
+      ],
+      "latestVersion": "8.1.0",
+      "npmModified": "2025-03-17T19:00:46.663Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/helmetjs/helmet",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "hpp",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^0.2.3"
+        }
+      ],
+      "latestVersion": "0.2.3",
+      "npmModified": "2022-06-18T21:44:03.206Z",
+      "staleOver2Years": true,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/analog-nico/hpp",
+      "githubArchived": false,
+      "githubPushedAt": "2023-02-06T09:53:21Z"
+    },
+    {
+      "package": "html-react-parser",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^5.1.15"
+        }
+      ],
+      "latestVersion": "5.2.17",
+      "npmModified": "2026-02-07T05:57:35.583Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/remarkablemark/html-react-parser",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "i18next",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^24.2.1"
+        }
+      ],
+      "latestVersion": "25.8.14",
+      "npmModified": "2026-03-04T05:58:59.976Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/i18next/i18next",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "ioredis",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^5.9.3"
+        }
+      ],
+      "latestVersion": "5.10.0",
+      "npmModified": "2026-02-27T13:52:10.423Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/luin/ioredis",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "jest",
+      "scopes": [
+        "root"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "root",
+          "bucket": "devDependencies",
+          "versionSpec": "^30.2.0"
+        }
+      ],
+      "latestVersion": "30.2.0",
+      "npmModified": "2025-09-28T07:33:12.359Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/jestjs/jest",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "jimp",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^1.6.0"
+        }
+      ],
+      "latestVersion": "1.6.0",
+      "npmModified": "2024-09-09T16:06:38.771Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": null,
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "js-cookie",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^3.0.5"
+        }
+      ],
+      "latestVersion": "3.0.5",
+      "npmModified": "2023-08-20T09:44:13.419Z",
+      "staleOver2Years": true,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/js-cookie/js-cookie",
+      "githubArchived": false,
+      "githubPushedAt": "2026-02-28T08:22:50Z"
+    },
+    {
+      "package": "jsonwebtoken",
+      "scopes": [
+        "root",
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "root",
+          "bucket": "devDependencies",
+          "versionSpec": "^9.0.3"
+        },
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^9.0.2"
+        }
+      ],
+      "latestVersion": "9.0.3",
+      "npmModified": "2026-01-27T21:32:26.382Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/auth0/node-jsonwebtoken",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "jsqr",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^1.4.0"
+        }
+      ],
+      "latestVersion": "1.4.0",
+      "npmModified": "2025-11-13T00:53:36.368Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/cozmo/jsQR",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "lodash",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^4.17.21"
+        }
+      ],
+      "latestVersion": "4.17.23",
+      "npmModified": "2026-02-17T22:07:01.094Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/lodash/lodash",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "material-react-table",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^3.0.1"
+        }
+      ],
+      "latestVersion": "3.2.1",
+      "npmModified": "2025-03-01T21:56:07.630Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/KevinVandy/material-react-table",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "mongodb-memory-server",
+      "scopes": [
+        "root"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "root",
+          "bucket": "devDependencies",
+          "versionSpec": "^11.0.1"
+        }
+      ],
+      "latestVersion": "11.0.1",
+      "npmModified": "2025-12-23T11:52:37.060Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/typegoose/mongodb-memory-server",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "mongoose",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^8.8.0"
+        }
+      ],
+      "latestVersion": "9.2.4",
+      "npmModified": "2026-03-04T00:07:15.510Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 18214691,
+      "zeroDownloads": false,
+      "repository": "https://github.com/Automattic/mongoose",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "morgan",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^1.10.0"
+        }
+      ],
+      "latestVersion": "1.10.1",
+      "npmModified": "2025-07-17T16:14:26.364Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/expressjs/morgan",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "multer",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^1.4.5-lts.1"
+        }
+      ],
+      "latestVersion": "2.1.0",
+      "npmModified": "2026-02-27T15:34:52.596Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/expressjs/multer",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "node-cache",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^5.1.2"
+        }
+      ],
+      "latestVersion": "5.1.2",
+      "npmModified": "2024-10-22T17:26:04.116Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/node-cache/node-cache",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "ol",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^10.3.1"
+        }
+      ],
+      "latestVersion": "10.8.0",
+      "npmModified": "2026-03-03T22:55:32.367Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/openlayers/openlayers",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "pdfkit",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^0.16.0"
+        }
+      ],
+      "latestVersion": "0.17.2",
+      "npmModified": "2025-08-30T18:17:33.077Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/foliojs/pdfkit",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "postcss",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^8.4.45"
+        }
+      ],
+      "latestVersion": "8.5.8",
+      "npmModified": "2026-03-02T22:19:42.173Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/postcss/postcss",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "postcss-nesting",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^13.0.0"
+        }
+      ],
+      "latestVersion": "14.0.0",
+      "npmModified": "2026-01-14T07:24:04.735Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/csstools/postcss-plugins",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "prettier",
+      "scopes": [
+        "server",
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^3.3.3"
+        },
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^3.3.3"
+        }
+      ],
+      "latestVersion": "3.8.1",
+      "npmModified": "2026-01-21T17:45:07.869Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/prettier/prettier",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "qrcode",
+      "scopes": [
+        "server",
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^1.5.4"
+        },
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^1.5.4"
+        }
+      ],
+      "latestVersion": "1.5.4",
+      "npmModified": "2025-11-13T00:56:56.222Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/soldair/node-qrcode",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^18.3.1"
+        }
+      ],
+      "latestVersion": "19.2.4",
+      "npmModified": "2026-03-03T16:29:33.582Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/facebook/react",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-apexcharts",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^1.4.1"
+        }
+      ],
+      "latestVersion": "2.0.1",
+      "npmModified": "2026-02-17T17:59:16.375Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/apexcharts/react-apexcharts",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-dom",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^18.3.1"
+        }
+      ],
+      "latestVersion": "19.2.4",
+      "npmModified": "2026-03-03T16:29:41.251Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/facebook/react",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-highlight-words",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^0.20.0"
+        }
+      ],
+      "latestVersion": "0.21.0",
+      "npmModified": "2025-01-12T21:27:16.626Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/bvaughn/react-highlight-words",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-hook-form",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^7.53.0"
+        }
+      ],
+      "latestVersion": "7.71.2",
+      "npmModified": "2026-02-20T21:26:30.766Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/react-hook-form/react-hook-form",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-i18next",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^15.0.1"
+        }
+      ],
+      "latestVersion": "16.5.4",
+      "npmModified": "2026-01-27T14:23:08.211Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/i18next/react-i18next",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-icons",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^5.5.0"
+        }
+      ],
+      "latestVersion": "5.6.0",
+      "npmModified": "2026-03-03T09:36:05.074Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/react-icons/react-icons",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-input-mask",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^2.0.4"
+        }
+      ],
+      "latestVersion": "2.0.4",
+      "npmModified": "2022-06-26T00:01:06.734Z",
+      "staleOver2Years": true,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/sanniassin/react-input-mask",
+      "githubArchived": true,
+      "githubPushedAt": "2024-08-01T00:59:19Z"
+    },
+    {
+      "package": "react-markdown",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^9.0.1"
+        }
+      ],
+      "latestVersion": "10.1.0",
+      "npmModified": "2025-03-07T10:32:53.525Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/remarkjs/react-markdown",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-modal",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^3.16.1"
+        }
+      ],
+      "latestVersion": "3.16.3",
+      "npmModified": "2024-12-17T13:40:17.400Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/reactjs/react-modal",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-number-format",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^5.4.2"
+        }
+      ],
+      "latestVersion": "5.4.4",
+      "npmModified": "2025-04-12T17:30:12.003Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/s-yadav/react-number-format",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-router-dom",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^6.26.2"
+        }
+      ],
+      "latestVersion": "7.13.1",
+      "npmModified": "2026-03-03T07:22:50.899Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/remix-run/react-router",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-scroll",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^1.9.0"
+        }
+      ],
+      "latestVersion": "1.9.3",
+      "npmModified": "2025-02-19T14:34:30.640Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/fisshy/react-scroll",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-select",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^5.8.2"
+        }
+      ],
+      "latestVersion": "5.10.2",
+      "npmModified": "2025-07-11T12:49:27.106Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/JedWatson/react-select.git",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-simple-maps",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "4.0.0-beta.6"
+        }
+      ],
+      "latestVersion": "3.0.0",
+      "npmModified": "2023-07-01T13:22:09.498Z",
+      "staleOver2Years": true,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/zcreativelabs/react-simple-maps",
+      "githubArchived": false,
+      "githubPushedAt": "2024-08-08T15:53:29Z"
+    },
+    {
+      "package": "react-syntax-highlighter",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^15.5.0"
+        }
+      ],
+      "latestVersion": "16.1.1",
+      "npmModified": "2026-02-26T22:37:53.963Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/react-syntax-highlighter/react-syntax-highlighter",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-tooltip",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^5.28.0"
+        }
+      ],
+      "latestVersion": "5.30.0",
+      "npmModified": "2025-11-01T00:52:54.367Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/ReactTooltip/react-tooltip",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "react-window",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^2.2.7"
+        }
+      ],
+      "latestVersion": "2.2.7",
+      "npmModified": "2026-02-13T22:35:53.914Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/bvaughn/react-window",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "recharts",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^2.15.1"
+        }
+      ],
+      "latestVersion": "3.7.0",
+      "npmModified": "2026-01-21T21:11:48.593Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/recharts/recharts",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "simplebar-react",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^3.2.6"
+        }
+      ],
+      "latestVersion": "3.3.2",
+      "npmModified": "2025-07-03T10:04:25.070Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/grsmto/simplebar",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "supertest",
+      "scopes": [
+        "root"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "root",
+          "bucket": "devDependencies",
+          "versionSpec": "^7.2.2"
+        }
+      ],
+      "latestVersion": "7.2.2",
+      "npmModified": "2026-01-06T09:29:48.496Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/ladjs/supertest",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "svg-captcha",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^1.4.0"
+        }
+      ],
+      "latestVersion": "1.4.0",
+      "npmModified": "2022-06-27T02:32:39.650Z",
+      "staleOver2Years": true,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/steambap/svg-captcha",
+      "githubArchived": false,
+      "githubPushedAt": "2024-02-04T23:20:25Z"
+    },
+    {
+      "package": "swr",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^2.4.0"
+        }
+      ],
+      "latestVersion": "2.4.1",
+      "npmModified": "2026-02-27T16:44:26.561Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/vercel/swr",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "tailwind-merge",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^2.5.2"
+        }
+      ],
+      "latestVersion": "3.5.0",
+      "npmModified": "2026-03-03T09:08:09.058Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/dcastil/tailwind-merge",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "tailwindcss",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^3.4.10"
+        }
+      ],
+      "latestVersion": "4.2.1",
+      "npmModified": "2026-02-26T11:32:19.692Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/tailwindlabs/tailwindcss",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "terraformer-wkt-parser",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^1.2.1"
+        }
+      ],
+      "latestVersion": "1.2.1",
+      "npmModified": "2024-09-24T21:33:18.908Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 380060,
+      "zeroDownloads": false,
+      "repository": "https://github.com/Esri/terraformer-wkt-parser",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "ts-node",
+      "scopes": [
+        "root",
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "root",
+          "bucket": "devDependencies",
+          "versionSpec": "^10.9.2"
+        },
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^10.9.2"
+        }
+      ],
+      "latestVersion": "10.9.2",
+      "npmModified": "2025-10-13T23:43:21.909Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/TypeStrong/ts-node",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "ts-node-dev",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^2.0.0"
+        }
+      ],
+      "latestVersion": "2.0.0",
+      "npmModified": "2022-06-27T22:14:07.515Z",
+      "staleOver2Years": true,
+      "monthlyDownloads": 7531624,
+      "zeroDownloads": false,
+      "repository": "https://github.com/whitecolor/ts-node-dev",
+      "githubArchived": true,
+      "githubPushedAt": "2024-06-14T23:39:53Z"
+    },
+    {
+      "package": "typescript",
+      "scopes": [
+        "server",
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "devDependencies",
+          "versionSpec": "^5.6.3"
+        },
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^5.6.2"
+        }
+      ],
+      "latestVersion": "5.9.3",
+      "npmModified": "2026-03-04T07:22:48.102Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 546552273,
+      "zeroDownloads": false,
+      "repository": "https://github.com/microsoft/TypeScript",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "use-debounce",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^10.1.0"
+        }
+      ],
+      "latestVersion": "10.1.0",
+      "npmModified": "2026-01-08T22:10:47.068Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/xnimorz/use-debounce",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "uuid",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^11.0.3"
+        }
+      ],
+      "latestVersion": "13.0.0",
+      "npmModified": "2025-09-08T18:43:40.044Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/uuidjs/uuid",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "vite",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^5.4.3"
+        }
+      ],
+      "latestVersion": "7.3.1",
+      "npmModified": "2026-02-27T04:10:44.727Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 272086208,
+      "zeroDownloads": false,
+      "repository": "https://github.com/vitejs/vite",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "vite-plugin-dynamic-import",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^1.5.0"
+        }
+      ],
+      "latestVersion": "1.6.0",
+      "npmModified": "2024-11-22T01:07:56.040Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 2368388,
+      "zeroDownloads": false,
+      "repository": "https://github.com/vite-plugin/vite-plugin-dynamic-import",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "wkx",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^0.5.0"
+        }
+      ],
+      "latestVersion": "0.5.0",
+      "npmModified": "2022-11-18T07:55:52.442Z",
+      "staleOver2Years": true,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/cschwarz/wkx",
+      "githubArchived": false,
+      "githubPushedAt": "2023-05-09T10:14:30Z"
+    },
+    {
+      "package": "workbox-cli",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "devDependencies",
+          "versionSpec": "^7.3.0"
+        }
+      ],
+      "latestVersion": "7.4.0",
+      "npmModified": "2025-11-19T17:46:40.719Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/googlechrome/workbox",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "xss-clean",
+      "scopes": [
+        "server"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^0.1.4"
+        }
+      ],
+      "latestVersion": "0.1.4",
+      "npmModified": "2023-06-02T16:36:42.949Z",
+      "staleOver2Years": true,
+      "monthlyDownloads": 235629,
+      "zeroDownloads": false,
+      "repository": null,
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "yet-another-react-lightbox",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^3.21.4"
+        }
+      ],
+      "latestVersion": "3.29.1",
+      "npmModified": "2026-02-13T01:30:35.244Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/igordanchenko/yet-another-react-lightbox",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "yup",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^1.4.0"
+        }
+      ],
+      "latestVersion": "1.7.1",
+      "npmModified": "2025-09-21T13:59:55.316Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 41459745,
+      "zeroDownloads": false,
+      "repository": "https://github.com/jquense/yup",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "zod",
+      "scopes": [
+        "server",
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "server",
+          "bucket": "dependencies",
+          "versionSpec": "^3.23.8"
+        },
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^3.23.8"
+        }
+      ],
+      "latestVersion": "4.3.6",
+      "npmModified": "2026-01-25T21:51:57.252Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": 405743814,
+      "zeroDownloads": false,
+      "repository": "https://github.com/colinhacks/zod",
+      "githubArchived": null,
+      "githubPushedAt": null
+    },
+    {
+      "package": "zustand",
+      "scopes": [
+        "client"
+      ],
+      "versionSpecs": [
+        {
+          "scope": "client",
+          "bucket": "dependencies",
+          "versionSpec": "^4.5.5"
+        }
+      ],
+      "latestVersion": "5.0.11",
+      "npmModified": "2026-02-01T02:12:46.225Z",
+      "staleOver2Years": false,
+      "monthlyDownloads": null,
+      "zeroDownloads": false,
+      "repository": "https://github.com/pmndrs/zustand",
+      "githubArchived": null,
+      "githubPushedAt": null
+    }
+  ]
+}

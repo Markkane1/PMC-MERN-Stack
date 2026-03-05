@@ -12,6 +12,7 @@ export interface CompetitionRegistrationDocument extends Document {
   studentCardBackPath?: string
   photoObjectPath?: string
   registrationId: string
+  createdBy?: mongoose.Types.ObjectId
 }
 
 const CompetitionRegistrationSchema = new Schema<CompetitionRegistrationDocument>(
@@ -26,6 +27,7 @@ const CompetitionRegistrationSchema = new Schema<CompetitionRegistrationDocument
     studentCardBackPath: { type: String },
     photoObjectPath: { type: String },
     registrationId: { type: String, unique: true },
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true }
 )

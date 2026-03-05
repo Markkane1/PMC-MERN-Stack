@@ -13,12 +13,6 @@ import {
   generateCaptcha,
 } from '../controllers/accounts/AuthController'
 import {
-  getGoogleAuthUrl,
-  handleGoogleCallback,
-  getGitHubAuthUrl,
-  handleGitHubCallback,
-} from '../controllers/accounts/OAuthController'
-import {
   listPermissions,
   resetPermissions,
   listGroups,
@@ -59,12 +53,6 @@ accountsRouter.post('/reset-forgot-password/', resetForgotPassword)
 accountsRouter.get('/list-inspectors/', authenticate, listInspectors)
 accountsRouter.post('/create-update-inpsector-user/', authenticate, createOrUpdateInspector)
 accountsRouter.get('/generate-captcha/', generateCaptcha)
-
-// OAuth Routes
-accountsRouter.get('/oauth/google/auth-url/', getGoogleAuthUrl)
-accountsRouter.post('/oauth/google/callback/', handleGoogleCallback)
-accountsRouter.get('/oauth/github/auth-url/', getGitHubAuthUrl)
-accountsRouter.post('/oauth/github/callback/', handleGitHubCallback)
 
 // Admin RBAC
 accountsRouter.get('/admin/permissions/', authenticate, requireGroup(['Admin', 'Super']), listPermissions)
