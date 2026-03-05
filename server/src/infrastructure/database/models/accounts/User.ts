@@ -36,38 +36,3 @@ const UserSchema = new Schema<UserDocument>(
 )
 
 export const UserModel = mongoose.model<UserDocument>('User', UserSchema, 'User')
-
-// SocialAccount schema for external provider tracking
-export interface SocialAccountDocument extends Document {
-  userId: mongoose.Types.ObjectId
-  provider: 'google' | 'github'
-  providerId: string
-  email?: string
-  name?: string
-  avatar?: string
-  raw?: Record<string, unknown>
-  createdAt: Date
-  updatedAt: Date
-}
-
-const SocialAccountSchema = new Schema<SocialAccountDocument>(
-  {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    provider: { type: String, required: true, enum: ['google', 'github'] },
-    providerId: { type: String, required: true },
-    email: { type: String },
-    name: { type: String },
-    avatar: { type: String },
-    raw: { type: Schema.Types.Mixed },
-  },
-  { timestamps: true }
-)
-
-// Create compound index to prevent duplicate social accounts
-SocialAccountSchema.index({ provider: 1, providerId: 1 }, { unique: true })
-
-export const SocialAccountModel = mongoose.model<SocialAccountDocument>(
-  'SocialAccount',
-  SocialAccountSchema,
-  'SocialAccount'
-)

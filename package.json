@@ -9,6 +9,12 @@
     "build:fe": "npm run build --prefix client",
     "build": "npm run build --prefix server && npm run build --prefix client",
     "verify": "npm run lint && npm run build",
+    "test:unit": "vitest run",
+    "test:integration": "jest --testPathPatterns=integration",
+    "test:components": "vitest run tests/components",
+    "test:e2e": "playwright test",
+    "test:coverage": "c8 vitest run",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:components && npm run test:e2e && npm run test:coverage",
     "audit": "npm audit --audit-level=high",
     "supplychain:verify:client-scripts": "node scripts/security/verify-postinstall-allowlist.cjs client/package-lock.json esbuild",
     "ci:secure:client": "npm ci --prefix client --ignore-scripts && npm run supplychain:verify:client-scripts && npm rebuild --prefix client esbuild",
@@ -27,11 +33,17 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "c8": "^11.0.0",
     "concurrently": "^9.0.1",
     "jest": "^30.2.0",
+    "jsdom": "^28.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongodb-memory-server": "^11.0.1",
     "supertest": "^7.2.2",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "vitest": "^4.0.18"
   }
 }

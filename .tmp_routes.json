@@ -1,0 +1,1927 @@
+[
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  44,
+        "router":  "accounts",
+        "method":  "POST",
+        "raw":  "\u0027/register/\u0027, register)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  45,
+        "router":  "accounts",
+        "method":  "POST",
+        "raw":  "\u0027/login/\u0027, login)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  46,
+        "router":  "accounts",
+        "method":  "POST",
+        "raw":  "\u0027/logout/\u0027, logout)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  47,
+        "router":  "accounts",
+        "method":  "GET",
+        "raw":  "\u0027/profile/\u0027, authenticate, profile)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  48,
+        "router":  "accounts",
+        "method":  "GET",
+        "raw":  "\u0027/role-dashboard/\u0027, authenticate, getRoleDashboardConfig)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  49,
+        "router":  "accounts",
+        "method":  "PATCH",
+        "raw":  "\u0027/profile/\u0027, authenticate, updateProfile)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  50,
+        "router":  "accounts",
+        "method":  "POST",
+        "raw":  "\u0027/reset-password2/\u0027, authenticate, resetPassword)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  51,
+        "router":  "accounts",
+        "method":  "POST",
+        "raw":  "\u0027/find-user/\u0027, findUser)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  52,
+        "router":  "accounts",
+        "method":  "POST",
+        "raw":  "\u0027/reset-forgot-password/\u0027, resetForgotPassword)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  53,
+        "router":  "accounts",
+        "method":  "GET",
+        "raw":  "\u0027/list-inspectors/\u0027, authenticate, listInspectors)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  54,
+        "router":  "accounts",
+        "method":  "POST",
+        "raw":  "\u0027/create-update-inpsector-user/\u0027, authenticate, createOrUpdateInspector)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  55,
+        "router":  "accounts",
+        "method":  "GET",
+        "raw":  "\u0027/generate-captcha/\u0027, generateCaptcha)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  58,
+        "router":  "accounts",
+        "method":  "GET",
+        "raw":  "\u0027/admin/permissions/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), listPermissions)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  59,
+        "router":  "accounts",
+        "method":  "POST",
+        "raw":  "\u0027/admin/permissions/reset/\u0027, authenticate, requireGroup([\u0027Super\u0027]), resetPermissions)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  60,
+        "router":  "accounts",
+        "method":  "PUT",
+        "raw":  "\u0027/admin/role-dashboard/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), updateRoleDashboardConfig)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  61,
+        "router":  "accounts",
+        "method":  "GET",
+        "raw":  "\u0027/admin/groups/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), listGroups)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  62,
+        "router":  "accounts",
+        "method":  "POST",
+        "raw":  "\u0027/admin/groups/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), createGroup)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  63,
+        "router":  "accounts",
+        "method":  "PATCH",
+        "raw":  "\u0027/admin/groups/:id/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), updateGroup)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  64,
+        "router":  "accounts",
+        "method":  "DELETE",
+        "raw":  "\u0027/admin/groups/:id/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), deleteGroup)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  65,
+        "router":  "accounts",
+        "method":  "GET",
+        "raw":  "\u0027/admin/users/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), listUsers)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  66,
+        "router":  "accounts",
+        "method":  "PATCH",
+        "raw":  "\u0027/admin/users/:id/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), updateUser)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  67,
+        "router":  "accounts",
+        "method":  "DELETE",
+        "raw":  "\u0027/admin/users/:id/\u0027, authenticate, requireGroup([\u0027Super\u0027]), deleteUser)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  68,
+        "router":  "accounts",
+        "method":  "POST",
+        "raw":  "\u0027/admin/users/:id/reset-password/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), resetUserPassword)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  71,
+        "router":  "accounts",
+        "method":  "GET",
+        "raw":  "\u0027/admin/superadmins/\u0027, authenticate, requireGroup([\u0027Super\u0027]), listSuperadmins)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  72,
+        "router":  "accounts",
+        "method":  "POST",
+        "raw":  "\u0027/admin/superadmins/\u0027, authenticate, requireGroup([\u0027Super\u0027]), createSuperadmin)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  73,
+        "router":  "accounts",
+        "method":  "PATCH",
+        "raw":  "\u0027/admin/superadmins/:id/\u0027, authenticate, requireGroup([\u0027Super\u0027]), updateSuperadmin)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  74,
+        "router":  "accounts",
+        "method":  "DELETE",
+        "raw":  "\u0027/admin/superadmins/:id/\u0027, authenticate, requireGroup([\u0027Super\u0027]), deleteSuperadmin)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  77,
+        "router":  "accounts",
+        "method":  "GET",
+        "raw":  "\u0027/admin/api-logs/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), listApiLogs)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  78,
+        "router":  "accounts",
+        "method":  "GET",
+        "raw":  "\u0027/admin/audit-logs/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), listAuditLogs)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  79,
+        "router":  "accounts",
+        "method":  "GET",
+        "raw":  "\u0027/admin/access-logs/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), listAccessLogs)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  80,
+        "router":  "accounts",
+        "method":  "GET",
+        "raw":  "\u0027/admin/service-configs/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), listServiceConfigurations)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  81,
+        "router":  "accounts",
+        "method":  "POST",
+        "raw":  "\u0027/admin/service-configs/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), createServiceConfiguration)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  82,
+        "router":  "accounts",
+        "method":  "PATCH",
+        "raw":  "\u0027/admin/service-configs/:id/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), updateServiceConfiguration)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/accounts.routes.ts",
+        "line":  83,
+        "router":  "accounts",
+        "method":  "GET",
+        "raw":  "\u0027/admin/external-tokens/\u0027, authenticate, requireGroup([\u0027Admin\u0027, \u0027Super\u0027]), listExternalTokens)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/common.routes.ts",
+        "line":  7,
+        "router":  "common",
+        "method":  "GET",
+        "raw":  "\u0027/notification/list\u0027, authenticate, listNotifications)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/common.routes.ts",
+        "line":  8,
+        "router":  "common",
+        "method":  "GET",
+        "raw":  "\u0027/notification/count\u0027, authenticate, notificationCount)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/common.routes.ts",
+        "line":  9,
+        "router":  "common",
+        "method":  "GET",
+        "raw":  "\u0027/search/query\u0027, authenticate, searchQuery)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/cache.routes.ts",
+        "line":  10,
+        "router":  "cache",
+        "method":  "GET",
+        "raw":  "\u0027/health\u0027, async (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/cache.routes.ts",
+        "line":  33,
+        "router":  "cache",
+        "method":  "GET",
+        "raw":  "\u0027/stats\u0027, async (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/cache.routes.ts",
+        "line":  47,
+        "router":  "cache",
+        "method":  "POST",
+        "raw":  "\u0027/clear\u0027, async (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  102,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/applicant-detail/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdetail\u0027]), listApplicants)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  103,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/applicant-detail/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdetail\u0027]), getApplicant)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  104,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/applicant-detail/\u0027, authenticate, requirePermission([\u0027pmc.add_applicantdetail\u0027]), parseMultipart, createApplicant)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  105,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/applicant-detail/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_applicantdetail\u0027]), parseMultipart, updateApplicant)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  106,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/applicant-detail/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_applicantdetail\u0027]), deleteApplicant)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  108,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/applicant-detail-main-list/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdetail\u0027]), listApplicantsMain)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  109,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/applicant-detail-main-do-list/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdetail\u0027]), listApplicantsMainDO)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  112,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/business-profiles/\u0027, authenticate, requirePermission([\u0027pmc.view_businessprofile\u0027]), businessProfileController.list)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  113,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/business-profiles/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_businessprofile\u0027]), businessProfileController.get)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  114,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/business-profiles/by_applicant/\u0027, authenticate, requirePermission([\u0027pmc.view_businessprofile\u0027]), getBusinessProfilesByApplicant)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  115,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/business-profiles/\u0027, authenticate, requirePermission([\u0027pmc.add_businessprofile\u0027]), parseMultipart, createBusinessProfile)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  116,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/business-profiles/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_businessprofile\u0027]), parseMultipart, updateBusinessProfile)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  117,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/business-profiles/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_businessprofile\u0027]), businessProfileController.remove)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  120,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/plastic-items/\u0027, authenticate, requirePermission([\u0027pmc.view_plasticitem\u0027]), cacheMiddleware(3600), plasticItemsController.list)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  121,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/plastic-items/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_plasticitem\u0027]), plasticItemsController.get)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  122,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/plastic-items/\u0027, authenticate, requirePermission([\u0027pmc.add_plasticitem\u0027]), plasticItemsController.create)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  123,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/plastic-items/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_plasticitem\u0027]), plasticItemsController.update)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  124,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/plastic-items/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_plasticitem\u0027]), plasticItemsController.remove)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  126,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/products/\u0027, authenticate, requirePermission([\u0027pmc.view_product\u0027]), cacheMiddleware(3600), productsController.list)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  127,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/products/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_product\u0027]), productsController.get)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  128,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/products/\u0027, authenticate, requirePermission([\u0027pmc.add_product\u0027]), productsController.create)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  129,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/products/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_product\u0027]), productsController.update)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  130,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/products/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_product\u0027]), productsController.remove)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  132,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/by-products/\u0027, authenticate, requirePermission([\u0027pmc.view_byproduct\u0027]), cacheMiddleware(3600), byProductsController.list)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  133,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/by-products/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_byproduct\u0027]), byProductsController.get)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  134,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/by-products/\u0027, authenticate, requirePermission([\u0027pmc.add_byproduct\u0027]), byProductsController.create)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  135,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/by-products/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_byproduct\u0027]), byProductsController.update)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  136,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/by-products/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_byproduct\u0027]), byProductsController.remove)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  139,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/producers/\u0027, authenticate, requirePermission([\u0027pmc.view_producer\u0027]), producersController.list)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  140,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/producers/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_producer\u0027]), producersController.get)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  141,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/producers/\u0027, authenticate, requirePermission([\u0027pmc.add_producer\u0027]), parseMultipart, producersController.create)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  142,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/producers/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_producer\u0027]), parseMultipart, producersController.update)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  143,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/producers/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_producer\u0027]), producersController.remove)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  145,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/consumers/\u0027, authenticate, requirePermission([\u0027pmc.view_consumer\u0027]), consumersController.list)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  146,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/consumers/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_consumer\u0027]), consumersController.get)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  147,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/consumers/\u0027, authenticate, requirePermission([\u0027pmc.add_consumer\u0027]), parseMultipart, consumersController.create)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  148,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/consumers/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_consumer\u0027]), parseMultipart, consumersController.update)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  149,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/consumers/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_consumer\u0027]), consumersController.remove)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  151,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/collectors/\u0027, authenticate, requirePermission([\u0027pmc.view_collector\u0027]), collectorsController.list)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  152,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/collectors/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_collector\u0027]), collectorsController.get)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  153,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/collectors/\u0027, authenticate, requirePermission([\u0027pmc.add_collector\u0027]), parseMultipart, collectorsController.create)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  154,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/collectors/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_collector\u0027]), parseMultipart, collectorsController.update)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  155,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/collectors/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_collector\u0027]), collectorsController.remove)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  157,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/recyclers/\u0027, authenticate, requirePermission([\u0027pmc.view_recycler\u0027]), recyclersController.list)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  158,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/recyclers/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_recycler\u0027]), recyclersController.get)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  159,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/recyclers/\u0027, authenticate, requirePermission([\u0027pmc.add_recycler\u0027]), parseMultipart, recyclersController.create)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  160,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/recyclers/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_recycler\u0027]), parseMultipart, recyclersController.update)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  161,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/recyclers/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_recycler\u0027]), recyclersController.remove)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  163,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/raw-materials/\u0027, authenticate, requirePermission([\u0027pmc.view_rawmaterial\u0027]), rawMaterialsController.list)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  164,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/raw-materials/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_rawmaterial\u0027]), rawMaterialsController.get)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  165,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/raw-materials/\u0027, authenticate, requirePermission([\u0027pmc.add_rawmaterial\u0027]), rawMaterialsController.create)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  166,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/raw-materials/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_rawmaterial\u0027]), rawMaterialsController.update)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  167,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/raw-materials/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_rawmaterial\u0027]), rawMaterialsController.remove)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  170,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/applicant-documents/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdocument\u0027]), listApplicantDocuments)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  171,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/applicant-documents/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdocument\u0027]), getApplicantDocument)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  172,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/applicant-documents/\u0027, authenticate, requirePermission([\u0027pmc.add_applicantdocument\u0027]), ...uploadApplicantDocument)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  173,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/applicant-documents/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_applicantdocument\u0027]), updateApplicantDocument)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  174,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/applicant-documents/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_applicantdocument\u0027]), deleteApplicantDocument)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  175,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  ""
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  182,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/district-documents/\u0027, authenticate, requirePermission([\u0027pmc.view_districtplasticcommitteedocument\u0027]), listDistrictDocuments)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  183,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/district-documents/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_districtplasticcommitteedocument\u0027]), getDistrictDocument)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  184,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/district-documents/\u0027, authenticate, requirePermission([\u0027pmc.add_districtplasticcommitteedocument\u0027]), ...uploadDistrictDocument)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  185,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/district-documents/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_districtplasticcommitteedocument\u0027]), updateDistrictDocument)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  186,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/district-documents/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_districtplasticcommitteedocument\u0027]), deleteDistrictDocument)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  189,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/districts/\u0027, authenticate, requirePermission([\u0027pmc.view_district\u0027]), cacheMiddleware(3600), listDistricts)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  190,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/districts-public\u0027, cacheMiddleware(3600), listDistrictsPublic)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  191,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/tehsils/\u0027, authenticate, requirePermission([\u0027pmc.view_tehsil\u0027]), cacheMiddleware(3600), listTehsils)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  194,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/applicant-location-public/\u0027, applicantLocationPublic)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  197,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/user-groups/\u0027, authenticate, listUserGroups)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  200,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/application-assignment/\u0027, authenticate, requirePermission([\u0027pmc.view_applicationassignment\u0027]), applicationAssignmentController.list)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  201,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/application-assignment/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_applicationassignment\u0027]), applicationAssignmentController.get)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  202,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/application-assignment/by_applicant/\u0027, authenticate, requirePermission([\u0027pmc.view_applicationassignment\u0027]), getApplicationAssignmentByApplicant)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  203,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/application-assignment/\u0027, authenticate, requirePermission([\u0027pmc.add_applicationassignment\u0027]), parseMultipart, createApplicationAssignment)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  204,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/application-assignment/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_applicationassignment\u0027]), parseMultipart, applicationAssignmentController.update)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  207,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/field-responses/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantfieldresponse\u0027]), applicantFieldResponsesController.list)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  208,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/field-responses/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantfieldresponse\u0027]), applicantFieldResponsesController.get)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  209,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/field-responses/\u0027, authenticate, requirePermission([\u0027pmc.add_applicantfieldresponse\u0027]), parseMultipart, applicantFieldResponsesController.create)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  210,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/field-responses/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_applicantfieldresponse\u0027]), parseMultipart, applicantFieldResponsesController.update)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  211,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/field-responses/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_applicantfieldresponse\u0027]), applicantFieldResponsesController.remove)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  213,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/manual-fields/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantmanualfields\u0027]), applicantManualFieldsController.list)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  214,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/manual-fields/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantmanualfields\u0027]), applicantManualFieldsController.get)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  215,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/manual-fields/\u0027, authenticate, requirePermission([\u0027pmc.add_applicantmanualfields\u0027]), parseMultipart, applicantManualFieldsController.create)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  216,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/manual-fields/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_applicantmanualfields\u0027]), parseMultipart, applicantManualFieldsController.update)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  217,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/manual-fields/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_applicantmanualfields\u0027]), applicantManualFieldsController.remove)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  220,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/fetch-statistics-view-groups/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdetail\u0027]), cacheMiddleware(1800), listGroupStats)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  221,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/fetch-statistics-do-view-groups/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdetail\u0027]), cacheMiddleware(1800), listGroupStatsDo)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  223,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/applicant-statistics/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdetail\u0027]), cacheMiddleware(1800), applicantStatistics)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  224,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/mis-applicant-statistics/\u0027, cacheMiddleware(1800), misApplicantStatistics)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  225,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/mis-district-plastic-stats/\u0027, cacheMiddleware(1800), districtPlasticStats)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  227,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/DistrictByLatLon/\u0027, districtByLatLon)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  230,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/applicant-alerts/\u0027, authenticate, applicantAlerts)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  231,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/track-application/\u0027, trackApplication)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  234,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/report/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdetail\u0027]), report)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  235,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/report-fee/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantfee\u0027, \u0027pmc.view_applicantdetail\u0027]), reportFee)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  236,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/export-applicant/\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdetail\u0027]), exportApplicant)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  237,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/psid-report/\u0027, authenticate, requirePermission([\u0027pmc.view_psidtracking\u0027]), psidReport)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  240,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/generate-psid/\u0027, authenticate, requirePermission([\u0027pmc.add_psidtracking\u0027]), generatePsid)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  241,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/check-psid-status/\u0027, authenticate, checkPsidStatus)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  243,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/payment-intimation/\u0027, authenticateUserOrService, paymentIntimation)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  244,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/plmis-token/\u0027, plmisToken)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  245,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/plmis-token/\u0027, plmisToken) // Backward compatibility"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  248,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/generate-license-pdf/\u0027, generateLicensePdf)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  249,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/license-pdf/\u0027, licensePdf)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  250,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/license-by-user/\u0027, authenticate, requirePermission([\u0027pmc.view_license\u0027]), licenseByUser)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  253,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/receipt-pdf/\u0027, authenticate, receiptPdf)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  254,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/chalan-pdf/\u0027, authenticate, chalanPdf)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  255,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/receipt-pdf/\u0027, authenticate, generateReceiptPdf)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  256,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/chalan-pdf/\u0027, authenticate, chalanPdf)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  257,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/verify-chalan-qr/\u0027, authenticate, verifyChalanQr)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  260,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/payment-status/:applicantId\u0027, authenticate, getPaymentStatus)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  261,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/payment-status/:applicantId\u0027, authenticate, recordPayment)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  262,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/check-psid-payment/\u0027, authenticate, checkPsidPaymentStatus)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  263,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/payment-history/:applicantId\u0027, authenticate, getPaymentHistory)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  264,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/license-eligibility/:applicantId\u0027, authenticate, checkLicenseEligibility)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  265,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/verify-payments\u0027, authenticate, verifyMultiplePayments)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  266,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/payment-reminder/:applicantId\u0027, authenticate, sendPaymentReminder)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  267,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/payment-summary\u0027, authenticate, getPaymentSummary)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  270,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/plmis/initiate\u0027, authenticate, requirePermission([\u0027pmc.add_psidtracking\u0027]), plmisUseCases.initiatePlmisPayment)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  271,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/plmis/status/:psidNumber\u0027, authenticate, plmisUseCases.checkPlmisPaymentStatus)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  272,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/plmis/verify\u0027, authenticate, requirePermission([\u0027pmc.change_psidtracking\u0027]), plmisUseCases.verifyPlmisPayment)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  273,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/plmis/receipt/:psidNumber\u0027, authenticate, plmisUseCases.getPlmisReceipt)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  274,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/plmis/cancel/:psidNumber\u0027, authenticate, requirePermission([\u0027pmc.change_psidtracking\u0027]), plmisUseCases.cancelPlmisPayment)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  275,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/plmis/statistics\u0027, authenticate, requirePermission([\u0027pmc.view_psidtracking\u0027]), plmisUseCases.getPlmisStatistics)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  276,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/plmis/health\u0027, authenticate, plmisUseCases.validatePlmisHealth)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  279,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/plmis/webhook/payment-confirmed\u0027, plmisUseCases.plmisPaymentConfirmedWebhook)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  280,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/plmis/webhook/payment-failed\u0027, plmisUseCases.plmisPaymentFailedWebhook)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  283,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/inspection-report/\u0027, authenticate, requirePermission([\u0027pmc.view_inspectionreport\u0027]), listInspectionReports)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  284,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/inspection-report/district_summary/\u0027, authenticate, requirePermission([\u0027pmc.view_inspectionreport\u0027]), districtSummary)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  285,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/inspection-report/export-all-inspections-excel/\u0027, authenticate, requirePermission([\u0027pmc.view_inspectionreport\u0027]), exportAllInspectionsExcel)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  286,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/inspection-report/export-all-inspections-pdf/\u0027, authenticate, requirePermission([\u0027pmc.view_inspectionreport\u0027]), exportAllInspectionsPdf)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  287,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/inspection-report/export-district-summary-excel/\u0027, authenticate, requirePermission([\u0027pmc.view_inspectionreport\u0027]), exportDistrictSummaryExcel)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  288,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/inspection-report/export-district-summary-pdf/\u0027, authenticate, requirePermission([\u0027pmc.view_inspectionreport\u0027]), exportDistrictSummaryPdf)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  289,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/inspection-report/\u0027, authenticate, requirePermission([\u0027pmc.add_inspectionreport\u0027]), ...createInspectionReport)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  290,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/inspection-report/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_inspectionreport\u0027]), getInspectionReport)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  291,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/inspection-report/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_inspectionreport\u0027]), ...updateInspectionReport)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  292,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/inspection-report/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_inspectionreport\u0027]), deleteInspectionReport)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  294,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/inspection-report-cached/\u0027, authenticate, requirePermission([\u0027pmc.view_inspectionreport\u0027]), listCachedInspectionReports)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  295,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/inspection-report-cached/all_other_single_use_plastics/\u0027, authenticate, requirePermission([\u0027pmc.view_singleuseplasticssnapshot\u0027]), allOtherSingleUsePlastics)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  296,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/inspection-report-cached/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_inspectionreport\u0027]), getCachedInspectionReport)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  297,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/inspection-report-cached/\u0027, authenticate, requirePermission([\u0027pmc.add_inspectionreport\u0027]), createCachedInspectionReport)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  298,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/inspection-report-cached/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_inspectionreport\u0027]), updateCachedInspectionReport)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  299,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/inspection-report-cached/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_inspectionreport\u0027]), deleteCachedInspectionReport)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  302,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/competition/\u0027, listCompetitions)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  303,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/competition/register/\u0027, authenticate, requirePermission([\u0027pmc.view_competitionregistration\u0027]), listCompetitionRegistrations)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  304,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/competition/register/:id/\u0027, authenticate, requirePermission([\u0027pmc.view_competitionregistration\u0027]), getCompetitionRegistrationDetails)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  305,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/competition/:competitionId/register/\u0027, registerCompetition)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  306,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/competition/register/\u0027, registerCompetition)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  307,
+        "router":  "pmc",
+        "method":  "PATCH",
+        "raw":  "\u0027/competition/register/:id/\u0027, authenticate, requirePermission([\u0027pmc.change_competitionregistration\u0027]), updateCompetitionRegistration)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  308,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/competition/register/:id/\u0027, authenticate, requirePermission([\u0027pmc.delete_competitionregistration\u0027]), deleteCompetitionRegistration)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  309,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/competition/my/registrations\u0027, authenticate, getMyRegistrations)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  310,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/competition/generate-label/\u0027, generateLabel)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  311,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/competition/courier-label/:registrationId\u0027, authenticate, getCourierLabelPdf)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  312,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/competition/:competitionId/registrations/:registrationId/submit\u0027, authenticate, submitEntry)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  313,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/competition/:id/submit\u0027, authenticate, submitEntry)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  314,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/competition/:competitionId/registrations/:registrationId/generate-label/\u0027, authenticate, generateLabel)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  315,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/competition/:competitionId/registrations/:registrationId/generate-label/\u0027, authenticate, generateLabel)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  316,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/competition/:competitionId/registrations/:registrationId/score\u0027, authenticate, scoreSubmission)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  317,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/competition/:registrationId/score\u0027, authenticate, scoreSubmission)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  318,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/competition/:id\u0027, getCompetition)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  321,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/idm_districts-club-counts/\u0027, districtsClubCounts)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  322,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/idm_clubs_geojson_all/\u0027, clubsGeojsonAll)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  323,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/idm_clubs/all/\u0027, clubsGeojsonAllViewset)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  326,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/ping/\u0027, ping)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  327,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/verify-chalan/\u0027, parseMultipart, verifyChalan)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  328,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/verify-chalan/\u0027, verifyChalan) // Backward compatibility for plain query calls"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  329,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/confiscation-lookup/\u0027, confiscationLookup)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  332,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/media/:folder_name/:file_name/\u0027, downloadMedia)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  333,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/media/:folder_name/:folder_name2/:file_name/\u0027, downloadMedia)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  336,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/export/applicants-payment\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdetail\u0027]), excelExportUseCases.exportApplicantsWithPayment)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  337,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/export/competitions\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdetail\u0027]), excelExportUseCases.exportCompetitionRegistrations)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  338,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/export/payments\u0027, authenticate, requirePermission([\u0027pmc.view_applicantfee\u0027]), excelExportUseCases.exportPaymentTransactions)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  339,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/export/psid-tracking\u0027, authenticate, requirePermission([\u0027pmc.view_psidtracking\u0027]), excelExportUseCases.exportPsidTracking)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  340,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/export/courier-labels\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdetail\u0027]), excelExportUseCases.exportCourierLabels)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  341,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/export/summary-report\u0027, authenticate, requirePermission([\u0027pmc.view_applicantdetail\u0027]), excelExportUseCases.exportSummaryReport)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  344,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/alerts\u0027, authenticate, alertUseCases.getApplicantAlerts)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  345,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/alerts/unread-count\u0027, authenticate, alertUseCases.getUnreadCount)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  346,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/alerts/:alertId([0-9a-fA-F]{24})\u0027, authenticate, alertUseCases.getAlertDetails)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  347,
+        "router":  "pmc",
+        "method":  "PUT",
+        "raw":  "\u0027/alerts/:alertId([0-9a-fA-F]{24})/read\u0027, authenticate, alertUseCases.markAlertAsRead)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  348,
+        "router":  "pmc",
+        "method":  "PUT",
+        "raw":  "\u0027/alerts/mark-read/batch\u0027, authenticate, alertUseCases.markMultipleAsRead)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  349,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/alerts/:alertId([0-9a-fA-F]{24})\u0027, authenticate, alertUseCases.deleteAlert)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  350,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/alerts/preferences\u0027, authenticate, alertUseCases.getNotificationPreferences)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  351,
+        "router":  "pmc",
+        "method":  "PUT",
+        "raw":  "\u0027/alerts/preferences\u0027, authenticate, alertUseCases.updateNotificationPreferences)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  352,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/alerts/test\u0027, authenticate, alertUseCases.sendTestAlert)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  353,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/alerts/statistics\u0027, authenticate, alertUseCases.getAlertStatistics)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  356,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/admin/alerts/create\u0027, authenticate, requirePermission([\u0027pmc.manage_alerts\u0027]), alertUseCases.adminCreateAlert)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  357,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/admin/alerts/all\u0027, authenticate, requirePermission([\u0027pmc.manage_alerts\u0027]), alertUseCases.adminGetAllAlerts)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  360,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/fields/definitions\u0027, authenticate, advancedFieldUseCases.getFieldDefinitions)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  361,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/fields/definitions/:fieldId\u0027, authenticate, advancedFieldUseCases.getFieldDefinition)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  362,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/fields/validate\u0027, authenticate, advancedFieldUseCases.validateFieldValue)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  363,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/fields/responses\u0027, authenticate, advancedFieldUseCases.saveFieldResponses)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  364,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/fields/responses\u0027, authenticate, advancedFieldUseCases.getApplicantResponses)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  365,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/fields/completion-status\u0027, authenticate, advancedFieldUseCases.getCompletionStatus)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  366,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/fields/evaluate-conditions\u0027, authenticate, advancedFieldUseCases.evaluateConditions)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  367,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/fields/audit-log/:fieldId\u0027, authenticate, advancedFieldUseCases.getFieldAuditLog)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  368,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/fields/sections\u0027, authenticate, advancedFieldUseCases.getAllSections)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  369,
+        "router":  "pmc",
+        "method":  "GET",
+        "raw":  "\u0027/fields/sections/:sectionId\u0027, authenticate, advancedFieldUseCases.getSectionWithFields)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  372,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/admin/fields/definitions\u0027, authenticate, requirePermission([\u0027pmc.manage_fields\u0027]), advancedFieldUseCases.adminCreateFieldDefinition)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  373,
+        "router":  "pmc",
+        "method":  "PUT",
+        "raw":  "\u0027/admin/fields/definitions/:fieldId\u0027, authenticate, requirePermission([\u0027pmc.manage_fields\u0027]), advancedFieldUseCases.adminUpdateFieldDefinition)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  374,
+        "router":  "pmc",
+        "method":  "DELETE",
+        "raw":  "\u0027/admin/fields/definitions/:fieldId\u0027, authenticate, requirePermission([\u0027pmc.manage_fields\u0027]), advancedFieldUseCases.adminDeleteFieldDefinition)"
+    },
+    {
+        "file":  "server/src/interfaces/http/routes/pmc.routes.ts",
+        "line":  375,
+        "router":  "pmc",
+        "method":  "POST",
+        "raw":  "\u0027/admin/fields/bulk-update\u0027, authenticate, requirePermission([\u0027pmc.manage_fields\u0027]), advancedFieldUseCases.adminBulkUpdateFields)"
+    },
+    {
+        "file":  "server/src/infrastructure/monitoring/routes.ts",
+        "line":  17,
+        "router":  "monitoring",
+        "method":  "GET",
+        "raw":  "\u0027/metrics\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/monitoring/routes.ts",
+        "line":  27,
+        "router":  "monitoring",
+        "method":  "GET",
+        "raw":  "\u0027/dashboard\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/monitoring/routes.ts",
+        "line":  41,
+        "router":  "monitoring",
+        "method":  "GET",
+        "raw":  "\u0027/health\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/monitoring/routes.ts",
+        "line":  62,
+        "router":  "monitoring",
+        "method":  "GET",
+        "raw":  "\u0027/endpoints\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/monitoring/routes.ts",
+        "line":  80,
+        "router":  "monitoring",
+        "method":  "GET",
+        "raw":  "\u0027/endpoints/:method/*\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/monitoring/routes.ts",
+        "line":  108,
+        "router":  "monitoring",
+        "method":  "GET",
+        "raw":  "\u0027/cache\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/monitoring/routes.ts",
+        "line":  125,
+        "router":  "monitoring",
+        "method":  "GET",
+        "raw":  "\u0027/database\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/monitoring/routes.ts",
+        "line":  144,
+        "router":  "monitoring",
+        "method":  "GET",
+        "raw":  "\u0027/system\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/monitoring/routes.ts",
+        "line":  182,
+        "router":  "monitoring",
+        "method":  "GET",
+        "raw":  "\u0027/report\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/monitoring/routes.ts",
+        "line":  193,
+        "router":  "monitoring",
+        "method":  "GET",
+        "raw":  "\u0027/alerts\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/monitoring/routes.ts",
+        "line":  216,
+        "router":  "monitoring",
+        "method":  "POST",
+        "raw":  "\u0027/reset\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/monitoring/routes.ts",
+        "line":  231,
+        "router":  "monitoring",
+        "method":  "GET",
+        "raw":  "\u0027/summary\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/resilience/routes.ts",
+        "line":  17,
+        "router":  "resilience",
+        "method":  "GET",
+        "raw":  "\u0027/rate-limits\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/resilience/routes.ts",
+        "line":  37,
+        "router":  "resilience",
+        "method":  "GET",
+        "raw":  "\u0027/rate-limits/ip/:ip\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/resilience/routes.ts",
+        "line":  55,
+        "router":  "resilience",
+        "method":  "GET",
+        "raw":  "\u0027/rate-limits/endpoint\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/resilience/routes.ts",
+        "line":  72,
+        "router":  "resilience",
+        "method":  "DELETE",
+        "raw":  "\u0027/rate-limits/reset\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/resilience/routes.ts",
+        "line":  91,
+        "router":  "resilience",
+        "method":  "GET",
+        "raw":  "\u0027/circuit-breakers\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/resilience/routes.ts",
+        "line":  108,
+        "router":  "resilience",
+        "method":  "POST",
+        "raw":  "\u0027/circuit-breakers/:name/reset\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/resilience/routes.ts",
+        "line":  126,
+        "router":  "resilience",
+        "method":  "POST",
+        "raw":  "\u0027/circuit-breakers/reset-all\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/resilience/routes.ts",
+        "line":  142,
+        "router":  "resilience",
+        "method":  "GET",
+        "raw":  "\u0027/resilience/summary\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/resilience/routes.ts",
+        "line":  174,
+        "router":  "resilience",
+        "method":  "GET",
+        "raw":  "\u0027/resilience/health\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/resilience/routes.ts",
+        "line":  197,
+        "router":  "resilience",
+        "method":  "GET",
+        "raw":  "\u0027/resilience/strategies\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/ha/routes.ts",
+        "line":  17,
+        "router":  "ha",
+        "method":  "GET",
+        "raw":  "\u0027/load-balancer/nodes\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/ha/routes.ts",
+        "line":  43,
+        "router":  "ha",
+        "method":  "POST",
+        "raw":  "\u0027/load-balancer/nodes\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/ha/routes.ts",
+        "line":  67,
+        "router":  "ha",
+        "method":  "DELETE",
+        "raw":  "\u0027/load-balancer/nodes/:nodeId\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/ha/routes.ts",
+        "line":  82,
+        "router":  "ha",
+        "method":  "GET",
+        "raw":  "\u0027/service-registry/services\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/ha/routes.ts",
+        "line":  101,
+        "router":  "ha",
+        "method":  "GET",
+        "raw":  "\u0027/service-registry/services/:serviceName\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/ha/routes.ts",
+        "line":  130,
+        "router":  "ha",
+        "method":  "POST",
+        "raw":  "\u0027/service-registry/register\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/ha/routes.ts",
+        "line":  161,
+        "router":  "ha",
+        "method":  "DELETE",
+        "raw":  "\u0027/service-registry/deregister/:serviceName/:instanceId\u0027, (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/ha/routes.ts",
+        "line":  176,
+        "router":  "ha",
+        "method":  "POST",
+        "raw":  ""
+    },
+    {
+        "file":  "server/src/infrastructure/ha/routes.ts",
+        "line":  202,
+        "router":  "ha",
+        "method":  "GET",
+        "raw":  "\u0027/health-checks\u0027, async (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/ha/routes.ts",
+        "line":  220,
+        "router":  "ha",
+        "method":  "POST",
+        "raw":  "\u0027/health-checks/run\u0027, async (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/ha/routes.ts",
+        "line":  234,
+        "router":  "ha",
+        "method":  "GET",
+        "raw":  "\u0027/ha/status\u0027, async (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/ha/routes.ts",
+        "line":  271,
+        "router":  "ha",
+        "method":  "GET",
+        "raw":  "\u0027/ha/readiness\u0027, async (req: Request, res: Response) =\u003e {"
+    },
+    {
+        "file":  "server/src/infrastructure/ha/routes.ts",
+        "line":  291,
+        "router":  "ha",
+        "method":  "GET",
+        "raw":  "\u0027/ha/liveness\u0027, (req: Request, res: Response) =\u003e {"
+    }
+]

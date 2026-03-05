@@ -49,7 +49,6 @@ export const API_COLLECTION_ALLOW_LIST = [
   'Recycler',
   'ServiceConfiguration',
   'SingleUsePlasticsSnapshot',
-  'SocialAccount',
   'SystemConfig',
   'Tehsil',
   'User',

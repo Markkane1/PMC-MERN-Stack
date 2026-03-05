@@ -14,15 +14,6 @@ export interface UserRepository {
   deleteById(id: string): Promise<void>
 }
 
-export interface SocialAccountRepository {
-  findById(id: string): Promise<any | null>
-  findByProviderAndId(provider: string, providerId: string): Promise<any | null>
-  findByUserId(userId: string): Promise<any[]>
-  create(account: any): Promise<any>
-  updateById(id: string, updates: any): Promise<any | null>
-  deleteById(id: string): Promise<void>
-}
-
 export interface UserProfileRepository {
   findByUserId(userId: string): Promise<UserProfile | null>
   listByUserIds(userIds: string[]): Promise<UserProfile[]>

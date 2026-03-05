@@ -1,5 +1,5 @@
-import type { UserRepository, UserProfileRepository, GroupRepository, PermissionRepository, UserAuditLogRepository, SocialAccountRepository } from '../../../../domain/repositories/accounts'
-import { UserModel, SocialAccountModel } from '../../models/accounts/User'
+import type { UserRepository, UserProfileRepository, GroupRepository, PermissionRepository, UserAuditLogRepository } from '../../../../domain/repositories/accounts'
+import { UserModel } from '../../models/accounts/User'
 import { UserProfileModel } from '../../models/accounts/UserProfile'
 import { GroupModel } from '../../models/accounts/Group'
 import { PermissionModel } from '../../models/accounts/Permission'
@@ -301,105 +301,5 @@ export const userAuditLogRepositoryMongo: UserAuditLogRepository = {
       createdAt: (created as any).createdAt,
       updatedAt: (created as any).updatedAt,
     }
-  },
-}
-
-export const socialAccountRepositoryMongo: SocialAccountRepository = {
-  async findById(id: string) {
-    const account = await SocialAccountModel.findById(id).lean()
-    return account
-      ? {
-          id: account._id.toString(),
-          userId: account.userId.toString(),
-          provider: account.provider,
-          providerId: account.providerId,
-          email: account.email,
-          name: account.name,
-          avatar: account.avatar,
-          raw: account.raw,
-          createdAt: (account as any).createdAt,
-          updatedAt: (account as any).updatedAt,
-        }
-      : null
-  },
-
-  async findByProviderAndId(provider: string, providerId: string) {
-    const account = await SocialAccountModel.findOne({ provider, providerId }).lean()
-    return account
-      ? {
-          id: account._id.toString(),
-          userId: account.userId.toString(),
-          provider: account.provider,
-          providerId: account.providerId,
-          email: account.email,
-          name: account.name,
-          avatar: account.avatar,
-          raw: account.raw,
-          createdAt: (account as any).createdAt,
-          updatedAt: (account as any).updatedAt,
-        }
-      : null
-  },
-
-  async findByUserId(userId: string) {
-    const accounts = await SocialAccountModel.find({ userId }).lean()
-    return accounts.map((account) => ({
-      id: account._id.toString(),
-      userId: account.userId.toString(),
-      provider: account.provider,
-      providerId: account.providerId,
-      email: account.email,
-      name: account.name,
-      avatar: account.avatar,
-      raw: account.raw,
-      createdAt: (account as any).createdAt,
-      updatedAt: (account as any).updatedAt,
-    }))
-  },
-
-  async create(account: any) {
-    const created = await SocialAccountModel.create({
-      userId: account.userId,
-      provider: account.provider,
-      providerId: account.providerId,
-      email: account.email,
-      name: account.name,
-      avatar: account.avatar,
-      raw: account.raw,
-    })
-    return {
-      id: created._id.toString(),
-      userId: created.userId.toString(),
-      provider: created.provider,
-      providerId: created.providerId,
-      email: created.email,
-      name: created.name,
-      avatar: created.avatar,
-      raw: created.raw,
-      createdAt: (created as any).createdAt,
-      updatedAt: (created as any).updatedAt,
-    }
-  },
-
-  async updateById(id: string, updates: any) {
-    const updated = await SocialAccountModel.findByIdAndUpdate(id, updates, { new: true }).lean()
-    return updated
-      ? {
-          id: updated._id.toString(),
-          userId: updated.userId.toString(),
-          provider: updated.provider,
-          providerId: updated.providerId,
-          email: updated.email,
-          name: updated.name,
-          avatar: updated.avatar,
-          raw: updated.raw,
-          createdAt: (updated as any).createdAt,
-          updatedAt: (updated as any).updatedAt,
-        }
-      : null
-  },
-
-  async deleteById(id: string) {
-    await SocialAccountModel.deleteOne({ _id: id })
   },
 }

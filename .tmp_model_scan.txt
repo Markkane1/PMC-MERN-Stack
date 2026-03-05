@@ -1,0 +1,761 @@
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\accounts\Group.ts
+- sourceId?: number
+- name: string
+- permissions: string[]
+- createdAt: Date
+- updatedAt: Date
+- _metadata_: required=true x1, unique=true x1, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\accounts\Permission.ts
+- sourceId?: number
+- name: string
+- codename: string
+- appLabel?: string
+- modelName?: string
+- contentTypeId?: number
+- permissionKey: string
+- createdAt: Date
+- updatedAt: Date
+- _metadata_: required=true x3, unique=true x1, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\accounts\User.ts
+- username: string
+- email?: string
+- passwordHash: string
+- firstName?: string
+- lastName?: string
+- avatar?: string
+- sourceId?: number
+- groups: string[]
+- directPermissions?: string[]
+- permissions?: string[]
+- isActive: boolean
+- isSuperadmin?: boolean
+- createdAt: Date
+- updatedAt: Date
+- _metadata_: required=true x2, unique=true x1, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\accounts\UserAuditLog.ts
+- sourceId?: number
+- userId?: number
+- username?: string
+- firstName?: string
+- lastName?: string
+- email?: string
+- isActive?: boolean
+- isStaff?: boolean
+- isSuperuser?: boolean
+- dateJoined?: Date
+- lastLogin?: Date
+- changeReason?: string
+- historyDate?: Date
+- historyType?: string
+- raw?: Record<string, unknown>
+- createdAt: Date
+- updatedAt: Date
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\accounts\UserProfile.ts
+- userId: mongoose.Types.ObjectId
+- districtId?: number
+- districtName?: string
+- districtShortName?: string
+- _metadata_: required=true x1, unique=true x1, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\common\AccessLog.ts
+- legacyId?: number
+- userId?: mongoose.Types.ObjectId
+- username?: string
+- modelName?: string
+- objectId?: string
+- method?: string
+- ipAddress?: string
+- endpoint?: string
+- timestamp?: Date
+- createdAt: Date
+- updatedAt: Date
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\common\ApiLog.ts
+- legacyId?: number
+- serviceName: string
+- endpoint: string
+- requestData?: Record<string, unknown>
+- responseData?: Record<string, unknown>
+- statusCode?: number
+- createdAt: Date
+- updatedAt: Date
+- _metadata_: required=true x2, unique=true x0, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\common\AuditLog.ts
+- legacyId?: number
+- userId?: mongoose.Types.ObjectId
+- username?: string
+- action: string
+- modelName?: string
+- objectId?: string
+- description?: string
+- ipAddress?: string
+- timestamp?: Date
+- createdAt: Date
+- updatedAt: Date
+- _metadata_: required=true x1, unique=true x0, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\common\ExternalServiceToken.ts
+- legacyId?: number
+- serviceName: string
+- accessToken: string
+- expiresAt: Date
+- createdAt: Date
+- updatedAt: Date
+- _metadata_: required=true x3, unique=true x0, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\common\ServiceConfiguration.ts
+- legacyId?: number
+- serviceName: string
+- baseUrl?: string
+- authEndpoint?: string
+- generatePsidEndpoint?: string
+- transactionStatusEndpoint?: string
+- clientId?: string
+- clientSecret?: string
+- createdAt: Date
+- updatedAt: Date
+- _metadata_: required=true x1, unique=true x1, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\common\SystemConfig.ts
+- key: string
+- value: Record<string, unknown>
+- createdAt: Date
+- updatedAt: Date
+- _metadata_: required=true x1, unique=true x1, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\idm\DistrictNew.ts
+- name?: string
+- shortName?: string
+- divisionName?: string
+- districtId?: number
+- divisionId?: number
+- extent?: string
+- geom?: Record<string, unknown>
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\idm\EecClub.ts
+- emisCode?: number
+- schoolName?: string
+- address?: string
+- headName?: string
+- headMobile?: string
+- gender?: string
+- educationLevel?: string
+- latitude?: number
+- longitude?: number
+- addedBy?: string
+- districtId?: mongoose.Types.ObjectId
+- districtName?: string
+- createdBy?: mongoose.Types.ObjectId
+- notificationPath?: string
+- geom?: Record<string, unknown>
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\AdvancedFieldResponse.ts
+- _metadata_: required=true x12, unique=true x2, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\Alert.ts
+- _metadata_: required=true x13, unique=true x2, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\ApplicantAlert.ts
+- numericId: number
+- applicantId: number | string
+- businessId?: number | string
+- alertType: AlertType
+- category: AlertCategory
+- title: string
+- description: string
+- priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
+- status: AlertStatus
+- source?: {
+- type: 'SYSTEM' | 'MANUAL' | 'SCHEDULED'
+- triggeredBy?: number | string
+- automationRule?: string
+- relatedEntity?: {
+- entityType: 'DOCUMENT' | 'BUSINESS_PROFILE' | 'INSPECTION' | 'ASSIGNMENT' | 'APPLICATION'
+- entityId: string
+- entityName?: string
+- recipients: AlertRecipient[]
+- dueDate?: Date
+- resolvedDate?: Date
+- resolutionNotes?: string
+- resolutionReason?: string
+- repeating?: {
+- enabled: boolean
+- frequency?: 'DAILY' | 'WEEKLY' | 'MONTHLY'
+- endDate?: Date
+- nextOccurrence?: Date
+- internalNotes?: string
+- attachments?: string[]
+- tags?: string[]
+- escalatedTo?: {
+- userId: number | string
+- name?: string
+- escalatedAt: Date
+- escalationReason: string
+- isActive: boolean
+- isArchived?: boolean
+- createdAt: Date
+- updatedAt: Date
+- createdBy: number | string
+- updatedBy: number | string
+- _metadata_: required=true x8, unique=true x1, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\ApplicantDetail.ts
+- numericId: number
+- registrationFor?: string
+- firstName: string
+- lastName?: string
+- applicantDesignation?: string
+- gender?: string
+- cnic?: string
+- email?: string
+- mobileOperator?: string
+- mobileNo?: string
+- applicationStatus?: string
+- trackingNumber?: string
+- remarks?: string
+- createdBy?: mongoose.Types.ObjectId
+- assignedGroup?: string
+- trackingHash?: string
+- createdAt: Date
+- updatedAt: Date
+- _metadata_: required=true x1, unique=true x1, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\ApplicantDocument.ts
+- numericId: number
+- applicantId: number
+- applicantIdString?: string // For UUID references if needed
+- documentType: DocumentType | string
+- fileUrl: string
+- fileName: string
+- fileSize: number // in bytes
+- mimeType: string
+- uploadDate: Date
+- expiryDate?: Date
+- status: DocumentStatus | string
+- documentPath?: string // Legacy field
+- documentDescription?: string // Legacy field
+- verifiedBy?: mongoose.Types.ObjectId
+- verificationDate?: Date
+- rejectionReason?: string
+- notes?: string
+- isActive: boolean
+- tags?: string[]
+- metadata?: {
+- uploadedFrom?: 'web' | 'mobile' | 'api'
+- ipAddress?: string
+- userAgent?: string
+- deviceInfo?: string
+- versioning?: {
+- version: number
+- previousVersionUrl?: string
+- changeReason?: string
+- changedBy?: mongoose.Types.ObjectId
+- changedAt?: Date
+- createdBy?: mongoose.Types.ObjectId
+- updatedBy?: mongoose.Types.ObjectId
+- _metadata_: required=true x6, unique=true x1, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\ApplicantFee.ts
+- applicantId: number
+- feeAmount: number
+- isSettled?: boolean
+- reason?: string
+- _metadata_: required=true x2, unique=true x0, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\ApplicantFieldResponse.ts
+- numericId: number
+- applicantId: number
+- fieldKey: string
+- response?: string
+- comment?: string
+- createdBy?: mongoose.Types.ObjectId
+- _metadata_: required=true x2, unique=true x1, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\ApplicantManualFields.ts
+- numericId: number
+- applicantId: number
+- latitude?: number
+- longitude?: number
+- listOfProducts?: string
+- listOfByProducts?: string
+- rawMaterialImported?: string
+- sellerNameIfRawMaterialBought?: string
+- selfImportDetails?: string
+- rawMaterialUtilized?: string
+- complianceThickness75?: string
+- validConsentPermitBuildingBylaws?: string
+- stockistDistributorList?: string
+- procurementPerDay?: string
+- noOfWorkers?: number
+- laborDeptRegistrationStatus?: string
+- occupationalSafetyAndHealthFacilities?: string
+- adverseEnvironmentalImpacts?: string
+- createdBy?: mongoose.Types.ObjectId
+- updatedBy?: mongoose.Types.ObjectId
+- _metadata_: required=true x1, unique=true x2, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\ApplicationAssignment.ts
+- numericId: number
+- applicantId: number | string
+- businessId: number | string
+- assignedToUserId: number | string
+- assignedToName?: string
+- assignedToEmail?: string
+- assignmentType: 'INSPECTION' | 'VERIFICATION' | 'APPROVAL' | 'PROCESSING'
+- status: AssignmentStatus
+- priority: AssignmentPriority
+- dueDate: Date
+- assignmentDate: Date
+- completionDate?: Date
+- notes?: string
+- instructions?: string
+- attachments?: string[]
+- previousAssignee?: {
+- userId: number | string
+- name: string
+- completionDate: Date
+- reason: string
+- escalationLevel: number
+- escalatedOn?: Date
+- escalationReason?: string
+- performanceMetrics?: {
+- averageCompletionTime: number
+- completionRate: number
+- qualityScore: number
+- isActive: boolean
+- createdAt: Date
+- updatedAt: Date
+- createdBy: number | string
+- updatedBy: number | string
+- _metadata_: required=true x7, unique=true x1, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\ApplicationSubmitted.ts
+- applicantId: number
+- _metadata_: required=true x1, unique=true x1, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\BusinessProfile.ts
+- numericId: number
+- applicantId: number | string
+- applicantIdString?: string
+- businessName: string
+- entityType: EntityType | string
+- businessSize?: BusinessSize | string
+- trackingNumber?: string
+- status: BusinessStatus | string
+- ownerName?: string
+- ownerCNIC?: string
+- ownerEmail?: string
+- ownerMobile?: string
+- contactPerson?: {
+- name?: string
+- designation?: string
+- phone?: string
+- email?: string
+- mobile?: string
+- email?: string
+- mobileOperator?: string
+- mobileNo?: string
+- phoneNo?: string
+- websiteAddress?: string
+- location?: {
+- address?: string
+- cityTown?: string
+- village?: string
+- postalCode?: string
+- districtId?: number
+- districtName?: string
+- tehsilId?: number
+- tehsilName?: string
+- latitude?: number
+- longitude?: number
+- operationalDetails?: {
+- operationalSince?: Date
+- commencementDate?: Date
+- workingDays?: number
+- noOfWorkers?: number
+- productionCapacity?: number
+- consumptionCapacity?: number
+- collectionArea?: string
+- recyclingCapacity?: number
+- facilitySize?: string
+- environmentalCompliance?: {
+- wasteManagementPlan?: boolean
+- wasteManagementPlanUrl?: string
+- efflunetTreatment?: boolean
+- efflunetTreatmentUrl?: string
+- pollutionControlCert?: string
+- registration?: {
+- registrationType?: RegistrationType | string
+- registrationNumber?: string
+- registrationDate?: Date
+- ntnNumber?: string
+- strnNumber?: string
+- seraiNumber?: string
+- businessLicense?: string
+- licenseExpiryDate?: Date
+- certifications?: {
+- name?: string
+- issuedBy?: string
+- issuedDate?: Date
+- expiryDate?: Date
+- certificateUrl?: string
+- financialInfo?: {
+- yearlyRevenue?: number
+- bankName?: string
+- accountHolder?: string
+- accountNumber?: string
+- ifscCode?: string
+- bankBranch?: string
+- description?: string
+- tags?: string[]
+- remarks?: string
+- isActive: boolean
+- verifiedBy?: mongoose.Types.ObjectId
+- verificationDate?: Date
+- rejectionReason?: string
+- ntnStrnPraNoIndividual?: string
+- ntnStrnPraNoCompany?: string
+- businessRegistrationType?: string
+- businessRegistrationNo?: string
+- districtId?: number
+- tehsilId?: number
+- cityTownVillage?: string
+- postalAddress?: string
+- postalCode?: string
+- locationLatitude?: number
+- locationLongitude?: number
+- workingDays?: number
+- commencementDate?: Date
+- noOfWorkers?: number
+- name?: string // Legacy
+- updatedBy?: mongoose.Types.ObjectId
+- createdBy?: mongoose.Types.ObjectId
+- _metadata_: required=true x2, unique=true x1, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\ByProduct.ts
+- numericId: number
+- businessId: number | string
+- businessIdString?: string
+- code?: string
+- name: string
+- productName?: string // Legacy
+- description?: string
+- category?: string
+- quantity?: number
+- unit?: string
+- disposalMethod?: string
+- disposalCost?: number
+- environmentalImpact?: string
+- harmfulSubstances?: string[]
+- hazardLevel?: HazardLevel | string
+- recommendations?: string
+- notes?: string
+- tags?: string[]
+- isActive: boolean
+- createdBy?: mongoose.Types.ObjectId
+- updatedBy?: mongoose.Types.ObjectId
+- _metadata_: required=true x2, unique=true x1, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\Collector.ts
+- numericId: number
+- applicantId: number
+- registrationRequiredFor?: any
+- registrationRequiredForOther?: any
+- selectedCategories?: any
+- totalCapacityValue?: number
+- numberOfVehicles?: number
+- numberOfPersons?: number
+- registrationRequiredForOtherOtherText?: string
+- updatedBy?: mongoose.Types.ObjectId
+- createdBy?: mongoose.Types.ObjectId
+- _metadata_: required=true x1, unique=true x2, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\CompetitionRegistration.ts
+- fullName: string
+- institute: string
+- grade: string
+- category: string
+- competitionType: string
+- mobile: string
+- studentCardFrontPath?: string
+- studentCardBackPath?: string
+- photoObjectPath?: string
+- registrationId: string
+- createdBy?: mongoose.Types.ObjectId
+- _metadata_: required=true x6, unique=true x1, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\Consumer.ts
+- numericId: number
+- applicantId: number
+- registrationRequiredFor?: any
+- registrationRequiredForOther?: any
+- plainPlasticSheetsForFoodWrapping?: any
+- packagingItems?: any
+- consumption?: string
+- provisionWasteDisposalBins?: string
+- noOfWasteDisposableBins?: number
+- segregatedPlasticsHandedOverToRegisteredRecyclers?: string
+- updatedBy?: mongoose.Types.ObjectId
+- createdBy?: mongoose.Types.ObjectId
+- registrationRequiredForOtherOtherText?: string
+- _metadata_: required=true x1, unique=true x2, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\Counter.ts
+- name: string
+- seq: number
+- _metadata_: required=true x1, unique=true x1, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\District.ts
+- districtId: number
+- divisionId: number
+- districtName: string
+- districtCode: string
+- shortName?: string
+- pitbDistrictId?: number
+- geom?: Record<string, unknown>
+- _metadata_: required=true x4, unique=true x1, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\DistrictPlasticCommitteeDocument.ts
+- numericId: number
+- districtId: number
+- documentType: string
+- title?: string
+- documentPath: string
+- uploadedBy?: mongoose.Types.ObjectId
+- documentDate?: Date
+- _metadata_: required=true x3, unique=true x1, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\Division.ts
+- divisionId: number
+- divisionName: string
+- divisionCode: string
+- _metadata_: required=true x3, unique=true x1, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\InspectionReport.ts
+- numericId: number
+- inspectorId: number | string
+- inspectorName?: string
+- applicantId: number | string
+- businessId: number | string
+- assignmentId?: string
+- inspectionType: InspectionType
+- status: InspectionStatus
+- scheduledDate?: Date
+- actualDate: Date
+- duration?: number
+- location?: {
+- name?: string
+- address?: string
+- coordinates?: {
+- latitude: number
+- longitude: number
+- findings: InspectionFinding[]
+- overallCompliance: number
+- overallRecommendation: 'APPROVE' | 'CONDITIONAL_APPROVAL' | 'REJECT' | 'FURTHER_INSPECTION'
+- violationsFound: boolean
+- criticalIssues: number
+- majorIssues: number
+- minorIssues: number
+- photosAttached: number
+- reportsAttached: string[]
+- observations?: string
+- nextSteps?: string
+- followUpRequired: boolean
+- followUpDate?: Date
+- followUpType?: InspectionType
+- inspectorSignature?: string
+- supervisorReview?: {
+- reviewedBy: number | string
+- reviewDate: Date
+- comments?: string
+- approved: boolean
+- isActive: boolean
+- createdAt: Date
+- updatedAt: Date
+- createdBy: number | string
+- updatedBy: number | string
+- businessName?: string
+- businessType?: string
+- licenseNumber?: string
+- plasticBagsConfiscation?: number
+- totalConfiscation?: number
+- latitude?: number
+- longitude?: number
+- inspectionDate?: Date
+- fineAmount?: number
+- districtId?: number
+- _metadata_: required=true x8, unique=true x1, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\License.ts
+- licenseFor?: string
+- licenseNumber: string
+- licenseDuration?: string
+- ownerName?: string
+- businessName?: string
+- typesOfPlastics?: string
+- particulars?: string
+- feeAmount?: number
+- address?: string
+- dateOfIssue?: Date
+- applicantId?: number
+- isActive?: boolean
+- createdBy?: mongoose.Types.ObjectId
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\PlasticItem.ts
+- numericId: number
+- code: string
+- itemName?: string // Legacy field
+- name: string
+- category: PlasticCategory | string
+- description?: string
+- hsnCode?: string
+- unit: MeasurementUnit | string
+- density?: number
+- recyclingRate?: number
+- hazardousLevel: HazardLevel | string
+- specifications?: Record<string, any>
+- notes?: string
+- tags?: string[]
+- isActive: boolean
+- createdBy?: mongoose.Types.ObjectId
+- updatedBy?: mongoose.Types.ObjectId
+- _metadata_: required=true x4, unique=true x2, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\Producer.ts
+- numericId: number
+- applicantId: number
+- trackingNumber?: string
+- registrationRequiredFor?: any
+- registrationRequiredForOther?: any
+- plainPlasticSheetsForFoodWrapping?: any
+- packagingItems?: any
+- numberOfMachines?: string
+- totalCapacityValue?: number
+- dateOfSettingUp?: Date
+- totalWasteGeneratedValue?: number
+- hasWasteStorageCapacity?: string
+- wasteDisposalProvision?: string
+- registrationRequiredForOtherOtherText?: string
+- createdBy?: mongoose.Types.ObjectId
+- _metadata_: required=true x1, unique=true x2, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\Product.ts
+- numericId: number
+- businessId: number | string
+- businessIdString?: string
+- plasticItemId: mongoose.Types.ObjectId | string
+- productName?: string // Legacy
+- name?: string
+- description?: string
+- quantity: number
+- unit: string
+- yearlyProduction?: number
+- yearlyConsumption?: number
+- storageLocation?: string
+- qualityStandard?: string
+- certifications?: string[]
+- specifications?: Record<string, any>
+- notes?: string
+- tags?: string[]
+- isActive: boolean
+- createdBy?: mongoose.Types.ObjectId
+- updatedBy?: mongoose.Types.ObjectId
+- _metadata_: required=true x4, unique=true x1, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\PSIDTracking.ts
+- applicantId?: number
+- deptTransactionId: string
+- dueDate?: Date
+- expiryDate?: Date
+- amountWithinDueDate?: number
+- amountAfterDueDate?: number
+- consumerName?: string
+- mobileNo?: string
+- cnic?: string
+- email?: string
+- districtId?: number
+- amountBifurcation?: any
+- consumerNumber?: string
+- status?: string
+- message?: string
+- paymentStatus?: string
+- amountPaid?: number
+- paidDate?: Date
+- paidTime?: string
+- bankCode?: string
+- createdBy?: mongoose.Types.ObjectId
+- _metadata_: required=true x1, unique=true x0, pre hooks x0, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\RawMaterial.ts
+- numericId: number
+- businessId: number | string
+- businessIdString?: string
+- code?: string
+- name: string
+- category?: string
+- description?: string
+- source?: string
+- sourceType?: 'SUPPLIER' | 'WASTE' | 'RECYCLED' | 'VIRGIN'
+- quantity: number
+- unit: string
+- cost?: number
+- totalCost?: number
+- supplier?: string
+- supplierContact?: string
+- supplierEmail?: string
+- supplierPhone?: string
+- purchaseDate?: Date
+- deliveryDate?: Date
+- qualityGrade?: string
+- purityLevel?: number
+- contaminants?: string[]
+- testCertificate?: string
+- storageLocation?: string
+- storageConditions?: string
+- expiryDate?: Date
+- specifications?: Record<string, any>
+- notes?: string
+- tags?: string[]
+- isActive: boolean
+- producerId?: mongoose.Types.ObjectId
+- materialName?: string
+- materialDescription?: string
+- materialQuantityValue?: number
+- materialQuantityUnit?: number
+- materialUtilizedQuantityValue?: number
+- materialUtilizedQuantityUnit?: number
+- materialImportBought?: string
+- nameSellerImporter?: string
+- isImporterFormFilled?: boolean
+- createdBy?: mongoose.Types.ObjectId
+- updatedBy?: mongoose.Types.ObjectId
+- _metadata_: required=true x4, unique=true x1, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\Recycler.ts
+- numericId: number
+- applicantId: number
+- selectedCategories?: any
+- plasticWasteAcquiredThrough?: any
+- hasAdequatePollutionControlSystems?: string
+- pollutionControlDetails?: string
+- registrationRequiredForOtherOtherText?: string
+- updatedBy?: mongoose.Types.ObjectId
+- createdBy?: mongoose.Types.ObjectId
+- _metadata_: required=true x1, unique=true x2, pre hooks x1, post hooks x0
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\SingleUsePlasticsSnapshot.ts
+- plasticItems: string[]
+
+### D:\web temps\PMC Working Project\PMC Mernstack\server\src\infrastructure\database\models\pmc\Tehsil.ts
+- tehsilId: number
+- districtId: number
+- divisionId: number
+- tehsilName: string
+- tehsilCode: string
+- _metadata_: required=true x5, unique=true x1, pre hooks x0, post hooks x0
+

@@ -16,17 +16,6 @@ export type User = Timestamped & {
   isSuperadmin?: boolean
 }
 
-export type SocialAccount = Timestamped & {
-  id?: Id
-  userId: Id
-  provider: 'google' | 'github'
-  providerId: string
-  email?: string
-  name?: string
-  avatar?: string
-  raw?: Record<string, unknown>
-}
-
 export type UserProfile = Timestamped & {
   id?: Id
   userId?: Id
