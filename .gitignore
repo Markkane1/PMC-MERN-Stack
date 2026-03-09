@@ -36,6 +36,9 @@ s9-*.json
 zap-report.html
 /docs/temp/
 
+# Local documentation and generated reports
+docs/
+
 # OS / IDE
 .DS_Store
 Thumbs.db
