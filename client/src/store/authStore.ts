@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { User } from '@/@types/auth'
+import { logger } from '@/utils/logger'
 import AxiosBase from '../services/axios/AxiosBase'
 import {
     clearAccessToken,
@@ -101,7 +102,7 @@ export const useSessionUser = create<AuthState & AuthAction>()(
                     }))
                 }
             } catch (error) {
-                console.error('Error fetching user groups:', error)
+                logger.error('Error fetching user groups:', error)
                 set((state) => ({
                     user: {
                         ...state.user,
@@ -130,7 +131,7 @@ export const useSessionUser = create<AuthState & AuthAction>()(
                     }))
                 }
             } catch (error) {
-                console.error('Error fetching role dashboard map:', error)
+                logger.error('Error fetching role dashboard map:', error)
             }
         },
     }),

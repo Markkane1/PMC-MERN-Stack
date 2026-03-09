@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useExcelExportAPI } from '../../api/pmc'
+import { logger } from '@/utils/logger'
 
 interface ExportOption {
   id: string
@@ -99,7 +100,7 @@ export const ExcelExportPanel: React.FC = () => {
         }, 3000)
       }
     } catch (err) {
-      console.error(`Failed to export ${exportType}:`, err)
+      logger.error(`Failed to export ${exportType}:`, err)
     } finally {
       setDownloadProgress({ ...downloadProgress, [exportType]: false })
     }

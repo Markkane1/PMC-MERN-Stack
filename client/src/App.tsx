@@ -7,6 +7,7 @@ import Views from '@/views'
 import appConfig from './configs/app.config'
 import './locales'
 import InstallPWA from './InstallPWA'
+import { bindInspectionStoreOnlineSyncListener } from '@/store/supid/useInspectionStore'
 
 if (appConfig.enableMock) {
     import('./mock')
@@ -29,6 +30,10 @@ function App() {
                 'beforeinstallprompt',
                 handleBeforeInstallPrompt,
             )
+    }, [])
+
+    useEffect(() => {
+        return bindInspectionStoreOnlineSyncListener()
     }, [])
 
     return (

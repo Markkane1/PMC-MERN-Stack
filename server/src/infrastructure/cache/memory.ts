@@ -21,7 +21,7 @@ const cache = new Map<string, CacheEntry>()
 /**
  * Cleanup expired entries periodically
  */
-setInterval(() => {
+const cleanupTimer = setInterval(() => {
   const now = Date.now()
   let cleaned = 0
 
@@ -36,6 +36,9 @@ setInterval(() => {
     console.log(`[Cache] Cleaned ${cleaned} expired entries`)
   }
 }, 60000) // Run every minute
+
+// Allow Node.js process (and test runners) to exit without waiting for this interval.
+cleanupTimer.unref?.()
 
 /**
  * Get value from cache

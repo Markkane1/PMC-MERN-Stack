@@ -15,6 +15,7 @@ import type { ZodType } from 'zod'
 import type { CommonProps } from '@/@types/common'
 import type { LicenseDetailFormSchema } from './types'
 import useFormStore from '../../../store/supid/supidStore'
+import { logger } from '@/utils/logger'
 
 type CustomerFormProps = {
     onFormSubmit: (values: LicenseDetailFormSchema) => void
@@ -64,7 +65,7 @@ const validationLicenseDetailFieldsConsumerSchema: ZodType<LicenseDetailFormSche
         .refine(
             (data) => {
                 // If there's NO existingFileId, then a new file is mandatory
-                console.log(data.registration_required_for)
+                logger.debug(data.registration_required_for)
                 if (
                     data.registration_required_for?.length === 0 &&
                     data.registration_required_for_other?.length === 0
@@ -122,7 +123,7 @@ const validationLicenseDetailFieldsCollectorSchema: ZodType<LicenseDetailFormSch
         .refine(
             (data) => {
                 // If there's NO existingFileId, then a new file is mandatory
-                console.log(data.registration_required_for)
+                logger.debug(data.registration_required_for)
                 if (
                     data.registration_required_for?.length === 0 &&
                     data.registration_required_for_other?.length === 0
@@ -229,7 +230,7 @@ const validationLicenseDetailFieldsProducerSchema: ZodType<LicenseDetailFormSche
         .refine(
             (data) => {
                 // If there's NO existingFileId, then a new file is mandatory
-                console.log(data.registration_required_for)
+                logger.debug(data.registration_required_for)
                 if (
                     data.registration_required_for?.length === 0 &&
                     data.registration_required_for_other?.length === 0
@@ -301,7 +302,7 @@ const LicenseDetailForm = (props: CustomerFormProps) => {
         getValuesFromStateBusinessEntity,
         markSectionAsCompleted,
     } = useFormStore()
-    console.log(completedSections)
+    logger.debug(completedSections)
     const {
         onFormSubmit,
         defaultValues = {},
@@ -340,12 +341,12 @@ const LicenseDetailForm = (props: CustomerFormProps) => {
         if (!isEmpty(defaultValues)) {
             reset(defaultValues)
         }
-        console.log('its in useEffect')
+        logger.debug('its in useEffect')
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(defaultValues)])
 
     const onSubmit = (values: LicenseDetailFormSchema) => {
-        console.log('its here k1')
+        logger.debug('its here k1')
         onFormSubmit?.(values)
     }
 

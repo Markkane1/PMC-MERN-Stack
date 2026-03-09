@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSessionUser } from '@/store/authStore'
 import TablerIcon from '@/components/shared/TablerIcon'
 import { getDashboardRoute } from '@/utils/roleRoute'
+import { logger } from '@/utils/logger'
 
 // Utility function to flatten nested objects and handle null values
 // Utility function to flatten nested objects and handle remarks
@@ -324,7 +325,7 @@ const Home = () => {
                     )
                 }
             } catch (error) {
-                console.error('Error fetching data:', error)
+                logger.error('Error fetching data:', error)
             } finally {
                 setLoading(false) // Hide the loading spinner
             }
@@ -358,7 +359,7 @@ const Home = () => {
             link.click()
             document.body.removeChild(link)
         } catch (error) {
-            console.error('Export failed:', error)
+            logger.error('Export failed:', error)
         }
     }
     return (

@@ -10,6 +10,7 @@ import { z } from 'zod'
 import type { ZodType } from 'zod'
 import type { CommonProps } from '@/@types/common'
 import type { ApplicantDetailFormSchema } from './types'
+import { logger } from '@/utils/logger'
 
 type CustomerFormProps = {
     onFormSubmit: (values: ApplicantDetailFormSchema) => void
@@ -78,12 +79,12 @@ const ApplicantDetailForm = (props: CustomerFormProps) => {
         if (!isEmpty(defaultValues)) {
             reset(defaultValues)
         }
-        console.log('its in useEffect')
+        logger.debug('its in useEffect')
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(defaultValues)])
 
     const onSubmit = (values: ApplicantDetailFormSchema) => {
-        console.log('its here k1')
+        logger.debug('its here k1')
         onFormSubmit?.(values)
     }
 

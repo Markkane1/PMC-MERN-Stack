@@ -19,6 +19,7 @@ import {
 } from '@mui/material'
 import Group from '@/components/ui/Checkbox/Group'
 import Radio from '@/components/ui/Radio'
+import { logger } from '@/utils/logger'
 
 type BusinessDetailSectionProps = FormSectionBaseProps & {
     readOnly?: boolean // Add this prop
@@ -134,7 +135,7 @@ const LicenseDetailProducerSection = ({
             setOptions(PackagingItems)
             setSelectedOptions(PackagingItems)
         } else {
-            console.warn('PackagingItems is not an array:', PackagingItems)
+            logger.warn('PackagingItems is not an array:', PackagingItems)
         }
     }, [PackagingItems])
 

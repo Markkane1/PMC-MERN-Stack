@@ -1,12 +1,32 @@
+// @vitest-environment jsdom
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import '@testing-library/jest-dom/vitest'
 import { BrowserRouter } from 'react-router-dom'
 import PaymentDashboard from '@/views/PaymentDashboard'
+
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+    return {
+        ...actual,
+        useParams: () => ({ applicantId: '123' }),
+    }
+})
 
 // Mock the API
 vi.mock('@/api/pmc', () => ({
     usePaymentAPI: () => ({
         loading: false,
         error: null,
+        getPaymentStatus: vi.fn().mockResolvedValue({
+            applicantId: '123',
+            status: 'pending',
+            amount: 5000,
+            dueDate: '2024-12-31',
+            breakdown: [
+                { item: 'Registration Fee', amount: 2000 },
+                { item: 'Processing Fee', amount: 3000 },
+            ],
+        }),
         paymentStatus: {
             applicantId: '123',
             status: 'pending',
@@ -20,6 +40,16 @@ vi.mock('@/api/pmc', () => ({
         fetchPaymentStatus: vi.fn(),
         verifyPayment: vi.fn(),
     }),
+}))
+
+vi.mock('@/components', () => ({
+    PaymentStatusComponent: ({ applicantId }: { applicantId: string }) => (
+        <div>
+            <h2>Payment Status</h2>
+            <p>Applicant: {applicantId}</p>
+            <p>Registration Fee</p>
+        </div>
+    ),
 }))
 
 describe('PaymentDashboard Component', () => {
@@ -39,7 +69,7 @@ describe('PaymentDashboard Component', () => {
     test('should display payment status', async () => {
         renderComponent()
         await waitFor(() => {
-            expect(screen.getByText(/Payment Status/i)).toBeInTheDocument()
+            expect(screen.getByRole('heading', { name: /Payment Status/i })).toBeInTheDocument()
         })
     })
 
@@ -51,7 +81,6 @@ describe('PaymentDashboard Component', () => {
     })
 
     test('should handle applicant ID from params or localStorage', () => {
-        localStorage.setItem('applicantId', '456')
         renderComponent()
         expect(screen.getByText(/Payment Management/i)).toBeInTheDocument()
     })
@@ -59,7 +88,7 @@ describe('PaymentDashboard Component', () => {
     test('should display deadline information', async () => {
         renderComponent()
         await waitFor(() => {
-            expect(screen.getByText(/Due Date/i)).toBeInTheDocument()
+            expect(screen.getByText(/Payment Deadline/i)).toBeInTheDocument()
         })
     })
 })

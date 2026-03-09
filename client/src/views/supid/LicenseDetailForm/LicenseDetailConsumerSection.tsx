@@ -16,6 +16,7 @@ import {
 import Checkbox from '@/components/ui/Checkbox'
 import { Controller, useWatch } from 'react-hook-form'
 import Radio from '@/components/ui/Radio'
+import { logger } from '@/utils/logger'
 
 type BusinessDetailSectionProps = FormSectionBaseProps & {
     readOnly?: boolean // Add this prop
@@ -99,11 +100,11 @@ const LicenseDetailConsumerSection = ({
             setOptions(PackagingItems)
             setSelectedOptions(PackagingItems)
         } else {
-            console.warn('PackagingItems is not an array:', PackagingItems)
+            logger.warn('PackagingItems is not an array:', PackagingItems)
         }
     }, [PackagingItems])
 
-    console.log('w_waste_disposal_provision', w_waste_disposal_provision)
+    logger.debug('w_waste_disposal_provision', w_waste_disposal_provision)
     return (
         <Card>
             <h4 className="mb-6">Detail - Stockist/Distributor/Supplier</h4>

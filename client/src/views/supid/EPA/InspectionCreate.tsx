@@ -62,7 +62,6 @@ const CustomerEdit = () => {
 
     const queryParams = new URLSearchParams(location.search)
     const id = queryParams.get('id')
-    console.log(reports)
 
     // ✅ Find and Convert Report Data in Zustand Store
     let inspectionData = useMemo(() => {
@@ -91,7 +90,6 @@ const CustomerEdit = () => {
 
     // ✅ Handle Form Submission
     const handleInspectionReportSubmit = async (values) => {
-        console.log('Submitting Data:', values)
         setIsSubmitting(true)
 
         // ✅ Prepare Data
@@ -139,12 +137,9 @@ const CustomerEdit = () => {
                 addNewReport(reportData as any)
             }
 
-            console.log('✅ Report Updated in Store')
-
             setIsSubmitting(false)
             navigate('/auth/EPAOperations/AllInspections')
         } catch (error) {
-            console.error('❌ Error in Submission:', error)
             setIsSubmitting(false)
         }
     }

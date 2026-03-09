@@ -20,6 +20,7 @@ import { LicenseDetailFields, LicenseDetailFieldsConsumer, LicenseDetailFieldsCo
 import AxiosBase from '../../../services/axios/AxiosBase' 
 import { useParams } from 'react-router-dom';
 import ReviewAndSavePage from './ReviewApplication'
+import { logger } from '@/utils/logger'
 
 const CustomerEdit = () => {
     const { id } = useParams();
@@ -279,7 +280,7 @@ const CustomerEdit = () => {
             // Handle the response data
         })
         .catch((error) => {
-            console.error('Error:', error);
+            logger.error('Error:', error);
             // Handle the error
         });;
     }
@@ -323,7 +324,7 @@ const CustomerEdit = () => {
             setIsSubmiting(false);
             onNext();
         } catch (error) {
-            console.error('Error in POST request:', error.response || error.message);
+            logger.error('Error in POST request:', error.response || error.message);
             setIsSubmiting(false);
         }
             onNext()
@@ -364,14 +365,14 @@ const CustomerEdit = () => {
                 setIsSubmiting(false);
                 onNext();
             } catch (error) {
-                console.error('Error in POST request:', error.response || error.message);
+                logger.error('Error in POST request:', error.response || error.message);
                 setIsSubmiting(false);
             }
 
             setIsSubmiting(false);
             onNext();
         } catch (error) {
-            console.error('Error in POST request:', error.response || error.message);
+            logger.error('Error in POST request:', error.response || error.message);
             setIsSubmiting(false);
         }
     }
@@ -415,7 +416,7 @@ const CustomerEdit = () => {
 
                 setIsSubmiting(false);
             } catch (error) {
-                console.error('Error in POST request:', error.response || error.message);
+                logger.error('Error in POST request:', error.response || error.message);
                 setIsSubmiting(false);
             }
         }
@@ -430,7 +431,7 @@ const CustomerEdit = () => {
 
                 setIsSubmiting(false);
             } catch (error) {
-                console.error('Error in POST request:', error.response || error.message);
+                logger.error('Error in POST request:', error.response || error.message);
                 setIsSubmiting(false);
             }
         }
@@ -507,7 +508,7 @@ const CustomerEdit = () => {
             setIsSubmiting(false);
             
         } catch (error) {
-            console.error('Error in POST request:', error.response || error.message);
+            logger.error('Error in POST request:', error.response || error.message);
             setIsSubmiting(false);
         }
 
@@ -543,7 +544,7 @@ const CustomerEdit = () => {
 
     const handleSubmitResponses = async () => {
         if(!applicantDetail.readOnly){       
-            // console.log('fieldResponses', applicantDetail.fieldResponses)
+            // logger.debug('fieldResponses', applicantDetail.fieldResponses)
             const payload = Object.entries(applicantDetail.fieldResponses).map(([key, value]) => ({
             field_key: key,
             response: value.response,
@@ -556,7 +557,7 @@ const CustomerEdit = () => {
                 headers: { "Content-Type": "application/json" },
             });
             } catch (error) {
-            console.error("Error submitting responses:", error);
+            logger.error("Error submitting responses:", error);
             navigate('/error');
             }
         }
@@ -605,7 +606,7 @@ const CustomerEdit = () => {
                 });
 
             } catch (error) {
-                console.error('Error in POST request:', error.response || error.message);
+                logger.error('Error in POST request:', error.response || error.message);
                 navigate('/error');
             }
         }
@@ -625,7 +626,7 @@ const CustomerEdit = () => {
                 });
 
             } catch (error) {
-                console.error('Error in POST request:', error.response || error.message);
+                logger.error('Error in POST request:', error.response || error.message);
                 navigate('/error');
             }
         }
@@ -645,7 +646,7 @@ const CustomerEdit = () => {
                 });
 
             } catch (error) {
-                console.error('Error in POST request:', error.response || error.message);
+                logger.error('Error in POST request:', error.response || error.message);
                 navigate('/error');
             }
         }
@@ -664,7 +665,7 @@ const CustomerEdit = () => {
               });
 
           } catch (error) {
-              console.error('Error in POST request:', error.response || error.message);
+              logger.error('Error in POST request:', error.response || error.message);
               navigate('/error');
           }
 
@@ -681,7 +682,7 @@ const CustomerEdit = () => {
             // Update local/manualFields state with newly created ID
             // updateManualFields({ id: response.data.id });
           } catch (error) {
-            console.error("Error POSTing manual fields:", error);
+            logger.error("Error POSTing manual fields:", error);
             navigate('/error');
           }
         } else {
@@ -694,14 +695,14 @@ const CustomerEdit = () => {
                 );
                 alert("Data is saved!")
             } catch (error) {
-                console.error("Error PATCHing manual fields:", error);
+                logger.error("Error PATCHing manual fields:", error);
                 navigate('/error');
             }
         }
       };
 
     const submitApplication = async () =>{
-        // console.log(formData)
+        // logger.debug(formData)
         setIsSubmiting(true)
         if(applicantDetail.assignedGroup2 !== '' && applicantDetail.assignedGroup2 !== undefined ){
             // Add non-file fields
@@ -718,7 +719,7 @@ const CustomerEdit = () => {
             //         // setIsSubmiting(false);
             //         navigate('/home');
             //     } catch (error) {
-            //         console.error('Error in POST request:', error.response || error.message);
+            //         logger.error('Error in POST request:', error.response || error.message);
             //         // setIsSubmiting(false);
             //     }
             //         // onNext()

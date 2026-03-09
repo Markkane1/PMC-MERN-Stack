@@ -4,6 +4,7 @@ import Button from '@/components/ui/Button'
 import TablerIcon from '@/components/shared/TablerIcon'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { logger } from '@/utils/logger'
 
 const CollapseMenuItemView2 = () => {
     const [isSubmiting, setIsSubmiting] = useState(false)
@@ -37,7 +38,7 @@ const CollapseMenuItemView2 = () => {
             window.URL.revokeObjectURL(url)
             setIsSubmiting(false)
         } catch (error) {
-            console.error('Error downloading report:', error)
+            logger.error('Error downloading report:', error)
             const err = error as {
                 response?: { status?: number; data?: unknown }
                 message?: string
@@ -82,7 +83,7 @@ const CollapseMenuItemView2 = () => {
             window.URL.revokeObjectURL(url)
             setIsSubmiting(false)
         } catch (error) {
-            console.error('Error downloading report:', error)
+            logger.error('Error downloading report:', error)
             const err = error as {
                 response?: { status?: number; data?: unknown }
                 message?: string

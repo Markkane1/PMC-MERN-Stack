@@ -17,6 +17,7 @@ import { useNavigate } from 'react-router-dom'
 import AxiosBase from '../../../services/axios/AxiosBase'
 
 import type { DropdownRef } from '@/components/ui/Dropdown'
+import { logger } from '@/utils/logger'
 
 type NotificationList = {
     id: string
@@ -133,7 +134,7 @@ const _Notification = ({ className }: { className?: string }) => {
                 throw new Error('Application is offline. Cannot fetch data.')
             }
         } catch (error) {
-            console.error('Error fetching applicant alerts:', error)
+            logger.error('Error fetching applicant alerts:', error)
             return [] // or throw error
         }
     }

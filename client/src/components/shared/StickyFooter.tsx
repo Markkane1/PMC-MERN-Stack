@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, ReactNode } from 'react'
 import classNames from 'classnames'
 import useDebounce from '@/utils/hooks/useDebounce'
 import type { HTMLAttributes } from 'react'
+import { logger } from '@/utils/logger'
 
 interface StickyFooterProps
     extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
@@ -26,7 +27,7 @@ const StickyFooter = (props: StickyFooterProps) => {
         const cachedRef = ref.current
         const observer = new IntersectionObserver(
             ([e]) => {
-                console.log(
+                logger.debug(
                     'e.intersectionRatio < 1',
                     e.intersectionRatio,
                     e.intersectionRatio < 1,

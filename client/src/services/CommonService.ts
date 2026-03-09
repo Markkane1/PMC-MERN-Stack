@@ -1,5 +1,6 @@
 import ApiService from './ApiService'
 import AxiosBase from '../services/axios/AxiosBase'
+import { logger } from '@/utils/logger'
 
 export async function apiGetNotificationCount() {
     // Reuse the same /pmc/applicant-alerts/ call, then get .length
@@ -46,7 +47,7 @@ export async function apiGetApplicantAlerts() {
             throw new Error('Application is offline. Cannot fetch data.')
         }
     } catch (error) {
-        console.error('Error fetching applicant alerts:', error)
+        logger.error('Error fetching applicant alerts:', error)
         return [] // Return an empty array if an error occurs
     }
 }

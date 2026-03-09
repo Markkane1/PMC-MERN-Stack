@@ -8,6 +8,7 @@ import type { FormSectionBaseProps } from './types'
 import InputMask from '@/components/shared/InputMask'
 import React, { useEffect, useState } from 'react'
 import AxiosBase from '../../../services/axios/AxiosBase'
+import { logger } from '@/utils/logger'
 
 type BusinessDetailSectionProps = FormSectionBaseProps & {
     readOnly?: boolean // Add this prop
@@ -53,7 +54,7 @@ const BusinessDetailSection = ({
                 setDistricts(districtOptions)
             })
             .catch((error) => {
-                console.error('Error fetching districts:', error)
+                logger.error('Error fetching districts:', error)
             })
 
         const response2 = AxiosBase.get(`/pmc/tehsils/`, {
@@ -69,7 +70,7 @@ const BusinessDetailSection = ({
                 setTehsils(tehsilOptions)
             })
             .catch((error) => {
-                console.error('Error fetching districts:', error)
+                logger.error('Error fetching districts:', error)
             })
     }, [])
 

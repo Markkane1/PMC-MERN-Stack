@@ -45,7 +45,9 @@ function normalizePath(value) {
 }
 
 function materializeRoutePath(routePath) {
-  return routePath.replace(/:([a-zA-Z0-9_]+)/g, DUMMY_OBJECT_ID)
+  return routePath
+    .replace(/:([a-zA-Z0-9_]+)\([^)]*\)/g, DUMMY_OBJECT_ID)
+    .replace(/:([a-zA-Z0-9_]+)/g, DUMMY_OBJECT_ID)
 }
 
 function discoverRoutes(routersByPrefix) {

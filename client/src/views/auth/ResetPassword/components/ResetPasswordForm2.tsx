@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import AxiosBase from '../../../../services/axios/AxiosBase'
 import axios from 'axios'
+import { logger } from '@/utils/logger'
 
 type ResetPasswordFormProps = {
     disableSubmit?: boolean
@@ -78,7 +79,7 @@ const ResetPasswordForm = ({
             )
         } catch (error) {
             if (axios.isAxiosError(error)) {
-                console.log(
+                logger.debug(
                     (error.response?.data as { detail?: string })?.detail,
                 )
                 setMessage?.(

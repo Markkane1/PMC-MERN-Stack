@@ -1,6 +1,8 @@
+// @vitest-environment jsdom
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import '@testing-library/jest-dom/vitest'
 import { BrowserRouter } from 'react-router-dom'
-import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard'
+import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard'
 
 describe('AnalyticsDashboard Component', () => {
     const mockData = [
@@ -54,16 +56,15 @@ describe('AnalyticsDashboard Component', () => {
     })
 
     test('should display date range inputs', () => {
-        renderComponent()
-        const dateInputs = screen.getAllByRole('textbox')
+        const { container } = renderComponent()
+        const dateInputs = container.querySelectorAll('input[type="date"]')
         expect(dateInputs.length).toBeGreaterThan(0)
     })
 
     test('should handle date range change', () => {
         const handleDateChange = vi.fn()
-        renderComponent({ onDateRangeChange: handleDateChange })
-        
-        const dateInputs = screen.getAllByRole('textbox')
+        const { container } = renderComponent({ onDateRangeChange: handleDateChange })
+        const dateInputs = container.querySelectorAll('input[type="date"]')
         if (dateInputs.length > 0) {
             fireEvent.change(dateInputs[0], { target: { value: '2024-06-01' } })
             expect(handleDateChange).toHaveBeenCalled()
@@ -79,8 +80,13 @@ describe('AnalyticsDashboard Component', () => {
         expect(handleExport).toHaveBeenCalled()
     })
 
+    test('should disable export button when no export handler is provided', () => {
+        renderComponent()
+        expect(screen.getByRole('button', { name: /Export/i })).toBeDisabled()
+    })
+
     test('should display loading state', () => {
-        renderComponent({ loading: true })
-        expect(screen.getByRole('progressbar', { hidden: true })).toBeDefined()
+        const { container } = renderComponent({ loading: true })
+        expect(container.querySelector('.animate-spin')).toBeInTheDocument()
     })
 })

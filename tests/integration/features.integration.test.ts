@@ -1,10 +1,8 @@
-// Test globals provided by vitest with globals: true
-
-global.fetch = vi.fn()
+global.fetch = jest.fn()
 
 describe('Application Form Integration', () => {
     beforeEach(() => {
-        vi.clearAllMocks()
+        jest.clearAllMocks()
     })
 
     it('should save application form progress', async () => {
@@ -14,7 +12,7 @@ describe('Application Form Integration', () => {
             email: 'john@example.com',
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => ({ success: true, applicantId: '123' }),
         })
@@ -39,7 +37,7 @@ describe('Application Form Integration', () => {
             },
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -49,9 +47,7 @@ describe('Application Form Integration', () => {
     })
 
     it('should validate form fields', async () => {
-        const fieldData = { email: 'invalid-email', phone: '123' }
-
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: false,
             json: async () => ({
                 errors: { email: 'Invalid email', phone: 'Invalid phone' },
@@ -72,7 +68,7 @@ describe('Application Form Integration', () => {
             status: 'submitted',
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -84,7 +80,7 @@ describe('Application Form Integration', () => {
 
 describe('Settings Integration', () => {
     beforeEach(() => {
-        vi.clearAllMocks()
+        jest.clearAllMocks()
     })
 
     it('should fetch user settings', async () => {
@@ -95,7 +91,7 @@ describe('Settings Integration', () => {
             },
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -111,7 +107,7 @@ describe('Settings Integration', () => {
             dailyDigest: true,
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => ({ success: true }),
         })
@@ -131,7 +127,7 @@ describe('Settings Integration', () => {
             secret: 'JBSWY3DPEBLW64TMMQ======',
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -144,7 +140,7 @@ describe('Settings Integration', () => {
 
 describe('GIS & Analytics Integration', () => {
     beforeEach(() => {
-        vi.clearAllMocks()
+        jest.clearAllMocks()
     })
 
     it('should fetch location statistics', async () => {
@@ -159,7 +155,7 @@ describe('GIS & Analytics Integration', () => {
             ],
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -176,7 +172,7 @@ describe('GIS & Analytics Integration', () => {
             },
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -195,7 +191,7 @@ describe('GIS & Analytics Integration', () => {
             ],
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })

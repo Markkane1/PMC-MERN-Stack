@@ -12,6 +12,7 @@ import AxiosBase from '../../../services/axios/AxiosBase'
 import { Button } from '@/components/ui/Button'
 import { useSessionUser } from '@/store/authStore'
 import { format, parseISO } from 'date-fns' // install with: npm install date-fns
+import { logger } from '@/utils/logger'
 
 type InspectionDetailSectionProps = {
     control: any
@@ -177,11 +178,11 @@ const InspectionDetailSection = ({
             '/pmc/inspection-report-cached/all_other_single_use_plastics/',
         )
             .then((response) => {
-                // console.log("API Response:", response.data); // Log entire API response
+                // logger.debug("API Response:", response.data); // Log entire API response
                 setOptions(response.data.single_use_plastic_items || []) // Ensure it's always an array
             })
             .catch((error) => {
-                console.error('Error fetching available options:', error)
+                logger.error('Error fetching available options:', error)
             })
     }, [])
 
@@ -225,8 +226,8 @@ const InspectionDetailSection = ({
     const [totalRecovery, setTotalRecovery] = useState(0)
 
     useEffect(() => {
-        console.log('Updating total recovery') // Debugging log
-        console.log('recoveryEntries', recoveryEntries)
+        logger.debug('Updating total recovery') // Debugging log
+        logger.debug('recoveryEntries', recoveryEntries)
         const total = recoveryEntries.reduce(
             (sum, entry) => sum + (entry.amount || 0),
             0,
@@ -235,7 +236,7 @@ const InspectionDetailSection = ({
 
         // ✅ Store `recoveryEntries` inside the form state
         // setValue("fineRecoveryBreakup", recoveryEntries, { shouldValidate: true, shouldDirty: true });
-        console.log('fineReoceryBreakup is setup')
+        logger.debug('fineReoceryBreakup is setup')
         // setValue("recoveryAmount", total, { shouldValidate: true, shouldDirty: true });
     }, [recoveryEntries, setValue]) // ✅ Make sure `recoveryEntries` is in dependency array
 
@@ -251,8 +252,8 @@ const InspectionDetailSection = ({
 
     // ✅ Handles updating a recovery entry
     const updateRecoveryEntry = (index, key, value) => {
-        console.log('recovery amount updated:')
-        console.log(index, key, value)
+        logger.debug('recovery amount updated:')
+        logger.debug(index, key, value)
         setRecoveryEntries((prevEntries) => {
             const updatedEntries = prevEntries.map((entry, i) =>
                 i === index
@@ -264,14 +265,14 @@ const InspectionDetailSection = ({
                     : entry,
             )
 
-            console.log('🔹 Updated Recovery Entries:', updatedEntries)
+            logger.debug('🔹 Updated Recovery Entries:', updatedEntries)
             return updatedEntries
         })
     }
 
     useEffect(() => {
-        console.log('Updated recovery entries:', recoveryEntries)
-        console.log('Calculated Total Recovery:', totalRecovery)
+        logger.debug('Updated recovery entries:', recoveryEntries)
+        logger.debug('Calculated Total Recovery:', totalRecovery)
     }, [recoveryEntries, totalRecovery])
 
     useEffect(() => {
@@ -287,10 +288,10 @@ const InspectionDetailSection = ({
     })
 
     const handleLocationSelect = (locationData) => {
-        console.log('Selected Location:', locationData)
+        logger.debug('Selected Location:', locationData)
 
         if (!locationData.lat || !locationData.lng) {
-            console.warn('Latitude or Longitude is missing, retrying...')
+            logger.warn('Latitude or Longitude is missing, retrying...')
         }
 
         setSelectedLocation({
@@ -339,16 +340,16 @@ const InspectionDetailSection = ({
         return formattedValue
     }
 
-    console.log('fineRecoveryBreakup:', defaultValues?.fineRecoveryBreakup)
+    logger.debug('fineRecoveryBreakup:', defaultValues?.fineRecoveryBreakup)
 
-    console.log('readOnly', readOnly)
+    logger.debug('readOnly', readOnly)
     const district_id =
         useSessionUser((state) => state.user.district_id) || null
     const district_name =
         useSessionUser((state) => state.user.district_name) || ''
-    console.log('district_name:', district_name)
-    console.log('location:', defaultValues?.location)
-    console.log('defaultValues:', defaultValues)
+    logger.debug('district_name:', district_name)
+    logger.debug('location:', defaultValues?.location)
+    logger.debug('defaultValues:', defaultValues)
 
     const { latitude, longitude } = defaultValues
 
@@ -360,13 +361,13 @@ const InspectionDetailSection = ({
     useEffect(() => {
         const retryFetchingLocation = () => {
             if (!selectedLocation.lat || !selectedLocation.lng) {
-                console.log('Retrying location fetch...')
+                logger.debug('Retrying location fetch...')
 
                 // Check if there's a previously saved location
                 if (savedLocation) {
                     setSelectedLocation(savedLocation)
                 } else {
-                    console.warn(
+                    logger.warn(
                         'No valid location found, please select again.',
                     )
                 }
@@ -1048,7 +1049,7 @@ const InspectionDetailSection = ({
                                     render={({ field }) => {
                                         useEffect(() => {
                                             if (!selectedLocation.lat) {
-                                                console.warn(
+                                                logger.warn(
                                                     'Latitude is missing, setting default...',
                                                 )
                                             }
@@ -1080,7 +1081,7 @@ const InspectionDetailSection = ({
                                     render={({ field }) => {
                                         useEffect(() => {
                                             if (!selectedLocation.lng) {
-                                                console.warn(
+                                                logger.warn(
                                                     'Longitude is missing, setting default...',
                                                 )
                                             }

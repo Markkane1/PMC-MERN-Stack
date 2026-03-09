@@ -3,6 +3,7 @@ import { MaterialReactTable } from 'material-react-table'
 import AxiosBase from '../services/axios/AxiosBase'
 import { useNavigate } from 'react-router-dom'
 import TablerIcon from '@/components/shared/TablerIcon'
+import { logger } from '@/utils/logger'
 
 // Utility function to flatten nested objects and handle null values
 // Utility function to flatten nested objects and handle remarks
@@ -314,7 +315,7 @@ const Home = () => {
             ) {
                 return
             }
-            console.error('Error fetching filtered data:', error)
+            logger.error('Error fetching filtered data:', error)
             setFlattenedData([])
             setColumns([])
         } finally {
@@ -451,14 +452,14 @@ const Home = () => {
                         ),
                     )
                 } else {
-                    console.error('Error fetching user groups:', groupsResult.reason)
+                    logger.error('Error fetching user groups:', groupsResult.reason)
                     setUserGroups([])
                 }
 
                 if (statsResult.status === 'fulfilled') {
                     setStatistics(normalizeStatistics(statsResult.value?.data || {}))
                 } else {
-                    console.error('Error fetching statistics:', statsResult.reason)
+                    logger.error('Error fetching statistics:', statsResult.reason)
                 }
             } catch (error) {
                 if (
@@ -467,7 +468,7 @@ const Home = () => {
                 ) {
                     return
                 }
-                console.error('Error fetching data:', error)
+                logger.error('Error fetching data:', error)
             } finally {
                 setMetaLoading(false)
             }
@@ -480,7 +481,7 @@ const Home = () => {
     }, []) // Run only once on component load
 
     useEffect(() => {
-        console.log('userGroups:', userGroups)
+        logger.debug('userGroups:', userGroups)
         if (userGroups.length > 0 && !userGroups.includes('Admin')) {
             navigate('/home')
         }
@@ -555,7 +556,7 @@ const Home = () => {
             link.click()
             document.body.removeChild(link)
         } catch (error) {
-            console.error('Export failed:', error)
+            logger.error('Export failed:', error)
         }
     }
     return (

@@ -30,6 +30,7 @@ import {
 import { MaterialReactTable } from 'material-react-table'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import TablerIcon from '@/components/shared/TablerIcon'
+import { logger } from '@/utils/logger'
 
 // Helper function
 function getCategoryColor(category: any) {
@@ -257,7 +258,7 @@ const MISDirectory = () => {
                     setSummaryTotals(null)
                 }
             } catch (error: any) {
-                console.error('Error fetching applicant data:', error)
+                logger.error('Error fetching applicant data:', error)
             }
         }
         fetchApplicantData()

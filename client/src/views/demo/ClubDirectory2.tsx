@@ -18,6 +18,7 @@ import Modal from '@mui/material/Modal'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
+import { logger } from '@/utils/logger'
 
 const ClubDirectory = () => {
     const mapRef = useRef<HTMLDivElement | null>(null)
@@ -73,7 +74,7 @@ const ClubDirectory = () => {
                     duration: 500,
                 })
             } catch (error: any) {
-                console.error('Error fetching districts:', error)
+                logger.error('Error fetching districts:', error)
             } finally {
                 setLoading(false)
             }
@@ -326,7 +327,7 @@ const ClubDirectory = () => {
             ),
         },
     ]
-    // console.log('topDistricts',topDistricts)
+    // logger.debug('topDistricts',topDistricts)
     const handleRowClick = (row: any) => {
         setSelectedClub(row.original.properties)
     }

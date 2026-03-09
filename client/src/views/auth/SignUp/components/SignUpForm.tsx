@@ -12,6 +12,7 @@ import { useNavigate, useLocation } from 'react-router-dom' // Import useNavigat
 import AxiosBase from '../../../../services/axios/AxiosBase'
 import axios from 'axios'
 import { sanitizeRedirectPath } from '@/utils/safeRedirect'
+import { logger } from '@/utils/logger'
 
 interface SignUpFormProps extends CommonProps {
     disableSubmit?: boolean
@@ -76,7 +77,7 @@ const SignUpForm = (props: SignUpFormProps) => {
                 throw new Error('Application is offline. Cannot load CAPTCHA.')
             }
         } catch (error) {
-            console.error('Error loading CAPTCHA:', error)
+            logger.error('Error loading CAPTCHA:', error)
             setCaptchaImage('')
             setCaptchaToken('')
             setValue('captcha_token', '')

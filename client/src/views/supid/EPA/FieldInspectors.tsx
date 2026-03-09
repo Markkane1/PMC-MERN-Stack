@@ -7,6 +7,7 @@ import { useSessionUser } from '@/store/authStore'
 import { IconButton } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit'
 import UserForm from './UserForm' // ✅ Import Add/Edit User Form
+import { logger } from '@/utils/logger'
 
 const { TabNav, TabList, TabContent } = Tabs
 
@@ -30,7 +31,7 @@ const Dashboard = () => {
                     setInspectors(response.data)
                 })
                 .catch((error) => {
-                    console.error('Error fetching inspectors:', error)
+                    logger.error('Error fetching inspectors:', error)
                 })
                 .finally(() => {
                     setLoading(false)

@@ -13,6 +13,7 @@ import { Form, FormItem } from '@/components/ui/Form'
 import TablerIcon from '@/components/shared/TablerIcon'
 import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline'
 import { IconButton, Tooltip } from '@mui/material'
+import { logger } from '@/utils/logger'
 
 const documentSchema = z.object({
     title: z.string().min(3, 'Title must be at least 3 characters'),
@@ -54,7 +55,7 @@ const DocumentsTab = () => {
         setLoading(true)
         AxiosBase.get('/pmc/district-documents/')
             .then((response) => setDocuments(response.data))
-            .catch((error) => console.error('Error fetching documents:', error))
+            .catch((error) => logger.error('Error fetching documents:', error))
             .finally(() => setLoading(false))
     }
 
@@ -81,7 +82,7 @@ const DocumentsTab = () => {
             fetchDocuments()
             reset()
         } catch (error) {
-            console.error('Error uploading document:', error)
+            logger.error('Error uploading document:', error)
             alert('Failed to upload document.')
         }
     }

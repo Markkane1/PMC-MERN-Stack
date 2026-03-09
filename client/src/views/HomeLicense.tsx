@@ -4,6 +4,7 @@ import {
     type MRT_ColumnDef,
 } from 'material-react-table'
 import AxiosBase from '../services/axios/AxiosBase'
+import { logger } from '@/utils/logger'
 
 type LicenseRow = Record<string, string | number | boolean> & {
     license_number?: string
@@ -99,7 +100,7 @@ const Home = () => {
                         : []
                     setUserGroups(groupsResponse.map((group) => group.name))
                 } catch (error) {
-                    console.error('Error fetching user groups:', error)
+                    logger.error('Error fetching user groups:', error)
                     setUserGroups([])
                 }
 
@@ -119,7 +120,7 @@ const Home = () => {
                     setFlattenedData([])
                 }
             } catch (error) {
-                console.error('Error fetching data:', error)
+                logger.error('Error fetching data:', error)
             }
         }
 

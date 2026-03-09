@@ -4,6 +4,7 @@ import { ArrowDownload20Regular, DocumentPdf20Regular, Eye20Regular, QrCode20Reg
 import type { AxiosError } from 'axios'
 import QRCode from 'qrcode'
 import AxiosBase from '../services/axios/AxiosBase'
+import { logger } from '@/utils/logger'
 
 interface ChalanData {
   chalanNumber?: string
@@ -144,7 +145,7 @@ export default function GenerateReceiptPage() {
         }
       }
       setError(errorMsg)
-      console.error('Chalan generation error:', err)
+      logger.error('Chalan generation error:', err)
     } finally {
       setLoading(false)
     }

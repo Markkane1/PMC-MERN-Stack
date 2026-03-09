@@ -47,11 +47,14 @@ export default function AnalyticsDashboard({
 }: AnalyticsDashboardProps) {
     const [dateFrom, setDateFrom] = useState('2024-01-01')
     const [dateTo, setDateTo] = useState('2024-06-30')
+    const canExport = typeof onExport === 'function'
 
     const handleExport = () => {
-        onExport?.()
-        // Mock export
-        console.log('Exporting analytics report...')
+        if (!canExport) {
+            return
+        }
+
+        onExport()
     }
 
     if (loading) {
@@ -98,7 +101,12 @@ export default function AnalyticsDashboard({
                         />
                         <button
                             onClick={handleExport}
-                            className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all"
+                            disabled={!canExport}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                                canExport
+                                    ? 'bg-primary text-white hover:bg-primary/90'
+                                    : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                            }`}
                         >
                             <FaDownload className="text-sm" />
                             Export

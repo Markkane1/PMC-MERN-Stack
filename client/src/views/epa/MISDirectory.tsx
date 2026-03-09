@@ -17,6 +17,7 @@ import TablerIcon from '@/components/shared/TablerIcon'
 import { Link } from 'react-router-dom'
 import { Divider, Select, MenuItem, Box } from '@mui/material'
 import { MaterialReactTable } from 'material-react-table'
+import { logger } from '@/utils/logger'
 
 // Helper function
 function getCategoryColor(category: any) {
@@ -132,7 +133,7 @@ const MISDirectory = ({ onDistrictClick }: any) => {
                 const sortedDistricts = Array.from(distinctDistricts).sort()
                 setDistrictOptions(sortedDistricts)
             } catch (error: any) {
-                console.error('Error fetching applicant data:', error)
+                logger.error('Error fetching applicant data:', error)
             }
         }
         fetchApplicantData()
@@ -684,7 +685,7 @@ const MyDataTable = ({
     districtOptions,
     onColumnFiltersChange,
 }: any) => {
-    console.log('districtOptions', districtOptions)
+    logger.debug('districtOptions', districtOptions)
 
     // // // 1) Gather unique district names for the District filter
     // const districtOptions = useMemo(() => {

@@ -14,6 +14,7 @@ import { MaterialReactTable } from 'material-react-table'
 import TablerIcon from '@/components/shared/TablerIcon'
 import { number } from 'zod'
 import AxiosBase from '../../services/axios/AxiosBase'
+import { logger } from '@/utils/logger'
 
 // new ApexCharts(document.querySelector("#spark3"), spark3).render();
 
@@ -112,7 +113,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                         },
                     },
                 )
-                console.log(respons.data)
+                logger.debug(respons.data)
 
                 const { district_data, registration_statistics, grid_data } =
                     respons.data
@@ -597,8 +598,8 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
     function showStatistics(seriesName: string, category: string): void {
         setFilterDistrictCategory(category)
         setFilterStackholderSeries(seriesName)
-        console.log('District calculated: ', category)
-        console.log('seriesName calculated: ', seriesName)
+        logger.debug('District calculated: ', category)
+        logger.debug('seriesName calculated: ', seriesName)
     }
 
     const AllStackholdersChartData: AllStackholdersChartDataTypes = {
@@ -618,7 +619,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                                 dataPointIndex
                             ]
                         showStatistics(seriesName, category)
-                        console.log(
+                        logger.debug(
                             `Series: ${seriesName}, Category: ${category}`,
                         )
                     },
@@ -678,7 +679,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
         },
     }
 
-    console.log('chartData', chartData)
+    logger.debug('chartData', chartData)
     return (
         <div className="dashboard-container flex flex-col flex-auto">
             <header className="dashboard-header">

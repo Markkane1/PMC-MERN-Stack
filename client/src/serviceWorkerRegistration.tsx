@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger'
+
 type SWConfig = {
     onUpdate?: (registration: ServiceWorkerRegistration) => void
     onSuccess?: (registration: ServiceWorkerRegistration) => void
@@ -25,7 +27,7 @@ export function register(config?: SWConfig) {
                     }
                 })
                 .catch((error) => {
-                    console.error('Service Worker registration failed:', error)
+                    logger.error('Service Worker registration failed:', error)
                 })
         })
     }
@@ -38,7 +40,7 @@ export function unregister() {
                 registration.unregister()
             })
             .catch((error) => {
-                console.error('Service Worker unregistration failed:', error)
+                logger.error('Service Worker unregistration failed:', error)
             })
     }
 }

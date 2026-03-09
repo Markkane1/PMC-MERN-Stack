@@ -2,6 +2,7 @@
  * Applicant Components
  */
 import React, { useState } from 'react'
+import { logger } from '@/utils/logger'
 
 export const ApplicantRegistration: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -33,7 +34,7 @@ export const ApplicantRegistration: React.FC = () => {
       const result = await response.json()
       if (result.success) alert('Applicant registered!')
     } catch (error) {
-      console.error('Error:', error)
+      logger.error('Error:', error)
     } finally {
       setLoading(false)
     }

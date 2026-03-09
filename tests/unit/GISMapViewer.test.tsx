@@ -1,10 +1,18 @@
+// @vitest-environment jsdom
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom'
+import '@testing-library/jest-dom/vitest'
 import GISMapViewer from '@/components/gis/GISMapViewer'
-
 
 // Mock OpenLayers
 vi.mock('ol/Map', () => ({
+    default: vi.fn(() => ({
+        setTarget: vi.fn(),
+        forEachFeatureAtPixel: vi.fn(),
+        on: vi.fn(),
+        un: vi.fn(),
+    })),
+}))
+vi.mock('ol/Map.js', () => ({
     default: vi.fn(() => ({
         setTarget: vi.fn(),
         forEachFeatureAtPixel: vi.fn(),

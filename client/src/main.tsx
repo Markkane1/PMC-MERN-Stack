@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
 import * as serviceWorkerRegistration from './serviceWorkerRegistration'
+import { logger } from '@/utils/logger'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<App />)
 
@@ -24,14 +25,14 @@ if (import.meta.env.PROD) {
                 return (swRegistration as any).sync.register('sync-posts')
             })
             .catch((err) =>
-                console.error('[❌ Sync registration failed]:', err),
+                logger.error('[❌ Sync registration failed]:', err),
             )
     }
 
     // ✅ Listen for Service Worker Messages (for Updates)
     navigator.serviceWorker.addEventListener('message', (event) => {
         if (event.data && event.data.type === 'NEW_VERSION') {
-            console.log('[⚡ New Version Available] Please refresh to update.')
+            logger.debug('[⚡ New Version Available] Please refresh to update.')
             alert('A new version is available! Please refresh to update.')
         }
     })

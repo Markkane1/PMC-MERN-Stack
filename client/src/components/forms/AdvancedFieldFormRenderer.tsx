@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useAdvancedFieldAPI } from '../../api/pmc'
+import { logger } from '@/utils/logger'
 
 interface FieldDefinition {
   _id: string
@@ -44,7 +45,7 @@ export const AdvancedFieldFormRenderer: React.FC<{ sectionId?: string; onSubmit?
       const data = await getFieldDefinitions(sectionId)
       setFields(data || [])
     } catch (err) {
-      console.error('Failed to load fields:', err)
+      logger.error('Failed to load fields:', err)
     }
   }
 
@@ -55,7 +56,7 @@ export const AdvancedFieldFormRenderer: React.FC<{ sectionId?: string; onSubmit?
         setFormData(responses)
       }
     } catch (err) {
-      console.error('Failed to load responses:', err)
+      logger.error('Failed to load responses:', err)
     }
   }
 
@@ -64,7 +65,7 @@ export const AdvancedFieldFormRenderer: React.FC<{ sectionId?: string; onSubmit?
       const status = await getCompletionStatus()
       setCompletionStatus(status)
     } catch (err) {
-      console.error('Failed to load completion status:', err)
+      logger.error('Failed to load completion status:', err)
     }
   }
 
@@ -90,7 +91,7 @@ export const AdvancedFieldFormRenderer: React.FC<{ sectionId?: string; onSubmit?
       onSubmit?.(formData)
       loadCompletionStatus()
     } catch (err) {
-      console.error('Failed to save responses:', err)
+      logger.error('Failed to save responses:', err)
     } finally {
       setSubmitting(false)
     }

@@ -76,6 +76,7 @@ export const env = {
   corsOrigins,
   uploadDir: path.resolve(process.env.UPLOAD_DIR || 'uploads'),
   nodeEnv: process.env.NODE_ENV || 'development',
+  enableRateLimitsInTest: process.env.ENABLE_RATE_LIMITS_IN_TEST === 'true',
   allowLegacyMasterkeyLogin: process.env.ALLOW_LEGACY_MASTERKEY_LOGIN === 'true',
   // Application URL
   appUrl: process.env.APP_URL || 'http://localhost:5173',

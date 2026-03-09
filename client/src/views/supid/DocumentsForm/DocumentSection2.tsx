@@ -16,6 +16,7 @@ import { ApplicantDetailForm } from '../ApplicantDetailForm'
 import useFormStore from '../../../store/supid/supidStore'
 import Button from '@/components/ui/Button'
 import TablerIcon from '@/components/shared/TablerIcon'
+import { logger } from '@/utils/logger'
 
 type BusinessDetailSectionProps = FormSectionBaseProps & {
     readOnly?: boolean // Add this prop
@@ -249,7 +250,7 @@ const LicenseDetailProducerSection = ({
             newWin.document.close()
             updateApplicantDetail({ applicationStatus: 'Fee Challan' })
         } catch (error) {
-            console.error(error)
+            logger.error(error)
 
             // Handle error response (if the server sends an HTML error response)
             if (error.response && error.response.data) {
@@ -281,7 +282,7 @@ const LicenseDetailProducerSection = ({
             newWin.document.close()
             //   updateApplicantDetail({"applicationStatus": 'Fee Challan'})
         } catch (error) {
-            console.error(error)
+            logger.error(error)
 
             // Handle error response (if the server sends an HTML error response)
             if (error.response && error.response.data) {

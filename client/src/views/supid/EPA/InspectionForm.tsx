@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import type { CommonProps } from '@/@types/common'
+import { logger } from '@/utils/logger'
 
 type InspectionFormProps = CommonProps & {
     onFormSubmit: (values: any) => void | Promise<void>
@@ -167,7 +168,7 @@ const InspectionForm = ({
     newCustomer: _newCustomer,
     children,
 }: InspectionFormProps) => {
-    // console.log('defaultValues2', defaultValues);
+    // logger.debug('defaultValues2', defaultValues);
     const {
         handleSubmit,
         reset,

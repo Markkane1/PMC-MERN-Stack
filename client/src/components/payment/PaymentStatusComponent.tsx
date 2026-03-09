@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { usePaymentAPI } from '../../api/pmc'
+import { logger } from '@/utils/logger'
 
 interface PaymentStatus {
   applicantId: string
@@ -28,7 +29,7 @@ export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ appl
       const data = await getPaymentStatus(parseInt(applicantId, 10))
       setPayment(data)
     } catch (err) {
-      console.error('Failed to load payment status:', err)
+      logger.error('Failed to load payment status:', err)
     }
   }
 
@@ -53,7 +54,7 @@ export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ appl
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
     } catch (err) {
-      console.error('Failed to generate chalan:', err)
+      logger.error('Failed to generate chalan:', err)
     }
   }
 
@@ -66,7 +67,7 @@ export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ appl
       setVerifyData({ amount: '', referenceNumber: '' })
       loadPaymentStatus()
     } catch (err) {
-      console.error('Failed to verify payment:', err)
+      logger.error('Failed to verify payment:', err)
     } finally {
       setVerifyLoading(false)
     }

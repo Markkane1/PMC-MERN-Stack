@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useAlertAPI } from '../../api/pmc'
+import { logger } from '@/utils/logger'
 
 interface NotificationPreferences {
   emailNotifications?: boolean
@@ -39,7 +40,7 @@ export const AlertPreferencesPanel: React.FC = () => {
         setPreferences(prefs)
       }
     } catch (err) {
-      console.error('Failed to load preferences:', err)
+      logger.error('Failed to load preferences:', err)
     }
   }
 
@@ -80,7 +81,7 @@ export const AlertPreferencesPanel: React.FC = () => {
       setIsEditing(false)
       setTimeout(() => setSavedMessage(''), 3000)
     } catch (err) {
-      console.error('Failed to save preferences:', err)
+      logger.error('Failed to save preferences:', err)
     } finally {
       setSaving(false)
     }

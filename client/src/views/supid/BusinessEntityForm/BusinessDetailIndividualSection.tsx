@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react'
 import AxiosBase from '../../../services/axios/AxiosBase'
 import InputMask from '@/components/shared/InputMask'
 import useFormStore from '../../../store/supid/supidStore'
+import { logger } from '@/utils/logger'
 
 type BusinessDetailSectionIndividualProps = FormSectionBaseProps & {
     readOnly?: boolean // Add this prop
@@ -61,7 +62,7 @@ const BusinessDetailSectionIndividual = ({
                 setDistricts(districtOptions)
             })
             .catch((error) => {
-                console.error('Error fetching districts:', error)
+                logger.error('Error fetching districts:', error)
             })
 
         const response2 = AxiosBase.get(
@@ -80,7 +81,7 @@ const BusinessDetailSectionIndividual = ({
                 setTehsils(tehsilOptions)
             })
             .catch((error) => {
-                console.error('Error fetching districts:', error)
+                logger.error('Error fetching districts:', error)
             })
     }, [])
 
@@ -103,11 +104,11 @@ const BusinessDetailSectionIndividual = ({
                     setTehsils(tehsilOptions)
                 })
                 .catch((error) => {
-                    console.error('Error fetching tehsils:', error)
+                    logger.error('Error fetching tehsils:', error)
                 })
         }
     }, [selectedDistrict])
-    console.log(districts)
+    logger.debug(districts)
     return (
         <Card>
             <h4 className="mb-6">Business Detail</h4>

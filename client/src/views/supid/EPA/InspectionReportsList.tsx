@@ -7,6 +7,7 @@ import useInspectionStore from '../../../store/supid/useInspectionStore' // ✅ 
 import { useSessionUser } from '@/store/authStore'
 import AxiosBase from '../../../services/axios/AxiosBase'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
+import { logger } from '@/utils/logger'
 // ✅ Helper Function to Format JSON
 const formatJsonColumn = (jsonData) => {
     if (!jsonData) return 'N/A'
@@ -165,7 +166,7 @@ const InspectionReportsList = () => {
             a.remove()
             window.URL.revokeObjectURL(url) // Clean up
         } catch (error) {
-            console.error('Failed to download Excel file:', error)
+            logger.error('Failed to download Excel file:', error)
         }
     }
 
@@ -193,7 +194,7 @@ const InspectionReportsList = () => {
             a.remove()
             window.URL.revokeObjectURL(url) // Clean up
         } catch (error) {
-            console.error('Failed to download Excel file:', error)
+            logger.error('Failed to download Excel file:', error)
         }
     }
 

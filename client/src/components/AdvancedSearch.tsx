@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
+import { logger } from '@/utils/logger'
 
 /**
  * AdvancedSearchPanel - Unified search across all entities
@@ -29,7 +30,7 @@ export const AdvancedSearchPanel: React.FC = () => {
         setRecentSearches(prev => [query, ...prev.slice(0, 4)])
       }
     } catch (error) {
-      console.error('Search error:', error)
+      logger.error('Search error:', error)
     } finally {
       setLoading(false)
     }
@@ -198,7 +199,7 @@ export const MultiCriteriaFilter: React.FC<{ entityType: string }> = ({ entityTy
         setHasApplied(true)
       }
     } catch (error) {
-      console.error('Filter error:', error)
+      logger.error('Filter error:', error)
     }
   }
 
@@ -303,7 +304,7 @@ export const SavedFilters: React.FC = () => {
         const result = await response.json()
         if (result.success) setSavedFilters(result.data)
       } catch (error) {
-        console.error('Error:', error)
+        logger.error('Error:', error)
       } finally {
         setLoading(false)
       }
@@ -320,7 +321,7 @@ export const SavedFilters: React.FC = () => {
         setSavedFilters(savedFilters.filter(f => f.id !== filterId))
       }
     } catch (error) {
-      console.error('Error:', error)
+      logger.error('Error:', error)
     }
   }
 

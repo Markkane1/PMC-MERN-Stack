@@ -9,6 +9,7 @@ import Modal from '@mui/material/Modal'
 import Box from '@mui/material/Box'
 import axios from 'axios'
 import type { TypeAttributes } from '@/components/ui/@types/common'
+import { logger } from '@/utils/logger'
 
 const Banner = () => {
     const [trackingPopupOpen, setTrackingPopupOpen] = useState(false) // New state for Thank You popup
@@ -35,7 +36,7 @@ const Banner = () => {
             setDialogContent(response.data.message)
             setTankYouPopupType('success')
         } catch (error) {
-            console.error('Error fetching user groups:', error)
+            logger.error('Error fetching user groups:', error)
             if (axios.isAxiosError(error)) {
                 setDialogContent(
                     (error.response?.data as { message?: string })?.message ||

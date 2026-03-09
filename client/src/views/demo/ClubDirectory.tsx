@@ -11,6 +11,7 @@ import { fromLonLat } from 'ol/proj'
 import AxiosBase from '../../services/axios/AxiosBase'
 import { MaterialReactTable } from 'material-react-table'
 import TablerIcon from '@/components/shared/TablerIcon'
+import { logger } from '@/utils/logger'
 
 const ClubDirectory = () => {
     const mapRef = useRef<HTMLDivElement | null>(null)
@@ -62,7 +63,7 @@ const ClubDirectory = () => {
                     duration: 500,
                 })
             } catch (error: any) {
-                console.error('Error fetching districts:', error)
+                logger.error('Error fetching districts:', error)
             } finally {
                 setLoading(false)
             }
@@ -245,7 +246,7 @@ const ClubDirectory = () => {
             ),
         },
     ]
-    // console.log('topDistricts',topDistricts)
+    // logger.debug('topDistricts',topDistricts)
     const getGoogleMapsLink = (schoolName: string, district: string) => {
         const formatText = (text: any) =>
             text

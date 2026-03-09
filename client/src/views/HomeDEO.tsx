@@ -4,6 +4,7 @@ import AxiosBase from '../services/axios/AxiosBase'
 import { useNavigate } from 'react-router-dom'
 import { useSessionUser } from '@/store/authStore'
 import TablerIcon from '@/components/shared/TablerIcon'
+import { logger } from '@/utils/logger'
 
 // import { FileSpreadsheet } from "lucide-react"; //
 
@@ -494,7 +495,7 @@ const Home = () => {
                 ) {
                     return
                 }
-                console.error('Error fetching filtered data:', error)
+                logger.error('Error fetching filtered data:', error)
                 setFlattenedData([])
                 setColumns([])
             } finally {
@@ -525,7 +526,7 @@ const Home = () => {
                 const response = await AxiosBase.get(`/pmc/report-fee/`) // API Endpoint
                 setFeeStats(response.data) // Store in state
             } catch (error) {
-                console.error('Error fetching fee statistics:', error)
+                logger.error('Error fetching fee statistics:', error)
             } finally {
                 setFeeLoading(false)
             }
@@ -591,7 +592,7 @@ const Home = () => {
         selectedTile,
     ])
 
-    // console.log('userAuthorityList', userAuthorityList)
+    // logger.debug('userAuthorityList', userAuthorityList)
     useEffect(() => {
         const controller = new AbortController()
         const fetchData = async () => {
@@ -620,14 +621,14 @@ const Home = () => {
                         ),
                     )
                 } else {
-                    console.error('Error fetching user groups:', groupsResult.reason)
+                    logger.error('Error fetching user groups:', groupsResult.reason)
                     setUserGroups([])
                 }
 
                 if (statsResult.status === 'fulfilled') {
                     setStatistics(normalizeStatistics(statsResult.value?.data || {}))
                 } else {
-                    console.error('Error fetching statistics:', statsResult.reason)
+                    logger.error('Error fetching statistics:', statsResult.reason)
                 }
             } catch (error) {
                 if (
@@ -636,7 +637,7 @@ const Home = () => {
                 ) {
                     return
                 }
-                console.error('Error fetching data:', error)
+                logger.error('Error fetching data:', error)
             } finally {
                 setMetaLoading(false)
             }
@@ -649,7 +650,7 @@ const Home = () => {
     }, []) // Run only once on component load
 
     useEffect(() => {
-        console.log('userGroups:', userGroups)
+        logger.debug('userGroups:', userGroups)
         if (userGroups.length > 0 && !userGroups.includes('Super')) {
             navigate('/home')
         }
@@ -680,7 +681,7 @@ const Home = () => {
             link.click()
             document.body.removeChild(link)
         } catch (error) {
-            console.error('Export failed:', error)
+            logger.error('Export failed:', error)
         }
     }
 

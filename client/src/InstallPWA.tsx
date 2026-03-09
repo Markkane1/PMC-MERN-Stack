@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { logger } from '@/utils/logger'
 
 interface InstallPWAProps {
     deferredPrompt: any // Accepts the event passed from App.tsx
@@ -9,16 +10,16 @@ const InstallPWA: React.FC<InstallPWAProps> = ({ deferredPrompt }) => {
 
     useEffect(() => {
         if (deferredPrompt) {
-            console.log('✅ PWA install prompt is available.')
+            logger.debug('✅ PWA install prompt is available.')
             setIsInstallable(true)
         } else {
-            console.log('⚠️ PWA install prompt is not available.')
+            logger.debug('⚠️ PWA install prompt is not available.')
         }
     }, [deferredPrompt])
 
     const handleInstall = async () => {
         if (!deferredPrompt) {
-            console.log('❌ Install prompt is not available.')
+            logger.debug('❌ Install prompt is not available.')
             return
         }
 
@@ -26,9 +27,9 @@ const InstallPWA: React.FC<InstallPWAProps> = ({ deferredPrompt }) => {
 
         const choiceResult = await deferredPrompt.userChoice
         if (choiceResult.outcome === 'accepted') {
-            console.log('✅ User accepted the install prompt.')
+            logger.debug('✅ User accepted the install prompt.')
         } else {
-            console.log('❌ User dismissed the install prompt.')
+            logger.debug('❌ User dismissed the install prompt.')
         }
 
         deferredPrompt = null // Prevent multiple prompts

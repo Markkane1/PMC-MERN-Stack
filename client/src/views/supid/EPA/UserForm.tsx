@@ -8,6 +8,7 @@ import { z } from 'zod'
 import AxiosBase from '@/services/axios/AxiosBase'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
+import { logger } from '@/utils/logger'
 
 const validationSchema = z
     .object({
@@ -109,7 +110,7 @@ const UserForm = ({ selectedUser, setSelectedUser }) => {
             setSelectedUser(null)
             reset() // ✅ Explicitly Reset Form After Submission
         } catch (error) {
-            console.error('Error updating/creating user:', error)
+            logger.error('Error updating/creating user:', error)
             setServerError(
                 error.response?.data?.error ||
                     'An unexpected error occurred. Please try again.',

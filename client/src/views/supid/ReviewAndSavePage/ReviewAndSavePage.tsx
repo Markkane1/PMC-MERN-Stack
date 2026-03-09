@@ -1,6 +1,7 @@
 import useFormStore from '../../../store/supid/supidStore'
 import BottomStickyBar from '@/components/template/BottomStickyBar'
 import type { CommonProps } from '@/@types/common'
+import { logger } from '@/utils/logger'
 
 type CustomerFormProps = CommonProps & {
     onFormSubmit?: (...args: any[]) => void
@@ -28,7 +29,7 @@ const ReviewAndSavePage = (props: CustomerFormProps) => {
             .toLowerCase() // Convert all letters to lowercase
             .replace(/\b\w/g, (char) => char.toUpperCase()) // Capitalize the first letter of each word
     }
-    console.log('business Entity fields and values', businessEntity)
+    logger.debug('business Entity fields and values', businessEntity)
 
     // Dynamically render fields for a given data object
     const renderFields = (data) => {

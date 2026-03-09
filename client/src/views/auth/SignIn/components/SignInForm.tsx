@@ -12,6 +12,7 @@ import type { CommonProps } from '@/@types/common'
 import type { ReactNode } from 'react'
 import { useSessionUser } from '@/store/authStore'
 import AxiosBase from '../../../../services/axios/AxiosBase'
+import { logger } from '@/utils/logger'
 
 interface SignInFormProps extends CommonProps {
     disableSubmit?: boolean
@@ -81,7 +82,7 @@ const SignInForm = (props: SignInFormProps) => {
                 throw new Error('Application is offline. Cannot load CAPTCHA.')
             }
         } catch (error) {
-            console.error('Error loading CAPTCHA:', error)
+            logger.error('Error loading CAPTCHA:', error)
             setCaptchaImage('')
             setCaptchaToken('')
             setValue('captcha_token', '')

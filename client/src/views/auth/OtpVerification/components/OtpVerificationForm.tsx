@@ -7,6 +7,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import type { CommonProps } from '@/@types/common'
+import { logger } from '@/utils/logger'
 
 interface OtpVerificationFormProps extends CommonProps {
     setOtpVerified?: (message: string) => void
@@ -51,7 +52,7 @@ const OtpVerificationForm = (props: OtpVerificationFormProps) => {
             setSubmitting(false)
         }
 
-        console.log('otp', otp)
+        logger.debug('otp', otp)
         setSubmitting(false)
     }
 

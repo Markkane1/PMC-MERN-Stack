@@ -46,6 +46,9 @@ const apiLimiter = rateLimit({
   legacyHeaders: false,
 })
 
+const shouldApplyRuntimeRateLimits =
+  env.nodeEnv !== 'test' || env.enableRateLimitsInTest
+
 // HTTPS redirect for production
 function httpsRedirect(req: Request, res: Response, next: NextFunction) {
   if (env.nodeEnv === 'production' && !req.secure && req.get('x-forwarded-proto') !== 'https') {
@@ -141,12 +144,15 @@ export function createApp() {
   app.use(monitoringMiddleware)
 
   // Week 6: Rate Limiting & Resilience
-  // IP-based rate limiting (100 requests/min per IP)
-  app.use(ipRateLimitingMiddleware)
-  // Endpoint-based rate limiting (1000 requests/min per endpoint)
-  app.use(endpointRateLimitingMiddleware)
-  // User-based rate limiting (for authenticated requests)
-  app.use(userRateLimitingMiddleware)
+  // Keep disabled in test mode to avoid non-deterministic throttling in integration suites.
+  if (shouldApplyRuntimeRateLimits) {
+    // IP-based rate limiting (100 requests/min per IP)
+    app.use(ipRateLimitingMiddleware)
+    // Endpoint-based rate limiting (1000 requests/min per endpoint)
+    app.use(endpointRateLimitingMiddleware)
+    // User-based rate limiting (for authenticated requests)
+    app.use(userRateLimitingMiddleware)
+  }
 
   // Enforce strict request body limits to reduce abuse risk.
   app.use(express.json({ limit: '10kb' }))
@@ -165,28 +171,30 @@ export function createApp() {
   // Performance monitoring (tracks response times)
   app.use(responseTimeMonitor.middleware())
 
-  // Apply general rate limiting to all API routes
-  app.use('/api/', apiLimiter)
+  if (shouldApplyRuntimeRateLimits) {
+    // Apply general rate limiting to all API routes
+    app.use('/api/', apiLimiter)
 
-  // Apply strict rate limiting to auth endpoints
-  const authRoutes = [
-    '/api/accounts/login',
-    '/api/accounts/login/',
-    '/api/accounts/register',
-    '/api/accounts/register/',
-    '/api/accounts/logout',
-    '/api/accounts/logout/',
-    '/api/accounts/find-user',
-    '/api/accounts/find-user/',
-    '/api/accounts/reset-forgot-password',
-    '/api/accounts/reset-forgot-password/',
-    '/api/accounts/generate-captcha',
-    '/api/accounts/generate-captcha/',
-  ]
+    // Apply strict rate limiting to auth endpoints
+    const authRoutes = [
+      '/api/accounts/login',
+      '/api/accounts/login/',
+      '/api/accounts/register',
+      '/api/accounts/register/',
+      '/api/accounts/logout',
+      '/api/accounts/logout/',
+      '/api/accounts/find-user',
+      '/api/accounts/find-user/',
+      '/api/accounts/reset-forgot-password',
+      '/api/accounts/reset-forgot-password/',
+      '/api/accounts/generate-captcha',
+      '/api/accounts/generate-captcha/',
+    ]
 
-  authRoutes.forEach((route) => {
-    app.use(route, loginLimiter)
-  })
+    authRoutes.forEach((route) => {
+      app.use(route, loginLimiter)
+    })
+  }
 
   // API routes
   app.use('/api', apiRouter)

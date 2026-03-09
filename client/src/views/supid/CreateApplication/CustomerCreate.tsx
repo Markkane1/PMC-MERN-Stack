@@ -34,6 +34,7 @@ import {
 } from '../LicenseDetailForm/types'
 import AxiosBase from '../../../services/axios/AxiosBase'
 import TablerIcon from '@/components/shared/TablerIcon'
+import { logger } from '@/utils/logger'
 
 const CustomerEdit = () => {
     const { id } = useParams()
@@ -377,7 +378,7 @@ const CustomerEdit = () => {
                     // Handle the response data
                 })
                 .catch((error) => {
-                    console.error('Error:', error)
+                    logger.error('Error:', error)
                     // Handle the error
                 })
         }
@@ -426,7 +427,7 @@ const CustomerEdit = () => {
                 setIsSubmiting(false)
                 onNext()
             } catch (error) {
-                console.error(
+                logger.error(
                     'Error in POST request:',
                     error.response || error.message,
                 )
@@ -463,7 +464,7 @@ const CustomerEdit = () => {
                     applicationStatus: 'Created',
                 }
                 updateApplicantDetail(updatedValues)
-                // console.log('applicant state:', applicantDetail)
+                // logger.debug('applicant state:', applicantDetail)
 
                 // formData.append('tracking_number', tracking_number);
                 // formData.append('registration_for', 'Producer');
@@ -477,7 +478,7 @@ const CustomerEdit = () => {
                 //         },
                 //     });
 
-                //     console.log('Post successful:', response.data);
+                //     logger.debug('Post successful:', response.data);
                 //     const id = response.data.id;
 
                 //     // Add the ID to the values object
@@ -489,14 +490,14 @@ const CustomerEdit = () => {
                 //     setIsSubmiting(false);
                 //     onNext();
                 // } catch (error) {
-                //     console.error('Error in POST request:', error.response || error.message);
+                //     logger.error('Error in POST request:', error.response || error.message);
                 //     setIsSubmiting(false);
                 // }
 
                 setIsSubmiting(false)
                 onNext()
             } catch (error) {
-                console.error(
+                logger.error(
                     'Error in POST request:',
                     error.response || error.message,
                 )
@@ -571,7 +572,7 @@ const CustomerEdit = () => {
 
                 setIsSubmiting(false)
             } catch (error) {
-                console.error(
+                logger.error(
                     'Error in POST request:',
                     error.response || error.message,
                 )
@@ -604,7 +605,7 @@ const CustomerEdit = () => {
                 } as BusinessDetailIndividualFields)
                 setIsSubmiting(false)
             } catch (error) {
-                console.error(
+                logger.error(
                     'Error in POST request:',
                     error.response || error.message,
                 )
@@ -795,7 +796,7 @@ const CustomerEdit = () => {
                     'registration_required_for_other_other_text',
                     values.registration_required_for_other_other_text || '',
                 )
-                // console.log('LicenseDetailConsumerSection', LicenseDetailConsumerSection)
+                // logger.debug('LicenseDetailConsumerSection', LicenseDetailConsumerSection)
                 if (licenseDetailConsumer.id) {
                     const response = await AxiosBase.patch(
                         `/pmc/consumers/${licenseDetailConsumer.id}/`,
@@ -1040,7 +1041,7 @@ const CustomerEdit = () => {
             setIsSubmiting(false)
             onNext() // Move to the next step
         } catch (error) {
-            console.error(
+            logger.error(
                 'Error in POST request:',
                 error.response || error.message,
             )
@@ -1093,7 +1094,7 @@ const CustomerEdit = () => {
                     'Identity Document - 2',
                 )
             } catch (error) {
-                console.error(
+                logger.error(
                     'Error in POST request:',
                     error.response || error.message,
                 )
@@ -1114,7 +1115,7 @@ const CustomerEdit = () => {
                     'Identity Document',
                 )
             } catch (error) {
-                console.error(
+                logger.error(
                     'Error in POST request:',
                     error.response || error.message,
                 )
@@ -1186,7 +1187,7 @@ const CustomerEdit = () => {
                     },
                 )
             } catch (error) {
-                console.error(
+                logger.error(
                     'Error in POST request:',
                     error.response || error.message,
                 )
@@ -1215,7 +1216,7 @@ const CustomerEdit = () => {
                     },
                 )
             } catch (error) {
-                console.error(
+                logger.error(
                     'Error in POST request:',
                     error.response || error.message,
                 )
@@ -1266,7 +1267,7 @@ const CustomerEdit = () => {
                     )
                 }
             } catch (error) {
-                console.error(
+                logger.error(
                     'Error in POST request:',
                     error.response || error.message,
                 )

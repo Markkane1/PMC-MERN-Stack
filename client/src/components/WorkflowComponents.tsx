@@ -2,6 +2,7 @@
  * Workflow Components
  */
 import React, { useState } from 'react'
+import { logger } from '@/utils/logger'
 
 export const AssignmentForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -30,7 +31,7 @@ export const AssignmentForm: React.FC = () => {
       const result = await response.json()
       if (result.success) alert('Assignment created!')
     } catch (error) {
-      console.error('Error:', error)
+      logger.error('Error:', error)
     } finally {
       setLoading(false)
     }
@@ -71,7 +72,7 @@ export const AssignmentList: React.FC<{ userId: string }> = ({ userId }) => {
         const result = await response.json()
         if (result.success) setAssignments(result.data || [])
       } catch (error) {
-        console.error('Error:', error)
+        logger.error('Error:', error)
       } finally {
         setLoading(false)
       }
@@ -125,7 +126,7 @@ export const InspectionForm: React.FC<{ applicantId: string }> = ({ applicantId 
       const result = await response.json()
       if (result.success) alert('Inspection created!')
     } catch (error) {
-      console.error('Error:', error)
+      logger.error('Error:', error)
     } finally {
       setLoading(false)
     }
@@ -165,7 +166,7 @@ export const WorkflowDashboard: React.FC<{ userId: string }> = ({ userId }) => {
         const result = await response.json()
         if (result.success) setDashboard(result.data)
       } catch (error) {
-        console.error('Error:', error)
+        logger.error('Error:', error)
       } finally {
         setLoading(false)
       }

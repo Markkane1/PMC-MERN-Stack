@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
+import { logger } from '@/utils/logger'
 
 /**
  * ComprehensiveAnalyticsDashboard - Complete system overview
@@ -22,7 +23,7 @@ export const ComprehensiveAnalyticsDashboard: React.FC = () => {
         const result = await response.json()
         if (result.success) setAnalytics(result.data)
       } catch (error) {
-        console.error('Analytics fetch failed:', error)
+        logger.error('Analytics fetch failed:', error)
       } finally {
         setLoading(false)
       }
@@ -120,7 +121,7 @@ export const RecyclingAnalyticsDashboard: React.FC = () => {
         const result = await response.json()
         if (result.success) setRecyclingData(result.data)
       } catch (error) {
-        console.error('Error:', error)
+        logger.error('Error:', error)
       } finally {
         setLoading(false)
       }
@@ -281,7 +282,7 @@ export const CustomReportBuilder: React.FC = () => {
         alert(`Report generated: ${result.data.filename}`)
       }
     } catch (error) {
-      console.error('Error:', error)
+      logger.error('Error:', error)
     } finally {
       setGenerating(false)
     }

@@ -2,6 +2,7 @@
  * Inventory Components
  */
 import React, { useState } from 'react'
+import { logger } from '@/utils/logger'
 
 export const PlasticItemForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -34,7 +35,7 @@ export const PlasticItemForm: React.FC = () => {
       const result = await response.json()
       if (result.success) alert('Plastic item created!')
     } catch (error) {
-      console.error('Error:', error)
+      logger.error('Error:', error)
     } finally {
       setLoading(false)
     }
@@ -80,7 +81,7 @@ export const InventoryDashboard: React.FC<{ businessId: string }> = ({ businessI
         const result = await response.json()
         if (result.success) setInventory(result.data)
       } catch (error) {
-        console.error('Error:', error)
+        logger.error('Error:', error)
       } finally {
         setLoading(false)
       }

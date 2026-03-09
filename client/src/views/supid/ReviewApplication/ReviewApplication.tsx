@@ -117,20 +117,15 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
   }, [groupList]);
 
   useEffect(() => {
-    console.log('its in effect of review application ')
-    console.log(applicantDetail)
-
     if (applicantDetail.id) {
         loadApplicantResponses(applicantDetail.id);
     }
   }, [applicantDetail.id]);
 
   useEffect(() => {
-    console.log('fieldResponses', fieldResponses)
     updateApplicantDetail({"fieldResponses":fieldResponses, "readOnly":disabled});
 
   }, [fieldResponses])
-console.log('fieldResponses', fieldResponses)
 
 useEffect(() => {
   updateApplicantDetail({"manualFields":manualFields, "readOnly":disabled});
@@ -348,7 +343,6 @@ const handleDocumentFormSubmit = async (document, document_description) => {
     });
     alert(documentType + " is uploaded")
   } catch (error) {
-      console.error('Error in POST request:', error.response || error.message);
       navigate('/error');
   }
 
@@ -360,8 +354,6 @@ const handleChangeManualFields = (fieldName, value) => {
     [fieldName]: value,
   }));
 };
-
-  console.log(applicantDetail)
 
 
 

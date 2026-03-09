@@ -4,6 +4,7 @@ import { Controller } from 'react-hook-form'
 // import { useState } from 'react';
 import type { FormSectionBaseProps } from './types'
 import useFormStore from '../../../store/supid/supidStore'
+import { logger } from '@/utils/logger'
 
 type BusinessDetailSectionProps = FormSectionBaseProps & {
     readOnly?: boolean // Add this prop
@@ -27,7 +28,7 @@ const BusinessDetailSection = ({
         markSectionAsCompleted,
     } = useFormStore()
 
-    console.log('businessEntityType', businessEntity.businessEntityType)
+    logger.debug('businessEntityType', businessEntity.businessEntityType)
     return (
         <Card>
             <h4 className="mb-6">Business Entity Type</h4>

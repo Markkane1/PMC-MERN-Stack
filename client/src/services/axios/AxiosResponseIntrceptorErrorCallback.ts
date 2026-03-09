@@ -1,5 +1,6 @@
 import { useSessionUser, useToken } from '@/store/authStore'
 import type { AxiosError } from 'axios'
+import { logger } from '@/utils/logger'
 
 const AxiosResponseIntrceptorErrorCallback = (error: AxiosError) => {
     const { response } = error
@@ -11,13 +12,13 @@ const AxiosResponseIntrceptorErrorCallback = (error: AxiosError) => {
         const errorDetails = response.data
 
         // Log or handle the error details as needed
-        console.error('Validation Error:', errorDetails)
+        logger.error('Validation Error:', errorDetails)
 
         // Optionally, you can trigger a custom handler to display the error
         // For example, use a global error handler or pass to a toast notification system
         // if (typeof errorDetails === 'object') {
         //     for (const [field, messages] of Object.entries(errorDetails)) {
-        //         console.log(`Field: ${field}, Error: ${messages.join(', ')}`)
+        //         logger.debug(`Field: ${field}, Error: ${messages.join(', ')}`)
         //         // Here, display the error messages to the form
         //     }
         // }

@@ -16,7 +16,7 @@ const ErrorPage = () => {
             <div style={styles.content}>
                 <h1 style={styles.title}>Oops! Something Went Wrong</h1>
                 <p style={styles.message}>
-                    We’re experiencing some technical difficulties. Please try
+                    Weï¿½re experiencing some technical difficulties. Please try
                     refreshing the page or come back later.
                 </p>
                 <p style={styles.message}>

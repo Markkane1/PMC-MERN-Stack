@@ -1,10 +1,6 @@
-import { usePaymentAPI, useAlertAPI } from '@/api/pmc'
-import { useGISAnalytics, useAdvancedAnalytics } from '@/api/analytics'
-
-// Setup mock fetch once before all tests
 beforeEach(() => {
-    vi.clearAllMocks()
-    ;(global.fetch as any) = vi.fn()
+    jest.clearAllMocks()
+    global.fetch = jest.fn()
 })
 
 describe('Payment API Integration', () => {
@@ -17,7 +13,7 @@ describe('Payment API Integration', () => {
             },
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -30,7 +26,7 @@ describe('Payment API Integration', () => {
     it('should handle payment verification', async () => {
         const mockResponse = { success: true, verified: true }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -42,7 +38,7 @@ describe('Payment API Integration', () => {
     it('should generate chalan', async () => {
         const mockResponse = { success: true, chalanNumber: 'CH-2024-001' }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -54,7 +50,7 @@ describe('Payment API Integration', () => {
 
 describe('Alert API Integration', () => {
     beforeEach(() => {
-        vi.clearAllMocks()
+        jest.clearAllMocks()
     })
 
     it('should fetch notifications', async () => {
@@ -64,7 +60,7 @@ describe('Alert API Integration', () => {
             ],
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -77,7 +73,7 @@ describe('Alert API Integration', () => {
     it('should mark notification as read', async () => {
         const mockResponse = { success: true }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -89,7 +85,7 @@ describe('Alert API Integration', () => {
     it('should update alert preferences', async () => {
         const mockResponse = { success: true, preferences: { email: true, sms: false } }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -101,7 +97,7 @@ describe('Alert API Integration', () => {
 
 describe('Analytics API Integration', () => {
     beforeEach(() => {
-        vi.clearAllMocks()
+        jest.clearAllMocks()
     })
 
     it('should fetch GIS locations', async () => {
@@ -111,7 +107,7 @@ describe('Analytics API Integration', () => {
             ],
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -127,7 +123,7 @@ describe('Analytics API Integration', () => {
             ],
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -144,7 +140,7 @@ describe('Analytics API Integration', () => {
             },
         }
 
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             json: async () => mockResponse,
         })
@@ -154,7 +150,7 @@ describe('Analytics API Integration', () => {
     })
 
     it('should export analytics', async () => {
-        ;(global.fetch as any).mockResolvedValueOnce({
+        global.fetch.mockResolvedValueOnce({
             ok: true,
             blob: async () => new Blob(['PDF content']),
         })

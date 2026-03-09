@@ -2,6 +2,7 @@
  * Document Components
  */
 import React, { useState } from 'react'
+import { logger } from '@/utils/logger'
 
 export const DocumentUpload: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -37,7 +38,7 @@ export const DocumentUpload: React.FC = () => {
       const result = await response.json()
       if (result.success) alert('Document uploaded!')
     } catch (error) {
-      console.error('Error:', error)
+      logger.error('Error:', error)
     } finally {
       setLoading(false)
     }
@@ -74,7 +75,7 @@ export const DocumentExpiryList: React.FC = () => {
         const result = await response.json()
         if (result.success) setDocuments(result.data || [])
       } catch (error) {
-        console.error('Error:', error)
+        logger.error('Error:', error)
       } finally {
         setLoading(false)
       }

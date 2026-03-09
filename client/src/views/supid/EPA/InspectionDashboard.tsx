@@ -6,6 +6,7 @@ import AxiosBase from '../../../services/axios/AxiosBase'
 import { useNavigate } from 'react-router-dom'
 import { useSessionUser } from '@/store/authStore'
 import FileDownloadIcon from '@mui/icons-material/FileDownload'
+import { logger } from '@/utils/logger'
 
 const InspectionReportsList = () => {
     const [reports, setReports] = useState([])
@@ -21,7 +22,7 @@ const InspectionReportsList = () => {
                 )
                 setReports(response.data)
             } catch (error) {
-                console.error('Error fetching reports:', error)
+                logger.error('Error fetching reports:', error)
             } finally {
                 setLoading(false)
             }
@@ -151,7 +152,7 @@ const InspectionReportsList = () => {
             a.remove()
             window.URL.revokeObjectURL(url) // Clean up
         } catch (error) {
-            console.error('Failed to download Excel file:', error)
+            logger.error('Failed to download Excel file:', error)
         }
     }
 
@@ -179,7 +180,7 @@ const InspectionReportsList = () => {
             a.remove()
             window.URL.revokeObjectURL(url) // Clean up
         } catch (error) {
-            console.error('Failed to download Excel file:', error)
+            logger.error('Failed to download Excel file:', error)
         }
     }
 

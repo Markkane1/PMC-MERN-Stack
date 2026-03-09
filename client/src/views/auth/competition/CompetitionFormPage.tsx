@@ -10,6 +10,7 @@ import Button from '@/components/ui/Button'
 import TablerIcon from '@/components/shared/TablerIcon'
 import AxiosBase from '../../../services/axios/AxiosBase'
 import type { CompetitionFormSchema } from './types'
+import { logger } from '@/utils/logger'
 
 const schema = z.object({
     fullName: z.string().min(1, { message: 'Required' }),
@@ -157,7 +158,7 @@ const CompetitionFormPage = () => {
                 alert('Something went wrong. Please try again.')
             }
         } catch (err) {
-            console.error('Submission failed:', err)
+            logger.error('Submission failed:', err)
             alert('Error submitting the form. Please try again later.')
         }
     }

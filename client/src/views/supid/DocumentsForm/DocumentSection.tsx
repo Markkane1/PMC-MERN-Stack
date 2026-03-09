@@ -15,6 +15,7 @@ import useFormStore from '../../../store/supid/supidStore'
 import AxiosBase from '@/services/axios/AxiosBase'
 import Button from '@/components/ui/Button'
 import TablerIcon from '@/components/shared/TablerIcon'
+import { logger } from '@/utils/logger'
 
 type BusinessDetailSectionProps = FormSectionBaseProps & {
     readOnly?: boolean // Add this prop
@@ -159,8 +160,8 @@ const LicenseDetailProducerSection = ({
         markSectionAsCompleted,
     } = useFormStore()
 
-    console.log('has_identity_document')
-    console.log('has_identity_document', applicantDetail.has_identity_document)
+    logger.debug('has_identity_document')
+    logger.debug('has_identity_document', applicantDetail.has_identity_document)
 
     const downloadLatestDocument = async (description: string) => {
         try {
@@ -181,7 +182,7 @@ const LicenseDetailProducerSection = ({
             link.click()
             document.body.removeChild(link)
         } catch (error) {
-            console.error(
+            logger.error(
                 'Failed to download latest document:',
                 error?.response || error?.message || error,
             )

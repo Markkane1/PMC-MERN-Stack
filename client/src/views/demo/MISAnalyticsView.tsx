@@ -16,6 +16,7 @@ import { number } from 'zod'
 import AxiosBase from '../../services/axios/AxiosBase'
 import { motion } from 'framer-motion'
 import { Divider } from '@mui/material'
+import { logger } from '@/utils/logger'
 
 // new ApexCharts(document.querySelector("#spark3"), spark3).render();
 
@@ -114,7 +115,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                         },
                     },
                 )
-                console.log(respons.data)
+                logger.debug(respons.data)
 
                 const { district_data, registration_statistics, grid_data } =
                     respons.data
@@ -346,7 +347,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                                     const seriesName = series[seriesIndex].name
                                     const category = districts[dataPointIndex]
                                     showStatistics(seriesName, category)
-                                    console.log(
+                                    logger.debug(
                                         `Series: ${seriesName}, Category: ${category}`,
                                     )
                                 },
@@ -564,8 +565,8 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
     function showStatistics(seriesName: string, category: string): void {
         setFilterDistrictCategory(category)
         setFilterStackholderSeries(seriesName)
-        console.log('District calculated: ', category)
-        console.log('seriesName calculated: ', seriesName)
+        logger.debug('District calculated: ', category)
+        logger.debug('seriesName calculated: ', seriesName)
     }
 
     const AllStackholdersChartData: AllStackholdersChartDataTypes = {
@@ -585,7 +586,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                                 dataPointIndex
                             ]
                         showStatistics(seriesName, category)
-                        console.log(
+                        logger.debug(
                             `Series: ${seriesName}, Category: ${category}`,
                         )
                     },
@@ -650,7 +651,7 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
         visible: { opacity: 1, transition: { duration: 1 } },
     }
 
-    console.log('chartData', chartData)
+    logger.debug('chartData', chartData)
     return (
         <motion.div
             className="banner-container2"

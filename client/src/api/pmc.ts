@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { getApiBaseUrl } from '@/utils/apiBaseUrl'
+import { logger } from '@/utils/logger'
 
 const API_BASE_URL = getApiBaseUrl()
 
@@ -125,7 +126,7 @@ export const useAlertAPI = () => {
       if (!response.ok) throw new Error(data.message)
       return data.data.unreadCount
     } catch (err) {
-      console.error('Failed to get unread count:', err)
+      logger.error('Failed to get unread count:', err)
       return 0
     }
   }, [])
@@ -182,7 +183,7 @@ export const useAlertAPI = () => {
       if (!response.ok) throw new Error(data.message)
       return data.data
     } catch (err) {
-      console.error('Failed to get preferences:', err)
+      logger.error('Failed to get preferences:', err)
       return null
     }
   }, [])
@@ -249,7 +250,7 @@ export const useAdvancedFieldAPI = () => {
       const data = await response.json()
       return data
     } catch (err) {
-      console.error('Validation error:', err)
+      logger.error('Validation error:', err)
       return { isValid: false, errors: ['Validation failed'] }
     }
   }, [])
@@ -306,7 +307,7 @@ export const useAdvancedFieldAPI = () => {
       if (!response.ok) throw new Error(data.message)
       return data.data
     } catch (err) {
-      console.error('Failed to get completion status:', err)
+      logger.error('Failed to get completion status:', err)
       return null
     }
   }, [])
@@ -321,7 +322,7 @@ export const useAdvancedFieldAPI = () => {
       if (!response.ok) throw new Error(data.message)
       return data.data
     } catch (err) {
-      console.error('Failed to get sections:', err)
+      logger.error('Failed to get sections:', err)
       return []
     }
   }, [])

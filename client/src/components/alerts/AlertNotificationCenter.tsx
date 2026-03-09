@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useAlertAPI } from '../../api/pmc'
+import { logger } from '@/utils/logger'
 
 interface Alert {
   _id: string
@@ -35,7 +36,7 @@ export const AlertNotificationCenter: React.FC = () => {
       const data = await getAlerts(10, page * 10)
       setAlerts(data || [])
     } catch (err) {
-      console.error('Failed to load alerts:', err)
+      logger.error('Failed to load alerts:', err)
     }
   }
 
@@ -44,7 +45,7 @@ export const AlertNotificationCenter: React.FC = () => {
       const count = await getUnreadCount()
       setUnreadCount(count)
     } catch (err) {
-      console.error('Failed to load unread count:', err)
+      logger.error('Failed to load unread count:', err)
     }
   }
 
@@ -54,7 +55,7 @@ export const AlertNotificationCenter: React.FC = () => {
       setAlerts(alerts.map((a) => (a._id === alertId ? { ...a, isRead: true } : a)))
       setUnreadCount(Math.max(0, unreadCount - 1))
     } catch (err) {
-      console.error('Failed to mark alert as read:', err)
+      logger.error('Failed to mark alert as read:', err)
     }
   }
 
@@ -63,7 +64,7 @@ export const AlertNotificationCenter: React.FC = () => {
       await deleteAlert(alertId)
       setAlerts(alerts.filter((a) => a._id !== alertId))
     } catch (err) {
-      console.error('Failed to delete alert:', err)
+      logger.error('Failed to delete alert:', err)
     }
   }
 

@@ -10,6 +10,7 @@ import Point from 'ol/geom/Point'
 import { fromLonLat, toLonLat } from 'ol/proj'
 import { Fill, Stroke, Style, Circle } from 'ol/style'
 import { Modify } from 'ol/interaction'
+import { logger } from '@/utils/logger'
 
 const OpenLayersLocationPicker = ({
     onLocationSelect,
@@ -97,7 +98,7 @@ const OpenLayersLocationPicker = ({
                         lng: position.coords.longitude,
                     })
                 },
-                (error) => console.error('Geolocation error:', error),
+                (error) => logger.error('Geolocation error:', error),
                 { enableHighAccuracy: true },
             )
         }

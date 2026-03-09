@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import { getApiBaseUrl } from '@/utils/apiBaseUrl'
+import { logger } from '@/utils/logger'
 
 interface LocationMarker {
     id: string
@@ -120,7 +121,7 @@ export const useGISAnalytics = () => {
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Error fetching locations'
             setError(message)
-            console.error(message)
+            logger.error(message)
             return []
         } finally {
             setLoading(false)
@@ -136,7 +137,7 @@ export const useGISAnalytics = () => {
             const districtFilter = district.trim().toLowerCase()
             return rows.filter((row: any) => String(row?.district_name || '').toLowerCase() === districtFilter)
         } catch (err) {
-            console.error('Error fetching location stats:', err)
+            logger.error('Error fetching location stats:', err)
             return []
         }
     }, [])
@@ -199,7 +200,7 @@ export const useAdvancedAnalytics = () => {
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Error fetching trends'
             setError(message)
-            console.error(message)
+            logger.error(message)
             return []
         } finally {
             setLoading(false)
@@ -220,7 +221,7 @@ export const useAdvancedAnalytics = () => {
                 { name: 'Districts Covered', value: Array.isArray(districtStats) ? districtStats.length : 0 },
             ]
         } catch (err) {
-            console.error('Error fetching summary metrics:', err)
+            logger.error('Error fetching summary metrics:', err)
             return []
         }
     }, [])
@@ -280,7 +281,7 @@ export const useComparisonAnalytics = () => {
             setComparisonData(mapped)
             return mapped
         } catch (err) {
-            console.error('Error comparing districts:', err)
+            logger.error('Error comparing districts:', err)
             setComparisonData([])
             return []
         } finally {
@@ -298,7 +299,7 @@ export const useComparisonAnalytics = () => {
                 }))
                 .sort((a, b) => b.value - a.value)
         } catch (err) {
-            console.error('Error fetching ranking:', err)
+            logger.error('Error fetching ranking:', err)
             return []
         }
     }, [])

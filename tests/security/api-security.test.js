@@ -164,6 +164,7 @@ describe('S5 Express & API Security', () => {
     process.env.JWT_REFRESH_EXPIRES_IN = '7d'
     process.env.CORS_ORIGIN = 'http://localhost:5173'
     process.env.MONGO_URI = mongoServer.getUri()
+    process.env.ENABLE_RATE_LIMITS_IN_TEST = 'true'
     process.env.ALLOW_LEGACY_MASTERKEY_LOGIN = 'false'
 
     execSync('npm run build --prefix server', {
