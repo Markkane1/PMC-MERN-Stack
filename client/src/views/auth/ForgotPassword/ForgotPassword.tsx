@@ -231,7 +231,7 @@ export const ForgotPasswordBase = () => {
                                     handlePsidChange(e.target.value)
                                 }
                             >
-                                {(inputProps) => (
+                                {({ size: _size, ...inputProps }) => (
                                     <Input
                                         type="text"
                                         autoComplete="off"
@@ -254,7 +254,7 @@ export const ForgotPasswordBase = () => {
                                     handleMobileNumberChange(e.target.value)
                                 }
                             >
-                                {(inputProps) => (
+                                {({ size: _size, ...inputProps }) => (
                                     <Input
                                         type="text"
                                         autoComplete="off"
@@ -270,7 +270,7 @@ export const ForgotPasswordBase = () => {
                                 value={cnic}
                                 onChange={(e) => setCnic(e.target.value)} // Update CNIC state
                             >
-                                {(inputProps) => (
+                                {({ size: _size, ...inputProps }) => (
                                     <Input
                                         type="text"
                                         autoComplete="off"
@@ -381,5 +381,4 @@ const ForgotPassword = () => {
 }
 
 export default ForgotPassword
-
 

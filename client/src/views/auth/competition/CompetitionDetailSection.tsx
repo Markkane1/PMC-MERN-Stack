@@ -178,7 +178,7 @@ const CompetitionDetailSection = ({
                                 readOnly={readOnly}
                                 onChange={(e) => field.onChange(e.target.value)}
                             >
-                                {(inputProps) => (
+                                {({ size: _size, ...inputProps }) => (
                                     <Input
                                         placeholder="Mobile"
                                         {...inputProps}
@@ -260,5 +260,4 @@ const CompetitionDetailSection = ({
 }
 
 export default CompetitionDetailSection
-
 

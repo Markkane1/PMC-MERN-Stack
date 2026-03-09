@@ -136,7 +136,7 @@ const ApplicantDetailSection = ({
                                 readOnly={readOnly} // Apply the read-only prop
                                 onChange={(e) => field.onChange(e.target.value)} // Update form state on change
                             >
-                                {(inputProps) => (
+                                {({ size: _size, ...inputProps }) => (
                                     <Input
                                         type="text"
                                         autoComplete="off"
@@ -189,7 +189,7 @@ const ApplicantDetailSection = ({
                                 readOnly={readOnly} // Apply the read-only prop
                                 onChange={(e) => field.onChange(e.target.value)} // Update form state on change
                             >
-                                {(inputProps) => (
+                                {({ size: _size, ...inputProps }) => (
                                     <Input
                                         type="text"
                                         autoComplete="off"
@@ -208,5 +208,4 @@ const ApplicantDetailSection = ({
 }
 
 export default ApplicantDetailSection
-
 

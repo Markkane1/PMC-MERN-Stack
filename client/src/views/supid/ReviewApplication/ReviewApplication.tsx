@@ -1,4 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  type ChangeEvent,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+} from "react";
 import useFormStore from "../../../store/supid/supidStore";
 import BottomStickyBar from "@/components/template/BottomStickyBar";
 import {
@@ -22,14 +29,66 @@ import { Tooltip } from 'react-tooltip'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import { useSessionUser } from '@/store/authStore';
 
-const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
+type GroupOption = {
+  value: string
+  label?: string
+}
+
+type FieldResponseValue = {
+  response?: string
+  comment?: string | null
+}
+
+type FieldResponses = Record<string, FieldResponseValue>
+
+type ManualFields = Record<string, string | File | undefined> & {
+  latitude: string
+  longitude: string
+  labor_dept_registration_status?: string
+}
+
+type ReviewAndSavePageProps = {
+  groupList?: GroupOption[]
+  children?: ReactNode
+  setMovementDirection: Dispatch<SetStateAction<'forward' | 'backward' | null>>
+}
+
+const emptyManualFields = (): ManualFields => ({
+  latitude: "",
+  longitude: "",
+})
+
+const getFileFromEvent = (
+  event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+) => (event.target as HTMLInputElement).files?.[0]
+
+const getManualFieldText = (fields: ManualFields, key: string) => {
+  const value = fields[key]
+  return typeof value === "string" || typeof value === "number"
+    ? String(value)
+    : ""
+}
+
+const formatValue = (key: string, value: unknown) => {
+  if (typeof value === "object" && value !== null) {
+    return JSON.stringify(value, null, 2)
+  }
+
+  if (key === "licenseType" && value === "Consumer") {
+    return "Stockist/Distributor/Supplier"
+  }
+
+  return String(value)
+}
+
+const ReviewAndSavePage = ({ groupList, children, setMovementDirection }: ReviewAndSavePageProps) => {
   const navigate = useNavigate();
   const [selectedGroup, setSelectedGroup] = useState(
     groupList !== undefined && groupList.length > 1 ? groupList[1].value : ""
   );
   const [checkboxState, setCheckboxState] = useState({ previousStage: false, nextStage: false });
-  const [fieldResponses, setFieldResponses] = useState({});
-  const [manualFields, setManualFields] = useState({ latitude: "", longitude: "" });
+  const [fieldResponses, setFieldResponses] = useState<FieldResponses>({});
+  const [manualFields, setManualFields] = useState<ManualFields>(emptyManualFields);
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -43,14 +102,15 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
   const handleCloseModal = () => setModalVisible(false);
 
   // Handler for radio change
-  const handleDocumentTypeChange = (e) => {
+  const handleDocumentTypeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setDocumentType(e.target.value);
   };
 
   // Wrap the file change handler so that it sends the current documentType
-  const onFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      handleDocumentFormSubmit(e.target.files[0], documentType);
+  const onFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = getFileFromEvent(e)
+    if (file) {
+      handleDocumentFormSubmit(file, documentType);
     }
   };
 
@@ -91,12 +151,13 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
   const {
     control,
     handleSubmit,
-    formState: { errors },
-  } = useForm({
+    formState: { errors: rawErrors },
+  } = useForm<Record<string, unknown>>({
     defaultValues: {
       firstName: "",
     },
   });
+  const errors = rawErrors as Record<string, { message?: string } | undefined>
 
   const [searchParams] = useSearchParams();
   const group = searchParams.get("group");
@@ -107,8 +168,8 @@ const ReviewAndSavePage = ({ groupList, children, setMovementDirection }) => {
   const [missingSelections, setMissingSelections] = useState([]);
   const [missingComments, setMissingComments] = useState([]);
 
-  const isFieldMissing = (key) => missingSelections.includes(key);
-  const isCommentMissing = (key) => missingComments.includes(key);
+  const isFieldMissing = (key: string) => missingSelections.includes(key);
+  const isCommentMissing = (key: string) => missingComments.includes(key);
 
   useEffect(() => {
     setSelectedGroup(
@@ -142,33 +203,37 @@ useEffect(() => {
 
 
 // Start 20250218
-const handleChangeRemarks = (event) => {
+const handleChangeRemarks = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
   setRemarks(event.target.value);
   const data_applicantDetail = { remarks: event.target.value };
   updateApplicantDetail(data_applicantDetail);
 };
 
-const loadApplicantResponses = async (applicantId) => {
+const loadApplicantResponses = async (_applicantId: string | number) => {
   try {
-      const transformedResponses = applicantDetail.field_responses.reduce((acc, item) => {
-        acc[item.field_key] = { response: item.response, comment: item.comment };
+      const transformedResponses = (applicantDetail.field_responses || []).reduce((acc: FieldResponses, item: Record<string, unknown>) => {
+        const fieldKey = String(item.field_key ?? "")
+        acc[fieldKey] = { response: String(item.response ?? ""), comment: item.comment as string | null | undefined };
         return acc;
       }, {});
       setFieldResponses(transformedResponses); // Update the state with the transformed format
       // setError(err);
       // If manual_fields is present, setManualFields
       if (applicantDetail.manual_fields) {
-        setManualFields(applicantDetail.manual_fields);
+        setManualFields({
+          ...emptyManualFields(),
+          ...(applicantDetail.manual_fields as Partial<ManualFields>),
+        });
       } else {
         // If none, perhaps reset or leave it alone
-        setManualFields({});
+        setManualFields(emptyManualFields());
       }
   } finally {
       // setLoading(false);
   }
 };
 
-  const handleCheckboxChangeYesNo = (key, response) => {
+  const handleCheckboxChangeYesNo = (key: string, response: string) => {
     setFieldResponses((prev) => ({
         ...prev,
         [key]: {
@@ -180,7 +245,7 @@ const loadApplicantResponses = async (applicantId) => {
     
 };
 
-const handleCommentChange = (key, comment) => {
+const handleCommentChange = (key: string, comment: string) => {
   setFieldResponses((prev) => ({
     ...prev,
     [key]: {
@@ -191,7 +256,7 @@ const handleCommentChange = (key, comment) => {
 };
 
 
-const handleCheckboxChange = (event) => {
+const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
   const { name, checked } = event.target;
   setMovementDirection(null);
   // Ensure only one checkbox is selected at a time
@@ -317,7 +382,7 @@ const handleCheckboxChange = (event) => {
 };
 
 
-const handleDocumentFormSubmit = async (document, document_description) => {
+const handleDocumentFormSubmit = async (document: File, document_description: string) => {
   const formData = new FormData();
   
 
@@ -348,7 +413,7 @@ const handleDocumentFormSubmit = async (document, document_description) => {
 
 };
 
-const handleChangeManualFields = (fieldName, value) => {
+const handleChangeManualFields = (fieldName: string, value: string | File | undefined) => {
   setManualFields((prev) => ({
     ...prev,
     [fieldName]: value,
@@ -415,7 +480,7 @@ const handleChangeManualFields = (fieldName, value) => {
   };
 
 
-  const renderPSIDTracking = (title, psidData) => (
+  const renderPSIDTracking = (title: string, psidData: Array<Record<string, unknown>> = []) => (
     <Card className="mb-4">
       <CardContent>
         <Typography variant="h6" className="font-bold mb-4">
@@ -437,9 +502,7 @@ const handleChangeManualFields = (fieldName, value) => {
                       {key.replace(/_/g, " ")}:
                     </span>
                     <span className="text-normal break-words">
-                      {typeof value === "object" && value !== null
-                        ? JSON.stringify(value, null, 2)
-                        : value}
+                      {formatValue(key, value)}
                     </span>
                   </div>
                 ) : null
@@ -456,7 +519,7 @@ const handleChangeManualFields = (fieldName, value) => {
   );
   
 
-  const renderSection = (title, data) => (
+  const renderSection = (title: string, data: Record<string, unknown> = {}) => (
     <Card className="mb-4">
       <CardContent>
         <Typography variant="h6" className="font-bold mb-4">
@@ -477,11 +540,7 @@ const handleChangeManualFields = (fieldName, value) => {
                   {keyToTitleMapping[key] || key}:
                 </span>
                 <span className="text-normal break-words">
-                  {1===1 //typeof value === "object" // && value !== null
-                    ? JSON.stringify(value, null, 2)
-                    : key === "licenseType" && value === "Consumer"
-                    ? "Stockist/Distributor/Supplier"
-                    : value}
+                  {formatValue(key, value)}
                 </span>
               </div>
   
@@ -641,7 +700,7 @@ const handleChangeManualFields = (fieldName, value) => {
                   type="text"
                   autoComplete="off"
                   placeholder="List of Products"
-                  value={manualFields.list_of_products || ""}
+                  value={getManualFieldText(manualFields, "list_of_products")}
                   onChange={(e) =>
                     handleChangeManualFields("list_of_products", e.target.value)
                   }
@@ -658,7 +717,7 @@ const handleChangeManualFields = (fieldName, value) => {
                   type="text"
                   autoComplete="off"
                   placeholder="List of By Products"
-                  value={manualFields.list_of_by_products || ""}
+                  value={getManualFieldText(manualFields, "list_of_by_products")}
                   onChange={(e) =>
                     handleChangeManualFields("list_of_by_products", e.target.value)
                   }
@@ -675,7 +734,7 @@ const handleChangeManualFields = (fieldName, value) => {
                   type="text"
                   autoComplete="off"
                   placeholder="List and Quantity of Raw Material Imported"
-                  value={manualFields.raw_material_imported || ""}
+                  value={getManualFieldText(manualFields, "raw_material_imported")}
                   onChange={(e) =>
                     handleChangeManualFields(
                       "raw_material_imported",
@@ -695,7 +754,7 @@ const handleChangeManualFields = (fieldName, value) => {
                   type="text"
                   autoComplete="off"
                   placeholder="If raw material is bought then Name of seller"
-                  value={manualFields.seller_name_if_raw_material_bought || ""}
+                  value={getManualFieldText(manualFields, "seller_name_if_raw_material_bought")}
                   onChange={(e) =>
                     handleChangeManualFields(
                       "seller_name_if_raw_material_bought",
@@ -715,7 +774,7 @@ const handleChangeManualFields = (fieldName, value) => {
                   type="text"
                   autoComplete="off"
                   placeholder="If self import, provide details"
-                  value={manualFields.self_import_details || ""}
+                  value={getManualFieldText(manualFields, "self_import_details")}
                   onChange={(e) =>
                     handleChangeManualFields("self_import_details", e.target.value)
                   }
@@ -732,7 +791,7 @@ const handleChangeManualFields = (fieldName, value) => {
                   type="text"
                   autoComplete="off"
                   placeholder="Quantity of raw material utilized"
-                  value={manualFields.raw_material_utilized || ""}
+                  value={getManualFieldText(manualFields, "raw_material_utilized")}
                   onChange={(e) =>
                     handleChangeManualFields(
                       "raw_material_utilized",
@@ -837,10 +896,10 @@ const handleChangeManualFields = (fieldName, value) => {
                 errorMessage={errors.consentPermitFile?.message}
               >
                 <Input
-                  type="file"
-                  accept=".pdf,.png,.jpg"
-                  onChange={(e) =>
-                    handleChangeManualFields("consent_permit_file", e.target.files[0])
+                    type="file"
+                    accept=".pdf,.png,.jpg"
+                    onChange={(e) =>
+                    handleChangeManualFields("consent_permit_file", getFileFromEvent(e))
                   }
                   disabled={disabled}
                 />
@@ -852,10 +911,10 @@ const handleChangeManualFields = (fieldName, value) => {
                 errorMessage={errors.flowDiagramFile?.message}
               >
                 <Input
-                  type="file"
-                  accept=".pdf,.png,.jpg"
-                  onChange={(e) =>
-                    handleChangeManualFields("flow_diagram_file", e.target.files[0])
+                    type="file"
+                    accept=".pdf,.png,.jpg"
+                    onChange={(e) =>
+                    handleChangeManualFields("flow_diagram_file", getFileFromEvent(e))
                   }
                   disabled={disabled}
                 />
@@ -877,10 +936,10 @@ const handleChangeManualFields = (fieldName, value) => {
                 errorMessage={errors.actionPlanFile?.message}
               >
                 <Input
-                  type="file"
-                  accept=".pdf,.png,.jpg"
-                  onChange={(e) =>
-                    handleChangeManualFields("action_plan_file", e.target.files[0])
+                    type="file"
+                    accept=".pdf,.png,.jpg"
+                    onChange={(e) =>
+                    handleChangeManualFields("action_plan_file", getFileFromEvent(e))
                   }
                   disabled={disabled}
                 />
@@ -895,7 +954,7 @@ const handleChangeManualFields = (fieldName, value) => {
                   type="text"
                   autoComplete="off"
                   placeholder="List of Stockist/Distributor/Supplier"
-                  value={manualFields.stockist_distributor_list || ""}
+                  value={getManualFieldText(manualFields, "stockist_distributor_list")}
                   onChange={(e) =>
                     handleChangeManualFields(
                       "stockist_distributor_list",
@@ -921,7 +980,7 @@ const handleChangeManualFields = (fieldName, value) => {
               <Input
                 type="text"
                 placeholder="Average Sales"
-                value={manualFields.procurement_per_day || ""}
+                value={getManualFieldText(manualFields, "procurement_per_day")}
                 onChange={(e) =>
                   handleChangeManualFields("procurement_per_day", e.target.value)
                 }
@@ -949,7 +1008,7 @@ const handleChangeManualFields = (fieldName, value) => {
                   borderRadius: "4px",
                   backgroundColor: "#f9f9f9",
                 }}
-                value={manualFields.no_of_workers || ""}
+                value={getManualFieldText(manualFields, "no_of_workers")}
                 onChange={(e) =>
                   handleChangeManualFields("no_of_workers", e.target.value)
                 }
@@ -1009,7 +1068,7 @@ const handleChangeManualFields = (fieldName, value) => {
                   borderRadius: "4px",
                   backgroundColor: "#f9f9f9",
                 }}
-                value={manualFields.occupational_safety_and_health_facilities || ""}
+                value={getManualFieldText(manualFields, "occupational_safety_and_health_facilities")}
                 onChange={(e) =>
                   handleChangeManualFields(
                     "occupational_safety_and_health_facilities",
@@ -1035,7 +1094,7 @@ const handleChangeManualFields = (fieldName, value) => {
                   borderRadius: "4px",
                   backgroundColor: "#f9f9f9",
                 }}
-                value={manualFields.adverse_environmental_impacts || ""}
+                value={getManualFieldText(manualFields, "adverse_environmental_impacts")}
                 onChange={(e) =>
                   handleChangeManualFields(
                     "adverse_environmental_impacts",
@@ -1058,7 +1117,7 @@ const handleChangeManualFields = (fieldName, value) => {
             type="file"
             accept=".png,.jpg"
             onChange={(e) =>
-              handleChangeManualFields("pictorial_evidence_file", e.target.files[0])
+              handleChangeManualFields("pictorial_evidence_file", getFileFromEvent(e))
             }
             disabled={disabled}
           />
@@ -1079,9 +1138,12 @@ const handleChangeManualFields = (fieldName, value) => {
               <Input
                 type="file"
                 accept=".pdf,.png,.jpg"
-                onChange={(e) =>
-                  handleDocumentFormSubmit(e.target.files[0], "Registration with Labor Deparment")
-                }
+                onChange={(e) => {
+                  const file = getFileFromEvent(e)
+                  if (file) {
+                    handleDocumentFormSubmit(file, "Registration with Labor Deparment")
+                  }
+                }}
                 disabled={disabled_lsm && !isAuthorizedDO}
               />
             </FormItem>
@@ -1165,7 +1227,7 @@ const handleChangeManualFields = (fieldName, value) => {
         {
         !disabled && <Card className="mb-4" >
           <CardContent>
-          <Typography variant="h7" sx={{ fontWeight: "bold", marginBottom: "20px" }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: "bold", marginBottom: "20px" }}>
           Please review the information provided by the applicant. This information is not editable and it is for your review only. Please click "Yes" if information is found correct and "No" if information is not correct. In case of "No" pleae add your comments too.
  
         </Typography>
@@ -1175,9 +1237,9 @@ const handleChangeManualFields = (fieldName, value) => {
         {
         disabled && <Card className="mb-4" >
           <CardContent>
-          <Typography variant="h7" sx={{ fontWeight: "bold", marginBottom: "20px" }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: "bold", marginBottom: "20px" }}>
           Please review the information provided by the applicant and District Incharge.
-        </Typography>
+          </Typography>
         </CardContent>
         </Card>
         }

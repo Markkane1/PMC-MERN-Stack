@@ -12,6 +12,7 @@ import sleep from '@/utils/sleep'
 import { TbTrash } from 'react-icons/tb'
 import { useNavigate } from 'react-router-dom'
 import type { ApplicantDetailFormSchema } from '../ApplicantDetailForm'
+import axios from 'axios'
 import Steps from '@/components/ui/Steps';
 import { BiSave } from 'react-icons/bi'
 import { BsBack } from 'react-icons/bs'
@@ -21,6 +22,50 @@ import AxiosBase from '../../../services/axios/AxiosBase'
 import { useParams } from 'react-router-dom';
 import ReviewAndSavePage from './ReviewApplication'
 import { logger } from '@/utils/logger'
+
+type ReviewFieldResponse = {
+    response?: string
+    comment?: string | null
+}
+
+type ReviewFieldResponses = Record<string, ReviewFieldResponse>
+
+type ReviewManualFields = Record<string, string | File | number | undefined> & {
+    id?: number
+    latitude?: string
+    longitude?: string
+}
+
+const logRequestError = (message: string, error: unknown) => {
+    if (axios.isAxiosError(error)) {
+        logger.error(message, {
+            status: error.response?.status,
+            data: error.response?.data,
+            message: error.message,
+        })
+        return
+    }
+
+    logger.error(message, error instanceof Error ? error.message : error)
+}
+
+const appendFormValue = (
+    formData: FormData,
+    key: string,
+    value: string | number | File | undefined,
+) => {
+    if (value === undefined || value === null) {
+        formData.append(key, '')
+        return
+    }
+
+    if (value instanceof File) {
+        formData.append(key, value)
+        return
+    }
+
+    formData.append(key, String(value))
+}
 
 const CustomerEdit = () => {
     const { id } = useParams();
@@ -545,7 +590,9 @@ const CustomerEdit = () => {
     const handleSubmitResponses = async () => {
         if(!applicantDetail.readOnly){       
             // logger.debug('fieldResponses', applicantDetail.fieldResponses)
-            const payload = Object.entries(applicantDetail.fieldResponses).map(([key, value]) => ({
+            const payload = Object.entries(
+                (applicantDetail.fieldResponses || {}) as ReviewFieldResponses,
+            ).map(([key, value]) => ({
             field_key: key,
             response: value.response,
             comment: value.comment,
@@ -565,32 +612,32 @@ const CustomerEdit = () => {
     
       const handleSubmitManualFields = async () => {
         // Retrieve manualFields from applicantDetail (or from your local state)
-        const { manualFields } = applicantDetail;
+        const manualFields = (applicantDetail.manualFields || {}) as ReviewManualFields;
       
         // Prepare form data
         const formData = new FormData();
-        formData.append("applicant", applicantDetail.id);
+        appendFormValue(formData, "applicant", applicantDetail.id);
       
       // Example fields â€” update/add/remove these as per your model
         formData.append("latitude", (manualFields.latitude ? parseFloat(manualFields.latitude).toFixed(6) : ""));
         formData.append("longitude", (manualFields.longitude ? parseFloat(manualFields.longitude).toFixed(6) : ""));      
-        formData.append("list_of_products", manualFields.list_of_products || "");
-        formData.append("list_of_by_products", manualFields.list_of_by_products || "");
-        formData.append("raw_material_imported", manualFields.raw_material_imported || "");
-        formData.append("seller_name_if_raw_material_bought", manualFields.seller_name_if_raw_material_bought || "");
-        formData.append("self_import_details", manualFields.self_import_details || "");
-        formData.append("raw_material_utilized", manualFields.raw_material_utilized || "");
-        formData.append("compliance_thickness_75", manualFields.compliance_thickness_75 || "");
-        formData.append("valid_consent_permit_building_bylaws", manualFields.valid_consent_permit_building_bylaws || "");
-        formData.append("stockist_distributor_list", manualFields.stockist_distributor_list || "");
-        formData.append("procurement_per_day", manualFields.procurement_per_day || "");
-        formData.append("no_of_workers", manualFields.no_of_workers || "");
-        formData.append("labor_dept_registration_status", manualFields.labor_dept_registration_status || "");
-        formData.append("occupational_safety_and_health_facilities", manualFields.occupational_safety_and_health_facilities || "");
-        formData.append("adverse_environmental_impacts", manualFields.adverse_environmental_impacts || "");
+        appendFormValue(formData, "list_of_products", manualFields.list_of_products);
+        appendFormValue(formData, "list_of_by_products", manualFields.list_of_by_products);
+        appendFormValue(formData, "raw_material_imported", manualFields.raw_material_imported);
+        appendFormValue(formData, "seller_name_if_raw_material_bought", manualFields.seller_name_if_raw_material_bought);
+        appendFormValue(formData, "self_import_details", manualFields.self_import_details);
+        appendFormValue(formData, "raw_material_utilized", manualFields.raw_material_utilized);
+        appendFormValue(formData, "compliance_thickness_75", manualFields.compliance_thickness_75);
+        appendFormValue(formData, "valid_consent_permit_building_bylaws", manualFields.valid_consent_permit_building_bylaws);
+        appendFormValue(formData, "stockist_distributor_list", manualFields.stockist_distributor_list);
+        appendFormValue(formData, "procurement_per_day", manualFields.procurement_per_day);
+        appendFormValue(formData, "no_of_workers", manualFields.no_of_workers);
+        appendFormValue(formData, "labor_dept_registration_status", manualFields.labor_dept_registration_status);
+        appendFormValue(formData, "occupational_safety_and_health_facilities", manualFields.occupational_safety_and_health_facilities);
+        appendFormValue(formData, "adverse_environmental_impacts", manualFields.adverse_environmental_impacts);
       
         // File fields (append only if present)
-        if (manualFields.consent_permit_file) {
+        if (manualFields.consent_permit_file instanceof File) {
         
         const formData2 =  new FormData();
         formData2.append('document', manualFields.consent_permit_file);
@@ -606,11 +653,11 @@ const CustomerEdit = () => {
                 });
 
             } catch (error) {
-                logger.error('Error in POST request:', error.response || error.message);
+                logRequestError('Error in POST request:', error);
                 navigate('/error');
             }
         }
-        if (manualFields.pictorial_evidence_file) {
+        if (manualFields.pictorial_evidence_file instanceof File) {
 
             const formData2 =  new FormData();
             formData2.append('document', manualFields.pictorial_evidence_file);
@@ -626,11 +673,11 @@ const CustomerEdit = () => {
                 });
 
             } catch (error) {
-                logger.error('Error in POST request:', error.response || error.message);
+                logRequestError('Error in POST request:', error);
                 navigate('/error');
             }
         }
-        if (manualFields.flow_diagram_file) {
+        if (manualFields.flow_diagram_file instanceof File) {
           
             const formData2 =  new FormData();
             formData2.append('document', manualFields.flow_diagram_file);
@@ -646,11 +693,11 @@ const CustomerEdit = () => {
                 });
 
             } catch (error) {
-                logger.error('Error in POST request:', error.response || error.message);
+                logRequestError('Error in POST request:', error);
                 navigate('/error');
             }
         }
-        if (manualFields.action_plan_file) {
+        if (manualFields.action_plan_file instanceof File) {
           const formData2 =  new FormData();
           formData2.append('document', manualFields.action_plan_file);
       
@@ -665,7 +712,7 @@ const CustomerEdit = () => {
               });
 
           } catch (error) {
-              logger.error('Error in POST request:', error.response || error.message);
+              logRequestError('Error in POST request:', error);
               navigate('/error');
           }
 
@@ -738,11 +785,20 @@ const CustomerEdit = () => {
                     });
                     navigate('/home');
                 } catch(error){
-                    const errorDetails = {
-                        status: error.response?.status,
-                        data: error.response?.data,
-                        message: error.message,
-                    };
+                    const errorDetails = axios.isAxiosError(error)
+                        ? {
+                              status: error.response?.status,
+                              data: error.response?.data,
+                              message: error.message,
+                          }
+                        : {
+                              status: undefined,
+                              data: undefined,
+                              message:
+                                  error instanceof Error
+                                      ? error.message
+                                      : 'Unknown error',
+                          };
     
                     navigate('/error', { state: { error: errorDetails } });
                 }

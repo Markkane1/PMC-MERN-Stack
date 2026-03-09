@@ -29,7 +29,8 @@
     "docker:staging:up": "docker compose -f docker-compose.staging.yml up -d --build",
     "docker:staging:down": "docker compose -f docker-compose.staging.yml down",
     "docker:prod:up": "docker compose -f docker-compose.production.yml up -d --build",
-    "docker:prod:down": "docker compose -f docker-compose.production.yml down"
+    "docker:prod:down": "docker compose -f docker-compose.production.yml down",
+    "deploy:oracle": "bash scripts/deploy/oracle-vm-deploy.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
