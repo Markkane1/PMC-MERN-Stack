@@ -20,20 +20,21 @@ set -a
 source "$ENV_FILE"
 set +a
 
-export NODE_ENV=production
 export PM2_APP_NAME="$APP_NAME"
 export PORT="${PORT:-3003}"
 
 echo "Installing dependencies"
-npm ci
-npm ci --prefix server
-npm ci --prefix client
+npm ci --include=dev --prefix server
+npm ci --include=dev --prefix client
 
 echo "Cleaning previous build artifacts"
 rm -rf "$ROOT_DIR/server/dist" "$ROOT_DIR/client/build"
 
 echo "Building server and client"
-npm run build
+npm run build --prefix server
+npm run build --prefix client
+
+export NODE_ENV=production
 
 echo "Ensuring upload directory exists"
 mkdir -p "${UPLOAD_DIR:-$ROOT_DIR/uploads}"
