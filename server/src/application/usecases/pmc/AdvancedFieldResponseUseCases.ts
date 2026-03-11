@@ -7,6 +7,7 @@ import {
   fieldSectionRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
 import { AdvancedFieldResponseService } from '../../services/pmc/AdvancedFieldResponseService'
+import { paginateArray, parsePaginationParams } from '../../../infrastructure/utils/pagination'
 
 type AuthRequest = Request & { user?: any }
 
@@ -33,10 +34,7 @@ export const getFieldDefinitions = asyncHandler(async (req: AuthRequest, res: Re
       fields = await fieldResponseService.getAllActiveFields()
     }
 
-    res.json({
-      success: true,
-      data: fields,
-    })
+    res.json(paginateArray(fields, parsePaginationParams(req.query)))
   } catch (error) {
     res.status(500).json({ success: false, message: (error as Error).message })
   }
@@ -134,10 +132,7 @@ export const getApplicantResponses = asyncHandler(async (req: AuthRequest, res: 
 
     const responses = await fieldResponseService.getApplicantResponses(applicantId)
 
-    res.json({
-      success: true,
-      data: responses,
-    })
+    res.json(paginateArray(responses, parsePaginationParams(req.query)))
   } catch (error) {
     res.status(500).json({ success: false, message: (error as Error).message })
   }
@@ -207,10 +202,7 @@ export const getFieldAuditLog = asyncHandler(async (req: AuthRequest, res: Respo
     const { fieldId } = req.params
     const auditLog = await fieldResponseService.getFieldAuditLog(applicantId, fieldId)
 
-    res.json({
-      success: true,
-      data: auditLog,
-    })
+    res.json(paginateArray(auditLog, parsePaginationParams(req.query)))
   } catch (error) {
     res.status(500).json({ success: false, message: (error as Error).message })
   }
@@ -224,10 +216,7 @@ export const getAllSections = asyncHandler(async (req: AuthRequest, res: Respons
   try {
     const sections = await fieldResponseService.getAllSections()
 
-    res.json({
-      success: true,
-      data: sections,
-    })
+    res.json(paginateArray(sections, parsePaginationParams(req.query)))
   } catch (error) {
     res.status(500).json({ success: false, message: (error as Error).message })
   }

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   calculateSkipLimit,
+  paginateArray,
   paginateResponse,
   parsePaginationParams,
 } from '../../server/src/infrastructure/utils/pagination'
@@ -22,10 +23,10 @@ describe('parsePaginationParams', () => {
     expect(parsed.pageSize).toBe(1)
   })
 
-  it('should enforce maximum pageSize bound of 1000', () => {
+  it('should enforce maximum limit bound of 100', () => {
     const parsed = parsePaginationParams({ page: '1', pageSize: '10000' })
-    expect(parsed.pageSize).toBe(1000)
-    expect(parsed.limit).toBe(1000)
+    expect(parsed.pageSize).toBe(100)
+    expect(parsed.limit).toBe(100)
   })
 
   it('should fallback to limit query param when pageSize is not provided', () => {
@@ -40,19 +41,28 @@ describe('paginateResponse', () => {
     expect(response.data).toEqual([1, 2, 3])
     expect(response.pagination).toEqual({
       page: 2,
-      pageSize: 3,
+      limit: 3,
       total: 10,
-      pages: 4,
-      hasNextPage: true,
-      hasPreviousPage: true,
+      totalPages: 4,
     })
   })
 
   it('should handle empty datasets and zero totals', () => {
     const response = paginateResponse([], { page: 1, pageSize: 20, total: 0 })
-    expect(response.pagination.pages).toBe(0)
-    expect(response.pagination.hasNextPage).toBe(false)
-    expect(response.pagination.hasPreviousPage).toBe(false)
+    expect(response.pagination.totalPages).toBe(0)
+  })
+})
+
+describe('paginateArray', () => {
+  it('should slice an array using shared pagination params', () => {
+    const response = paginateArray([1, 2, 3, 4, 5], parsePaginationParams({ page: '2', limit: '2' }))
+    expect(response.data).toEqual([3, 4])
+    expect(response.pagination).toEqual({
+      page: 2,
+      limit: 2,
+      total: 5,
+      totalPages: 3,
+    })
   })
 })
 

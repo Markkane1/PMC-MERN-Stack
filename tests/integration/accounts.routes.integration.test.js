@@ -162,7 +162,7 @@ describe('Accounts API Integration', () => {
 
     const [permissionsResponse, groupsResponse, usersResponse] = await Promise.all([
       request(app)
-        .get('/api/accounts/admin/permissions/')
+        .get('/api/accounts/admin/permissions/?limit=100')
         .set('Authorization', `Bearer ${superToken}`),
       request(app)
         .get('/api/accounts/admin/groups/')
@@ -173,20 +173,26 @@ describe('Accounts API Integration', () => {
     ])
 
     expect(permissionsResponse.status).toBe(200)
+    expect(permissionsResponse.body).toHaveProperty('data')
+    expect(permissionsResponse.body).toHaveProperty('pagination')
     expect(
-      permissionsResponse.body.some((permission) => permission.permission_key === 'auth.delete_group'),
+      permissionsResponse.body.data.some((permission) => permission.permission_key === 'auth.delete_group'),
     ).toBe(false)
     expect(
-      permissionsResponse.body.some((permission) => permission.permission_key === 'pmc.view_license'),
+      permissionsResponse.body.data.some((permission) => permission.permission_key === 'pmc.view_license'),
     ).toBe(true)
 
     expect(groupsResponse.status).toBe(200)
-    const legacyGroup = groupsResponse.body.find((group) => group.name === 'Legacy Reviewers')
+    expect(groupsResponse.body).toHaveProperty('data')
+    expect(groupsResponse.body).toHaveProperty('pagination')
+    const legacyGroup = groupsResponse.body.data.find((group) => group.name === 'Legacy Reviewers')
     expect(legacyGroup).toBeTruthy()
     expect(legacyGroup.permissions).toEqual(['pmc.view_license'])
 
     expect(usersResponse.status).toBe(200)
-    const returnedUser = usersResponse.body.find((user) => user.username === 'regular.user')
+    expect(usersResponse.body).toHaveProperty('data')
+    expect(usersResponse.body).toHaveProperty('pagination')
+    const returnedUser = usersResponse.body.data.find((user) => user.username === 'regular.user')
     expect(returnedUser).toBeTruthy()
     expect(returnedUser.direct_permissions).toEqual(['pmc.view_license'])
     expect(returnedUser.permissions).toEqual(['pmc.view_license'])
@@ -198,10 +204,47 @@ describe('Accounts API Integration', () => {
       .set('Authorization', `Bearer ${superToken}`)
 
     expect(response.status).toBe(200)
-    expect(Array.isArray(response.body)).toBe(true)
-    if (response.body.length > 0) {
-      expect(response.body[0]).not.toHaveProperty('passwordHash')
+    expect(Array.isArray(response.body.data)).toBe(true)
+    expect(response.body.pagination).toMatchObject({
+      page: 1,
+      limit: 20,
+    })
+    if (response.body.data.length > 0) {
+      expect(response.body.data[0]).not.toHaveProperty('passwordHash')
     }
+  })
+
+  it('should honor page and limit query params on admin users list', async () => {
+    await UserModel.create({
+      username: 'extra.user.one',
+      passwordHash: await bcrypt.hash('RegularPass123', 10),
+      groups: ['APPLICANT'],
+      permissions: [],
+      directPermissions: [],
+      isActive: true,
+    })
+
+    await UserModel.create({
+      username: 'extra.user.two',
+      passwordHash: await bcrypt.hash('RegularPass123', 10),
+      groups: ['APPLICANT'],
+      permissions: [],
+      directPermissions: [],
+      isActive: true,
+    })
+
+    const response = await request(app)
+      .get('/api/accounts/admin/users/?page=2&limit=2')
+      .set('Authorization', `Bearer ${superToken}`)
+
+    expect(response.status).toBe(200)
+    expect(response.body.pagination).toEqual({
+      page: 2,
+      limit: 2,
+      total: 4,
+      totalPages: 2,
+    })
+    expect(response.body.data).toHaveLength(2)
   })
 
   it('should return 400 for invalid object id in admin user update route', async () => {

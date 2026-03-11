@@ -4,6 +4,7 @@ import type { AuthRequest } from '../../../interfaces/http/middlewares/auth'
 import { pointInMultiPolygon, pointInPolygon } from '../../../shared/utils/geo'
 import { parallelQueriesWithMetadata } from '../../../infrastructure/utils/parallelQueries'
 import { cacheManager } from '../../../infrastructure/cache/cacheManager'
+import { paginateArray, parsePaginationParams } from '../../../infrastructure/utils/pagination'
 import type {
   ApplicantRepository,
   ApplicationAssignmentRepository,
@@ -85,7 +86,7 @@ function normalizeGeom(geom: any): string | null {
 
 export const listUserGroups = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user
-  if (!user) return res.json([])
+  if (!user) return res.json(paginateArray([], parsePaginationParams(req.query)))
 
   const groups: string[] = user.groups || []
   const profile = await defaultDeps.userProfileRepo.findByUserId(String(user._id))
@@ -97,7 +98,7 @@ export const listUserGroups = asyncHandler(async (req: AuthRequest, res: Respons
     district_name: profile?.districtName || null,
   }))
 
-  return res.json(response)
+  return res.json(paginateArray(response, parsePaginationParams(req.query)))
 })
 
 export const trackApplication = asyncHandler(async (req: Request, res: Response) => {
@@ -144,7 +145,7 @@ export const trackApplication = asyncHandler(async (req: Request, res: Response)
 
 export const applicantAlerts = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user
-  if (!user) return res.json([])
+  if (!user) return res.json(paginateArray([], parsePaginationParams(req.query)))
 
   const applicants = await defaultDeps.applicantRepo.list({
     createdBy: user._id,
@@ -180,17 +181,18 @@ export const applicantAlerts = asyncHandler(async (req: AuthRequest, res: Respon
     })
   }
 
-  return res.json(serialized)
+  return res.json(paginateArray(serialized, parsePaginationParams(req.query)))
 })
 
-export const listDistricts = asyncHandler(async (_req: Request, res: Response) => {
+export const listDistricts = asyncHandler(async (req: Request, res: Response) => {
   const cacheKey = 'districts:list:with-stats'
+  const pagination = parsePaginationParams(req.query)
   
   // Try cache first
   const cached = await cacheManager.get<any>(cacheKey)
   if (cached) {
     res.set('X-Cache', 'HIT')
-    return res.json(cached)
+    return res.json(paginateArray(cached, pagination))
   }
 
   // Cache miss - fetch from database
@@ -230,17 +232,22 @@ export const listDistricts = asyncHandler(async (_req: Request, res: Response) =
   // Store in cache (1 hour TTL)
   await cacheManager.set(cacheKey, districtData, { ttl: 3600 })
 
-  return res.json(districtData)
+  return res.json(paginateArray(districtData, pagination))
 })
 
-export const listDistrictsPublic = asyncHandler(async (_req: Request, res: Response) => {
+export const listDistrictsPublic = asyncHandler(async (req: Request, res: Response) => {
   const districts = await defaultDeps.districtRepo.list({}, { districtName: 1 })
-  return res.json(districts.map((d: any) => ({
-    district_id: d.districtId,
-    district_name: d.districtName,
-    district_code: d.districtCode,
-    geom: normalizeGeom(d.geom),
-  })))
+  return res.json(
+    paginateArray(
+      districts.map((d: any) => ({
+        district_id: d.districtId,
+        district_name: d.districtName,
+        district_code: d.districtCode,
+        geom: normalizeGeom(d.geom),
+      })),
+      parsePaginationParams(req.query)
+    )
+  )
 })
 
 export const listTehsils = asyncHandler(async (req: Request, res: Response) => {
@@ -248,15 +255,20 @@ export const listTehsils = asyncHandler(async (req: Request, res: Response) => {
   const tehsils = districtId
     ? await defaultDeps.tehsilRepo.listByDistrictId(districtId)
     : await defaultDeps.tehsilRepo.list({}, { tehsilName: 1 })
-  return res.json(tehsils.map((t: any) => ({
-    tehsil_id: t.tehsilId,
-    tehsil_name: t.tehsilName,
-    tehsil_code: t.tehsilCode,
-    district_id: t.districtId,
-  })))
+  return res.json(
+    paginateArray(
+      tehsils.map((t: any) => ({
+        tehsil_id: t.tehsilId,
+        tehsil_name: t.tehsilName,
+        tehsil_code: t.tehsilCode,
+        district_id: t.districtId,
+      })),
+      parsePaginationParams(req.query)
+    )
+  )
 })
 
-export const applicantLocationPublic = asyncHandler(async (_req: Request, res: Response) => {
+export const applicantLocationPublic = asyncHandler(async (req: Request, res: Response) => {
   const manualFields = await defaultDeps.manualFieldsRepo.listWithLatLon()
 
   const getApplicantId = (record: any): string | null => {
@@ -347,7 +359,7 @@ export const applicantLocationPublic = asyncHandler(async (_req: Request, res: R
     }
   })
 
-  return res.json(data)
+  return res.json(paginateArray(data, parsePaginationParams(req.query)))
 })
 
 export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: Response) => {

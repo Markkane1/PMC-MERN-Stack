@@ -1,18 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import ReactApexChart from 'react-apexcharts'
+import { useNavigate } from 'react-router-dom'
 import './KPIDashboard.css'
-import {
-    GoogleMap,
-    LoadScript,
-    Marker,
-    InfoWindow,
-} from '@react-google-maps/api'
-import Select from 'react-select'
-import DemoBoxContent from '@/components/docs/DemoBoxContent'
 import { MaterialReactTable } from 'material-react-table'
 import TablerIcon from '@/components/shared/TablerIcon'
-import { number } from 'zod'
+import Chart from '@/components/shared/Chart'
 import AxiosBase from '../../services/axios/AxiosBase'
 import { logger } from '@/utils/logger'
 
@@ -699,15 +690,15 @@ export const KPIDashboardBase: React.FC<BaseKPIDashboardProps> = ({
                 ))}
             </div>
 
-            {/* React Apex Chart */}
-            <div id="chart" className="mt-5">
-                {chartData && chartData.series && chartData.options && (
-                    <ReactApexChart
-                        options={chartData.options}
-                        series={chartData.series}
-                        type="bar"
-                        height={350}
-                    />
+                {/* React Apex Chart */}
+                <div id="chart" className="mt-5">
+                    {chartData && chartData.series && chartData.options && (
+                        <Chart
+                            customOptions={chartData.options}
+                            series={chartData.series}
+                            type="bar"
+                            height={350}
+                        />
                 )}
             </div>
 
@@ -789,7 +780,5 @@ const Tile: React.FC<TileProps> = ({ title, data, color, icon }: any) => {
 }
 
 export default KPIDashboard // Export only the base component
-
-
 
 

@@ -3,7 +3,7 @@ import { Request, Response } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import PDFDocument from 'pdfkit'
 import ExcelJS from 'exceljs'
-import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
+import { paginateArray, parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
 import { parallelQueriesWithMetadata } from '../../../infrastructure/utils/parallelQueries'
 import { InspectionReportModel } from '../../../infrastructure/database/models/pmc/InspectionReport'
 import type { InspectionReportRepository, SingleUsePlasticsSnapshotRepository, DistrictRepository } from '../../../domain/repositories/pmc'
@@ -259,14 +259,14 @@ export const deleteInspectionReport = asyncHandler(async (req: AuthRequest, res:
   return res.status(204).send()
 })
 
-export const allOtherSingleUsePlastics = asyncHandler(async (_req: Request, res: Response) => {
+export const allOtherSingleUsePlastics = asyncHandler(async (req: Request, res: Response) => {
   const snapshot = await defaultDeps.snapshotRepo.findById('single-use-snapshot')
-  return res.json((snapshot as any)?.plasticItems || [])
+  return res.json(paginateArray((snapshot as any)?.plasticItems || [], parsePaginationParams(req.query)))
 })
 
-export const districtSummary = asyncHandler(async (_req: Request, res: Response) => {
+export const districtSummary = asyncHandler(async (req: Request, res: Response) => {
   const summaries = await districtSummaryInternal()
-  return res.json(summaries)
+  return res.json(paginateArray(summaries, parsePaginationParams(req.query)))
 })
 
 export const exportAllInspectionsExcel = asyncHandler(async (_req: Request, res: Response) => {

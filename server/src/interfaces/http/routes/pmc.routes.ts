@@ -52,7 +52,7 @@ import {
 } from '../controllers/pmc/CommonController'
 import { report, reportFee, exportApplicant, psidReport } from '../controllers/pmc/ReportController'
 import { generateLicensePdf, licensePdf, licenseByUser } from '../controllers/pmc/LicenseController'
-import { receiptPdf, chalanPdf, generateReceiptPdf, verifyChalanQr } from '../controllers/pmc/PdfController'
+import { receiptPdf, chalanPdf, generateReceiptPdf, getPdfJob, verifyChalanQr } from '../controllers/pmc/PdfController'
 import { getPaymentStatus, recordPayment, checkPsidPaymentStatus, getPaymentHistory, checkLicenseEligibility, verifyMultiplePayments, sendPaymentReminder, getPaymentSummary } from '../controllers/pmc/PaymentController'
 import { generatePsid, checkPsidStatus, paymentIntimation, plmisToken } from '../controllers/pmc/PsidController'
 import {
@@ -250,6 +250,7 @@ pmcRouter.get('/license-pdf/', licensePdf)
 pmcRouter.get('/license-by-user/', authenticate, requirePermission(['pmc.view_license']), licenseByUser)
 
 // PDFs
+pmcRouter.get('/pdf/:jobId', getPdfJob)
 pmcRouter.get('/receipt-pdf/', authenticate, receiptPdf)
 pmcRouter.get('/chalan-pdf/', authenticate, chalanPdf)
 pmcRouter.post('/receipt-pdf/', authenticate, generateReceiptPdf)

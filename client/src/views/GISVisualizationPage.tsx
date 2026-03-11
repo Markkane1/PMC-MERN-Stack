@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
-import GISMapViewer from '@/components/gis/GISMapViewer'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import LocationAnalytics from '@/components/analytics/LocationAnalytics'
 import { useGISAnalytics } from '@/api/analytics'
+import DashboardChunkSkeleton from '@/components/shared/loaders/DashboardChunkSkeleton'
+
+const GISMapViewer = lazy(() => import('@/components/gis/GISMapViewer'))
 
 interface LocationMarker {
     id: string
@@ -77,17 +79,25 @@ export default function GISVisualizationPage() {
                     <h2 className="text-xl font-bold mb-3">Location Map</h2>
                     <div className="h-96 rounded-lg overflow-hidden border border-gray-200">
                         {loading ? (
-                            <div className="flex items-center justify-center h-full bg-gray-100">
-                                <div className="animate-spin">
-                                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                                </div>
-                            </div>
-                        ) : (
-                            <GISMapViewer
-                                markers={filteredLocations}
-                                onMarkerClick={setSelectedMarker}
-                                showHeatmap={filterType === 'violation' || filterType === 'complaint'}
+                            <DashboardChunkSkeleton
+                                variant="map"
+                                className="h-full border-0 shadow-none"
                             />
+                        ) : (
+                            <Suspense
+                                fallback={
+                                    <DashboardChunkSkeleton
+                                        variant="map"
+                                        className="h-full border-0 shadow-none"
+                                    />
+                                }
+                            >
+                                <GISMapViewer
+                                    markers={filteredLocations}
+                                    onMarkerClick={setSelectedMarker}
+                                    showHeatmap={filterType === 'violation' || filterType === 'complaint'}
+                                />
+                            </Suspense>
                         )}
                     </div>
                 </div>

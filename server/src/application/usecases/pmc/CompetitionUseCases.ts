@@ -31,6 +31,9 @@ import {
   applicantFeeRepositoryMongo,
   psidTrackingRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
+import { paginateResponse, parsePaginationParams } from '../../../infrastructure/utils/pagination'
+import { buildPdfJobAcceptedResponse, pdfJobQueueService } from '../../services/pmc/PdfJobQueueService'
+import type { PdfArtifact } from '../../services/pmc/PdfGenerationRuntime'
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
@@ -73,12 +76,43 @@ const defaultDeps: CompetitionDeps = {
   ),
 }
 
+function getRequesterKeys(req: AuthRequest) {
+  const userId = req.user?._id ? String(req.user._id) : req.user?.id ? String(req.user.id) : null
+  return userId ? [`user:${userId}`, `ip:${req.ip}`] : [`ip:${req.ip}`]
+}
+
+function sendPdfArtifact(res: Response, artifact: PdfArtifact) {
+  res.setHeader('Content-Type', artifact.mimeType)
+  res.setHeader('Content-Disposition', `attachment; filename="${artifact.filename}"`)
+  res.setHeader('Content-Length', artifact.size)
+  res.setHeader('X-Generated-At', artifact.generatedAt.toISOString())
+  return res.send(artifact.buffer)
+}
+
+function buildCourierLabelData(label: any, registration?: any) {
+  return {
+    trackingNumber: label.trackingNumber,
+    competitionName: 'Competition Entry',
+    participantName: registration?.participantName || label.shippingAddress?.recipientName || 'Recipient',
+    recipientName: label.shippingAddress.recipientName,
+    street: label.shippingAddress.street,
+    city: label.shippingAddress.city,
+    province: label.shippingAddress.province,
+    postalCode: label.shippingAddress.postalCode,
+    phone: label.shippingAddress.phone,
+    courierCompany: label.courierCompany,
+    generatedDate: label.generatedAt || new Date(),
+    registrationId: label.registrationId?.toString(),
+  }
+}
+
 /**
  * List all competitions
  * GET /api/pmc/competitions
  */
 export const listCompetitions = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { active } = req.query
+  const { page, limit, skip } = parsePaginationParams(req.query)
 
   let competitions
   if (active === 'true') {
@@ -88,9 +122,11 @@ export const listCompetitions = asyncHandler(async (req: AuthRequest, res: Respo
   }
 
   res.json({
-    success: true,
-    data: competitions,
-    total: competitions.length,
+    ...paginateResponse(competitions.slice(skip, skip + limit), {
+      page,
+      limit,
+      total: competitions.length,
+    }),
   })
 })
 
@@ -284,11 +320,14 @@ export const getMyRegistrations = asyncHandler(async (req: AuthRequest, res: Res
   }
 
   const registrations = await defaultDeps.registrationRepo.findByApplicant(applicantId)
+  const { page, limit, skip } = parsePaginationParams(req.query)
 
   res.json({
-    success: true,
-    data: registrations,
-    total: registrations.length,
+    ...paginateResponse(registrations.slice(skip, skip + limit), {
+      page,
+      limit,
+      total: registrations.length,
+    }),
   })
 })
 
@@ -400,23 +439,25 @@ export const generateLabel = asyncHandler(async (req: AuthRequest, res: Response
         generatedAt: new Date(),
       })
 
-      // Generate PDF label using CourierLabelPdfService
-      await generateLabelPdf(label, registration)
     }
 
-    if (req.method === 'GET') {
-      const buffer = await generateLabelPdfBuffer(label)
-      res.setHeader('Content-Type', 'application/pdf')
-      res.setHeader('Content-Disposition', `attachment; filename="courier-label-${label.trackingNumber}.pdf"`)
-      return res.send(buffer)
+    const labelData = buildCourierLabelData(label, registration)
+    const result = await pdfJobQueueService.generateOrQueue(
+      'courier-label',
+      labelData,
+      getRequesterKeys(req)
+    )
+
+    if (result.mode === 'inline') {
+      return sendPdfArtifact(res, result.artifact)
     }
 
-    res.status(201).json({
-      success: true,
-      message: 'Courier label generated successfully',
+    return res.status(202).json({
+      ...buildPdfJobAcceptedResponse(result.job),
+      message: 'Courier label job queued successfully',
       data: {
         ...(typeof (label as any).toObject === 'function' ? (label as any).toObject() : label),
-        labelUrl: `/api/pmc/competition/courier-label/${registrationId}`,
+        labelUrl: pdfJobQueueService.buildPollUrl(result.job.jobId),
       },
     })
   } catch (error) {
@@ -450,11 +491,23 @@ export const getCourierLabelPdf = asyncHandler(async (req: AuthRequest, res: Res
       })
     }
 
-    const buffer = await generateLabelPdfBuffer(label)
+    const result = await pdfJobQueueService.generateOrQueue(
+      'courier-label',
+      buildCourierLabelData(label),
+      getRequesterKeys(req)
+    )
 
-    res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', `attachment; filename="courier-label-${label.trackingNumber}.pdf"`)
-    res.send(buffer)
+    if (result.mode === 'inline') {
+      return sendPdfArtifact(res, result.artifact)
+    }
+
+    return res.status(202).json({
+      ...buildPdfJobAcceptedResponse(result.job),
+      message: 'Courier label job queued successfully',
+      data: {
+        trackingNumber: label.trackingNumber,
+      },
+    })
   } catch (error) {
     res.status(400).json({
       success: false,
@@ -462,56 +515,6 @@ export const getCourierLabelPdf = asyncHandler(async (req: AuthRequest, res: Res
     })
   }
 })
-
-/**
- * Generate PDF label
- */
-async function generateLabelPdf(label: any, registration: any): Promise<void> {
-  try {
-    const labelData = {
-      trackingNumber: label.trackingNumber,
-      competitionName: 'Competition Entry',
-      participantName: registration.participantName,
-      recipientName: label.shippingAddress.recipientName,
-      street: label.shippingAddress.street,
-      city: label.shippingAddress.city,
-      province: label.shippingAddress.province,
-      postalCode: label.shippingAddress.postalCode,
-      phone: label.shippingAddress.phone,
-      courierCompany: label.courierCompany,
-      generatedDate: label.generatedAt,
-      registrationId: registration._id?.toString(),
-    }
-
-    await CourierLabelPdfService.generateCourierLabelPdf(labelData)
-    console.log(`Generated label PDF for ${label.trackingNumber}`)
-  } catch (error) {
-    console.error(`Failed to generate label PDF: ${error}`)
-    // Don't throw error - label record is already created
-  }
-}
-
-/**
- * Generate label PDF buffer
- */
-async function generateLabelPdfBuffer(label: any): Promise<Buffer> {
-  const labelData = {
-    trackingNumber: label.trackingNumber,
-    competitionName: 'Competition Entry',
-    participantName: label.shippingAddress?.recipientName || 'Recipient',
-    recipientName: label.shippingAddress.recipientName,
-    street: label.shippingAddress.street,
-    city: label.shippingAddress.city,
-    province: label.shippingAddress.province,
-    postalCode: label.shippingAddress.postalCode,
-    phone: label.shippingAddress.phone,
-    courierCompany: label.courierCompany,
-    generatedDate: label.generatedAt || new Date(),
-    registrationId: label.registrationId?.toString(),
-  }
-
-  return await CourierLabelPdfService.generateCourierLabelPdf(labelData)
-}
 
 /**
  * Score submission (admin)

@@ -1,18 +1,20 @@
+import { lazy, Suspense, useState, useEffect } from 'react'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
 import Select from '@/components/ui/Select'
 import { FormItem } from '@/components/ui/Form'
 import { Controller, useWatch, useForm } from 'react-hook-form'
 import Checkbox from '@/components/ui/Checkbox'
-import { useState, useEffect } from 'react'
 import { Autocomplete, TextField, Chip, Hidden, List } from '@mui/material'
-import OpenLayersLocationPicker from './OpenLayersLocationPicker'
 import NumericInput from '@/components/shared/NumericInput'
 import AxiosBase from '../../../services/axios/AxiosBase'
 import { Button } from '@/components/ui/Button'
 import { useSessionUser } from '@/store/authStore'
 import { format, parseISO } from 'date-fns' // install with: npm install date-fns
 import { logger } from '@/utils/logger'
+import DashboardChunkSkeleton from '@/components/shared/loaders/DashboardChunkSkeleton'
+
+const OpenLayersLocationPicker = lazy(() => import('./OpenLayersLocationPicker'))
 
 type InspectionDetailSectionProps = {
     control: any
@@ -1021,11 +1023,13 @@ const InspectionDetailSection = ({
 
             <div style={{ padding: '20px' }}>
                 <h1>Select Location</h1>
-                <OpenLayersLocationPicker
-                    savedLocation={savedLocation} // Pass saved location if available
-                    isEditing={!!defaultValues?.id} // If ID exists, it’s in edit mode
-                    onLocationSelect={handleLocationSelect}
-                />
+                <Suspense fallback={<DashboardChunkSkeleton variant="map" />}>
+                    <OpenLayersLocationPicker
+                        savedLocation={savedLocation} // Pass saved location if available
+                        isEditing={!!defaultValues?.id} // If ID exists, it’s in edit mode
+                        onLocationSelect={handleLocationSelect}
+                    />
+                </Suspense>
 
                 {/* Display Selected Location */}
                 {
@@ -1150,4 +1154,3 @@ const InspectionDetailSection = ({
 }
 
 export default InspectionDetailSection
-

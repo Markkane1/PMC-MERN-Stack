@@ -1,7 +1,11 @@
-import { useState, useEffect } from 'react'
-import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard'
+import { lazy, Suspense, useState, useEffect } from 'react'
 import { useAdvancedAnalytics } from '@/api/analytics'
 import { FaChartLine, FaInfoCircle } from 'react-icons/fa'
+import DashboardChunkSkeleton from '@/components/shared/loaders/DashboardChunkSkeleton'
+
+const AnalyticsDashboard = lazy(
+    () => import('@/components/analytics/AnalyticsDashboard'),
+)
 
 export default function AdvancedAnalyticsPage() {
     const { metrics, loading, fetchTrendData, fetchSummaryMetrics, exportAnalytics } = useAdvancedAnalytics()
@@ -75,18 +79,16 @@ export default function AdvancedAnalyticsPage() {
 
             {/* Main Analytics Dashboard */}
             {loading ? (
-                <div className="flex justify-center items-center h-96">
-                    <div className="animate-spin">
-                        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
-                    </div>
-                </div>
+                <DashboardChunkSkeleton />
             ) : (
-                <AnalyticsDashboard
-                    data={metrics}
-                    metrics={kpiMetrics}
-                    onDateRangeChange={handleDateRangeChange}
-                    onExport={handleExport}
-                />
+                <Suspense fallback={<DashboardChunkSkeleton />}>
+                    <AnalyticsDashboard
+                        data={metrics}
+                        metrics={kpiMetrics}
+                        onDateRangeChange={handleDateRangeChange}
+                        onExport={handleExport}
+                    />
+                </Suspense>
             )}
 
             {/* Additional Insights */}

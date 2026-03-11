@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import type { ApplicantRepository, ApplicationAssignmentRepository, BusinessProfileRepository } from '../../../domain/repositories/pmc'
 import { applicantRepositoryMongo, applicationAssignmentRepositoryMongo, businessProfileRepositoryMongo } from '../../../infrastructure/database/repositories/pmc'
+import { paginateArray, parsePaginationParams } from '../../../infrastructure/utils/pagination'
 
 type AuthRequest = Request & { user?: any }
 
@@ -63,7 +64,7 @@ async function buildApplicantAlerts(userId: string, deps: CommonApiDeps = defaul
 
 export const listNotifications = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user
-  if (!user) return res.json([])
+  if (!user) return res.json(paginateArray([], parsePaginationParams(req.query)))
 
   const alerts = await buildApplicantAlerts(String(user._id))
 
@@ -81,7 +82,7 @@ export const listNotifications = asyncHandler(async (req: AuthRequest, res: Resp
     link: alert.urlSubPart,
   }))
 
-  return res.json(response)
+  return res.json(paginateArray(response, parsePaginationParams(req.query)))
 })
 
 export const notificationCount = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -94,7 +95,7 @@ export const notificationCount = asyncHandler(async (req: AuthRequest, res: Resp
 
 export const searchQuery = asyncHandler(async (req: Request, res: Response) => {
   const query = String(req.query.query || '').trim()
-  if (!query) return res.json([])
+  if (!query) return res.json(paginateArray([], parsePaginationParams(req.query)))
 
   const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
 
@@ -136,5 +137,5 @@ export const searchQuery = asyncHandler(async (req: Request, res: Response) => {
     results.push({ title: 'Businesses', data: businessItems })
   }
 
-  return res.json(results)
+  return res.json(paginateArray(results, parsePaginationParams(req.query)))
 })

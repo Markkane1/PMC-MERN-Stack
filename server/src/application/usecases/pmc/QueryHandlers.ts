@@ -7,6 +7,7 @@ import {
   applicantDocumentRepositoryMongo,
   competitionRegistrationRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
+import { paginateArray, parsePaginationParams } from '../../../infrastructure/utils/pagination'
 import { ApplicantDocumentModel } from '../../../infrastructure/database/models/pmc/ApplicantDocument'
 import { DistrictPlasticCommitteeDocumentModel } from '../../../infrastructure/database/models/pmc/DistrictPlasticCommitteeDocument'
 
@@ -46,7 +47,7 @@ export const getBusinessProfilesByApplicant = asyncHandler(async (req: AuthReque
 
   try {
     const profiles = await businessProfileRepositoryMongo.list({ applicantId: applicantId_alt })
-    return res.json(profiles || [])
+    return res.json(paginateArray(profiles || [], parsePaginationParams(req.query)))
   } catch (error) {
     console.error(`Error fetching business profiles for applicant ${applicantId_alt}:`, error)
     return res.status(500).json({ message: 'Failed to fetch business profiles' })
@@ -67,7 +68,7 @@ export const getApplicationAssignmentByApplicant = asyncHandler(async (req: Auth
 
   try {
     const assignments = await applicationAssignmentRepositoryMongo.list({ applicantId: applicantId_alt })
-    return res.json(assignments || [])
+    return res.json(paginateArray(assignments || [], parsePaginationParams(req.query)))
   } catch (error) {
     console.error(`Error fetching assignments for applicant ${applicantId_alt}:`, error)
     return res.status(500).json({ message: 'Failed to fetch assignments' })
@@ -230,7 +231,7 @@ export const listCachedInspectionReports = asyncHandler(async (req: AuthRequest,
   try {
     // Replace with actual cached report model/repository when implemented
     // For now returns empty array (caching layer can be added later)
-    return res.json([])
+    return res.json(paginateArray([], parsePaginationParams(req.query)))
   } catch (error) {
     console.error('Error listing cached inspection reports:', error)
     return res.status(500).json({ message: 'Failed to list cached inspection reports' })
@@ -291,7 +292,7 @@ export const listCompetitionRegistrations = asyncHandler(async (req: AuthRequest
   try {
     const registrations = await competitionRegistrationRepositoryMongo.findAll()
     if (isSuperadmin(req)) {
-      return res.json(registrations || [])
+      return res.json(paginateArray(registrations || [], parsePaginationParams(req.query)))
     }
 
     const userId = getAuthenticatedUserId(req)
@@ -303,7 +304,7 @@ export const listCompetitionRegistrations = asyncHandler(async (req: AuthRequest
       (registration: any) =>
         registration?.createdBy && String(registration.createdBy) === userId
     )
-    return res.json(ownedRegistrations)
+    return res.json(paginateArray(ownedRegistrations, parsePaginationParams(req.query)))
   } catch (error) {
     console.error('Error listing competition registrations:', error)
     return res.status(500).json({ message: 'Failed to list competition registrations' })

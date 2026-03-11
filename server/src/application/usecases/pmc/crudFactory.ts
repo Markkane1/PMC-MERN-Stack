@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import type { CrudRepository } from '../../../infrastructure/database/repositories/pmc/crud'
-import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
+import { paginateArray, parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
 
 export function createCrudController(repo: CrudRepository, options?: {
   setCreatedBy?: boolean
@@ -24,7 +24,7 @@ export function createCrudController(repo: CrudRepository, options?: {
     
     const docs = await repo.list(query)
     const data = options?.transform ? docs.map((d: any) => options.transform?.(d, req)) : docs
-    res.json(data)
+    res.json(paginateArray(data, parsePaginationParams(req.query)))
   })
 
   const get = asyncHandler(async (req: Request, res: Response) => {

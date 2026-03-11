@@ -113,8 +113,7 @@ const buildApplicantListCacheKey = (scope: string, req: AuthRequest, user: any) 
   const userId = String(user?._id || user?.id || 'anonymous')
   const groups = Array.isArray(user?.groups) ? [...user.groups].sort().join(',') : ''
   const compact = normalizeQueryValue(req.query.compact)
-  const page = normalizeQueryValue(req.query.page || 1)
-  const pageSize = normalizeQueryValue(req.query.page_size || req.query.limit || 200)
+  const { page, limit } = parsePaginationParams(req.query)
   const assignedGroup = normalizeQueryValue(req.query.assigned_group)
   const applicationStatus = normalizeQueryValue(req.query.application_status)
   return [
@@ -124,7 +123,7 @@ const buildApplicantListCacheKey = (scope: string, req: AuthRequest, user: any) 
     `g:${groups}`,
     `c:${compact}`,
     `p:${page}`,
-    `ps:${pageSize}`,
+    `ps:${limit}`,
     `ag:${assignedGroup}`,
     `as:${applicationStatus}`,
   ].join('|')
@@ -451,7 +450,8 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
   const startedAt = Date.now()
   const user = req.user
   const userGroups = user?.groups || []
-  if (!user) return res.json([])
+  const pagination = parsePaginationParams(req.query)
+  if (!user) return res.json(paginateResponse([], { page: pagination.page, limit: pagination.limit, total: 0 }))
   const compactMode = ['1', 'true', 'yes'].includes(String(req.query.compact || '').toLowerCase())
 
   if (userGroups.includes('Super')) {
@@ -465,7 +465,7 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
         res.setHeader('X-Query-Time-Ms', String(cached.queryDuration))
         res.setHeader('X-Assemble-Time-Ms', String(cached.assembleDuration))
         res.setHeader('X-Handler-Time-Ms', String(totalDuration))
-        return res.json(cached.data)
+        return res.json(paginateResponse(cached.data, { page: pagination.page, limit: pagination.limit, total: cached.total }))
       }
       res.setHeader('X-List-Cache', 'MISS')
     }
@@ -494,14 +494,12 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
     }
 
     const filter = clauses.length ? { $and: clauses } : {}
-    const page = Number(req.query.page || 1)
-    const limit = Number(req.query.page_size || req.query.limit || 200)
     const computePayload = async (): Promise<CachedApplicantListPayload> => {
       const queryStartedAt = Date.now()
       const result = await defaultDeps.applicantRepo.listPaginated(
         filter,
-        page,
-        limit,
+        pagination.page,
+        pagination.limit,
         { createdAt: -1 },
         compactMode ? COMPACT_APPLICANT_PROJECTION : undefined
       )
@@ -548,7 +546,7 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
       ipAddress: req.ip,
       endpoint: req.originalUrl,
     })
-    return res.json(data)
+    return res.json(paginateResponse(data, { page: pagination.page, limit: pagination.limit, total }))
   }
 
   const cacheKey = compactMode ? buildApplicantListCacheKey('filtered', req, user) : null
@@ -561,20 +559,18 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
       res.setHeader('X-Query-Time-Ms', String(cached.queryDuration))
       res.setHeader('X-Assemble-Time-Ms', String(cached.assembleDuration))
       res.setHeader('X-Handler-Time-Ms', String(totalDuration))
-      return res.json(cached.data)
+      return res.json(paginateResponse(cached.data, { page: pagination.page, limit: pagination.limit, total: cached.total }))
     }
     res.setHeader('X-List-Cache', 'MISS')
   }
 
   const { filter } = await filterByUserGroups(req)
-  const page = Number(req.query.page || 1)
-  const limit = Number(req.query.page_size || req.query.limit || 200)
   const computePayload = async (): Promise<CachedApplicantListPayload> => {
     const queryStartedAt = Date.now()
     const result = await defaultDeps.applicantRepo.listPaginated(
       filter,
-      page,
-      limit,
+      pagination.page,
+      pagination.limit,
       { createdAt: -1 },
       compactMode ? COMPACT_APPLICANT_PROJECTION : undefined
     )
@@ -621,12 +617,13 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
     ipAddress: req.ip,
     endpoint: req.originalUrl,
   })
-  return res.json(data)
+  return res.json(paginateResponse(data, { page: pagination.page, limit: pagination.limit, total }))
 })
 
 export const listApplicantsMainDO = asyncHandler(async (req: AuthRequest, res: Response) => {
   const startedAt = Date.now()
   const user = req.user
+  const pagination = parsePaginationParams(req.query)
   if (!user?.groups?.includes('DO')) {
     return res.status(400).json({ error: 'Not DO Group' })
   }
@@ -641,7 +638,7 @@ export const listApplicantsMainDO = asyncHandler(async (req: AuthRequest, res: R
       res.setHeader('X-Query-Time-Ms', String(cached.queryDuration))
       res.setHeader('X-Assemble-Time-Ms', String(cached.assembleDuration))
       res.setHeader('X-Handler-Time-Ms', String(totalDuration))
-      return res.json(cached.data)
+      return res.json(paginateResponse(cached.data, { page: pagination.page, limit: pagination.limit, total: cached.total }))
     }
     res.setHeader('X-List-Cache', 'MISS')
   }
@@ -667,14 +664,12 @@ export const listApplicantsMainDO = asyncHandler(async (req: AuthRequest, res: R
     clauses.push(legacyApplicationStatusFilter(req.query.application_status as string))
   }
 
-  const page = Number(req.query.page || 1)
-  const limit = Number(req.query.page_size || req.query.limit || 200)
   const computePayload = async (): Promise<CachedApplicantListPayload> => {
     const queryStartedAt = Date.now()
     const result = await defaultDeps.applicantRepo.listPaginated(
       { $and: clauses },
-      page,
-      limit,
+      pagination.page,
+      pagination.limit,
       { createdAt: -1 },
       compactMode ? COMPACT_APPLICANT_PROJECTION : undefined
     )
@@ -721,7 +716,7 @@ export const listApplicantsMainDO = asyncHandler(async (req: AuthRequest, res: R
     ipAddress: req.ip,
     endpoint: req.originalUrl,
   })
-  return res.json(data)
+  return res.json(paginateResponse(data, { page: pagination.page, limit: pagination.limit, total }))
 })
 
 function mapApplicantPayload(body: any) {

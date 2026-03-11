@@ -13,6 +13,7 @@ import { AuditLogModel } from '../../../infrastructure/database/models/common/Au
 import { AccessLogModel } from '../../../infrastructure/database/models/common/AccessLog'
 import { ExternalServiceTokenModel } from '../../../infrastructure/database/models/common/ExternalServiceToken'
 import { ServiceConfigurationModel } from '../../../infrastructure/database/models/common/ServiceConfiguration'
+import { parsePaginationParams, paginateArray, paginateResponse } from '../../../infrastructure/utils/pagination'
 import type { AuthRequest } from '../../../interfaces/http/middlewares/auth'
 import type {
   UserRepository,
@@ -176,7 +177,8 @@ export const listPermissions = asyncHandler(async (_req: Request, res: Response)
   )
 
   return res.json(
-    PERMISSION_SEEDS.map((permission) => {
+    paginateArray(
+      PERMISSION_SEEDS.map((permission) => {
       const existing = existingByKey.get(permission.permissionKey)
       return serializePermission({
         id: existing?.id != null ? String(existing.id) : undefined,
@@ -186,7 +188,9 @@ export const listPermissions = asyncHandler(async (_req: Request, res: Response)
         appLabel: permission.appLabel,
         modelName: permission.modelName,
       })
-    })
+      }),
+      parsePaginationParams(_req.query)
+    )
   )
 })
 
@@ -234,11 +238,14 @@ export const resetPermissions = asyncHandler(async (req: AuthRequest, res: Respo
 export const listGroups = asyncHandler(async (_req: Request, res: Response) => {
   const groups = await defaultDeps.groupRepo.list()
   return res.json(
-    groups.map((group) => ({
-      id: group.id,
-      name: group.name,
-      permissions: normalizePermissionKeys(group.permissions || []),
-    }))
+    paginateArray(
+      groups.map((group) => ({
+        id: group.id,
+        name: group.name,
+        permissions: normalizePermissionKeys(group.permissions || []),
+      })),
+      parsePaginationParams(_req.query)
+    )
   )
 })
 
@@ -359,17 +366,20 @@ export const listUsers = asyncHandler(async (req: AuthRequest, res: Response) =>
   const isSuper = actorGroups.includes('Super')
   const visibleUsers = isSuper ? users : users.filter((u) => !u.isSuperadmin && !(u.groups || []).includes('Super'))
   return res.json(
-    visibleUsers.map((user) => ({
-      id: user.id,
-      username: user.username,
-      first_name: user.firstName,
-      last_name: user.lastName,
-      groups: user.groups || [],
-      permissions: normalizePermissionKeys(user.permissions || []),
-      direct_permissions: normalizePermissionKeys(user.directPermissions || []),
-      is_active: user.isActive,
-      is_superadmin: user.isSuperadmin || false,
-    }))
+    paginateArray(
+      visibleUsers.map((user) => ({
+        id: user.id,
+        username: user.username,
+        first_name: user.firstName,
+        last_name: user.lastName,
+        groups: user.groups || [],
+        permissions: normalizePermissionKeys(user.permissions || []),
+        direct_permissions: normalizePermissionKeys(user.directPermissions || []),
+        is_active: user.isActive,
+        is_superadmin: user.isSuperadmin || false,
+      })),
+      parsePaginationParams(req.query)
+    )
   )
 })
 
@@ -501,15 +511,18 @@ export const listSuperadmins = asyncHandler(async (req: AuthRequest, res: Respon
   const users = await defaultDeps.userRepo.listAll()
   const supers = users.filter((user) => user.isSuperadmin || (user.groups || []).includes('Super'))
   return res.json(
-    supers.map((user) => ({
-      id: user.id,
-      username: user.username,
-      first_name: user.firstName,
-      last_name: user.lastName,
-      groups: user.groups || [],
-      is_active: user.isActive,
-      is_superadmin: true,
-    }))
+    paginateArray(
+      supers.map((user) => ({
+        id: user.id,
+        username: user.username,
+        first_name: user.firstName,
+        last_name: user.lastName,
+        groups: user.groups || [],
+        is_active: user.isActive,
+        is_superadmin: true,
+      })),
+      parsePaginationParams(req.query)
+    )
   )
 })
 
@@ -670,17 +683,6 @@ export const updateRoleDashboardConfig = asyncHandler(async (req: AuthRequest, r
   return res.json({ mappings })
 })
 
-
-
-function parsePaging(query: Record<string, any>) {
-  const limitRaw = Number(query.limit || 50)
-  const pageRaw = Number(query.page || 1)
-  const limit = Math.min(Math.max(limitRaw, 1), 500)
-  const page = Math.max(pageRaw, 1)
-  const skip = (page - 1) * limit
-  return { limit, page, skip }
-}
-
 function parseDateRange(query: Record<string, any>) {
   const from = query.from ? new Date(String(query.from)) : null
   const to = query.to ? new Date(String(query.to)) : null
@@ -703,13 +705,13 @@ export const listApiLogs = asyncHandler(async (req: AuthRequest, res: Response) 
   const range = parseDateRange(query)
   if (range) filter.createdAt = range
 
-  const { limit, page, skip } = parsePaging(query)
+  const { limit, page, skip } = parsePaginationParams(query)
   const [items, total] = await Promise.all([
     ApiLogModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
     ApiLogModel.countDocuments(filter),
   ])
 
-  return res.json({ items, total, page, limit })
+  return res.json(paginateResponse(items, { page, limit, total }))
 })
 
 export const listAuditLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -721,13 +723,13 @@ export const listAuditLogs = asyncHandler(async (req: AuthRequest, res: Response
   const range = parseDateRange(query)
   if (range) filter.timestamp = range
 
-  const { limit, page, skip } = parsePaging(query)
+  const { limit, page, skip } = parsePaginationParams(query)
   const [items, total] = await Promise.all([
     AuditLogModel.find(filter).sort({ timestamp: -1, createdAt: -1 }).skip(skip).limit(limit).lean(),
     AuditLogModel.countDocuments(filter),
   ])
 
-  return res.json({ items, total, page, limit })
+  return res.json(paginateResponse(items, { page, limit, total }))
 })
 
 export const listAccessLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -740,18 +742,18 @@ export const listAccessLogs = asyncHandler(async (req: AuthRequest, res: Respons
   const range = parseDateRange(query)
   if (range) filter.timestamp = range
 
-  const { limit, page, skip } = parsePaging(query)
+  const { limit, page, skip } = parsePaginationParams(query)
   const [items, total] = await Promise.all([
     AccessLogModel.find(filter).sort({ timestamp: -1, createdAt: -1 }).skip(skip).limit(limit).lean(),
     AccessLogModel.countDocuments(filter),
   ])
 
-  return res.json({ items, total, page, limit })
+  return res.json(paginateResponse(items, { page, limit, total }))
 })
 
-export const listServiceConfigurations = asyncHandler(async (_req: AuthRequest, res: Response) => {
+export const listServiceConfigurations = asyncHandler(async (req: AuthRequest, res: Response) => {
   const items = await ServiceConfigurationModel.find({}).sort({ serviceName: 1 }).lean()
-  return res.json(items)
+  return res.json(paginateArray(items, parsePaginationParams(req.query)))
 })
 
 export const createServiceConfiguration = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -808,7 +810,11 @@ export const listExternalTokens = asyncHandler(async (req: AuthRequest, res: Res
   const query = req.query as Record<string, any>
   const filter: Record<string, any> = {}
   if (query.service) filter.serviceName = String(query.service)
-  const items = await ExternalServiceTokenModel.find(filter).sort({ createdAt: -1 }).limit(200).lean()
+  const { page, limit, skip } = parsePaginationParams(query)
+  const [items, total] = await Promise.all([
+    ExternalServiceTokenModel.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+    ExternalServiceTokenModel.countDocuments(filter),
+  ])
   const normalized = items.map((item: any) => {
     const createdAt = item.createdAt ? new Date(item.createdAt) : null
     let expiresAt = item.expiresAt ? new Date(item.expiresAt) : null
@@ -827,5 +833,5 @@ export const listExternalTokens = asyncHandler(async (req: AuthRequest, res: Res
       createdAt: createdAt ? createdAt.toISOString() : null,
     }
   })
-  return res.json(normalized)
+  return res.json(paginateResponse(normalized, { page, limit, total }))
 })

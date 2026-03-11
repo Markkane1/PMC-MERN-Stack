@@ -1,7 +1,67 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path';
+import path from 'path'
 import dynamicImport from 'vite-plugin-dynamic-import'
+
+const normalizeId = (id: string) => id.split(path.sep).join('/')
+
+const manualChunks = (id: string) => {
+  const normalizedId = normalizeId(id)
+
+  if (normalizedId.includes('/node_modules/react/') || normalizedId.includes('/node_modules/react-dom/') || normalizedId.includes('/node_modules/react-router')) {
+    return 'vendor-react'
+  }
+
+  if (normalizedId.includes('/node_modules/react-apexcharts/') || normalizedId.includes('/node_modules/apexcharts/')) {
+    return 'vendor-apexcharts'
+  }
+
+  if (normalizedId.includes('/node_modules/recharts/')) {
+    return 'vendor-recharts'
+  }
+
+  if (normalizedId.includes('/node_modules/ol/')) {
+    return 'vendor-openlayers'
+  }
+
+  if (normalizedId.includes('/node_modules/@react-google-maps/api/')) {
+    return 'vendor-google-maps'
+  }
+
+  if (normalizedId.includes('/node_modules/material-react-table/') || normalizedId.includes('/node_modules/@tanstack/react-table/')) {
+    return 'vendor-tables'
+  }
+
+  if (normalizedId.includes('/node_modules/@mui/') || normalizedId.includes('/node_modules/@emotion/')) {
+    return 'vendor-mui'
+  }
+
+  if (normalizedId.includes('/node_modules/framer-motion/')) {
+    return 'vendor-motion'
+  }
+
+  if (normalizedId.includes('/node_modules/axios/') || normalizedId.includes('/node_modules/swr/')) {
+    return 'vendor-data'
+  }
+
+  if (normalizedId.includes('/node_modules/react-icons/')) {
+    return 'vendor-icons'
+  }
+
+  if (normalizedId.includes('/node_modules/date-fns/') || normalizedId.includes('/node_modules/classnames/') || normalizedId.includes('/node_modules/lodash/')) {
+    return 'vendor-utils'
+  }
+
+  if (normalizedId.includes('/src/views/AdvancedAnalyticsPage.tsx') || normalizedId.includes('/src/components/analytics/AnalyticsDashboard.tsx')) {
+    return 'analytics-dashboard'
+  }
+
+  if (normalizedId.includes('/src/views/GISVisualizationPage.tsx') || normalizedId.includes('/src/components/gis/GISMapViewer.tsx') || normalizedId.includes('/src/views/supid/EPA/OpenLayersLocationPicker.tsx')) {
+    return 'gis-dashboard'
+  }
+
+  return undefined
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -25,44 +85,17 @@ export default defineConfig({
   },
   build: {
     outDir: 'build',
-    // Week 3: Code splitting - manual chunks
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Vendor libraries - load once, reuse across all chunks
-          'react': ['react', 'react-dom', 'react-router-dom'],
-          
-          // UI & data libraries
-          'ui': ['@tanstack/react-table', '@mui/material', '@mui/icons-material'],
-          
-          // Data visualization
-          'charts': ['react-apexcharts', 'apexcharts'],
-          
-          // Data fetching & caching
-          'data': ['swr', 'axios'],
-          
-          // Utilities
-          'utils': ['lodash', 'date-fns', 'classnames'],
-          
-          // Virtualization for large lists
-          'virtual': ['react-window'],
-          
-          // Icons & theming
-          'icons': ['react-icons'],
-        },
-        // Optimize chunk file sizes
+        manualChunks,
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash][extname]',
       }
     },
-    // Increase chunk size warning threshold (default: 500KB)
     chunkSizeWarningLimit: 600,
-    // Source maps in production for debugging
     sourcemap: false,
-    // Minify with esbuild (fast)
     minify: 'esbuild',
-    // Target modern browsers
     target: 'ES2020',
   }
 })

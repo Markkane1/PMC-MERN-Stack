@@ -20,18 +20,16 @@
 
 export interface PaginationParams {
   page: number
+  limit: number
   pageSize: number
   skip: number
-  limit: number
 }
 
 export interface PaginationMeta {
   page: number
-  pageSize: number
+  limit: number
   total: number
-  pages: number
-  hasNextPage: boolean
-  hasPreviousPage: boolean
+  totalPages: number
 }
 
 export interface PaginatedResponse<T> {
@@ -46,17 +44,17 @@ export interface PaginatedResponse<T> {
  */
 export function parsePaginationParams(query: any): PaginationParams {
   let page = Number(query.page) || 1
-  let pageSize = Number(query.pageSize) || Number(query.limit) || 20
+  let limit = Number(query.limit) || Number(query.pageSize) || Number(query.page_size) || 20
 
   // Validate bounds
   if (page < 1) page = 1
-  if (pageSize < 1) pageSize = 1
-  if (pageSize > 1000) pageSize = 1000 // Cap at 1000 to prevent DoS
+  if (limit < 1) limit = 1
+  if (limit > 100) limit = 100
 
-  const skip = (page - 1) * pageSize
-  const limit = pageSize
+  const skip = (page - 1) * limit
+  const pageSize = limit
 
-  return { page, pageSize, skip, limit }
+  return { page, limit, pageSize, skip }
 }
 
 /**
@@ -69,24 +67,36 @@ export function paginateResponse<T>(
   data: T[],
   params: {
     page: number
-    pageSize: number
+    pageSize?: number
+    limit?: number
     total: number
   }
 ): PaginatedResponse<T> {
-  const { page, pageSize, total } = params
-  const pages = Math.ceil(total / pageSize)
+  const { page, total } = params
+  const limit = params.limit ?? params.pageSize ?? 20
+  const totalPages = total > 0 ? Math.ceil(total / limit) : 0
 
   return {
     data,
     pagination: {
       page,
-      pageSize,
+      limit,
       total,
-      pages,
-      hasNextPage: page < pages,
-      hasPreviousPage: page > 1,
+      totalPages,
     },
   }
+}
+
+export function paginateArray<T>(
+  items: T[],
+  params: PaginationParams
+): PaginatedResponse<T> {
+  const data = items.slice(params.skip, params.skip + params.limit)
+  return paginateResponse(data, {
+    page: params.page,
+    limit: params.limit,
+    total: items.length,
+  })
 }
 
 /**

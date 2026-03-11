@@ -8,6 +8,7 @@ import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import type { AuthRequest } from '../../../interfaces/http/middlewares/auth'
 import { env } from '../../../infrastructure/config/env'
 import { validatePasswordPolicy } from '../../../shared/utils/passwordPolicy'
+import { paginateArray, parsePaginationParams } from '../../../infrastructure/utils/pagination'
 import type { UserRepository, UserProfileRepository } from '../../../domain/repositories/accounts'
 import type { ApplicantRepository, PSIDTrackingRepository, DistrictRepository } from '../../../domain/repositories/pmc'
 import {
@@ -430,7 +431,7 @@ export const listInspectors = asyncHandler(async (req: AuthRequest, res: Respons
       last_name: inspector.lastName,
     }))
 
-  return res.json(filtered)
+  return res.json(paginateArray(filtered, parsePaginationParams(req.query)))
 })
 
 export const createOrUpdateInspector = asyncHandler(async (req: AuthRequest, res: Response) => {

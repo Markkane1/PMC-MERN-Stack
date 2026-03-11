@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import Loading from '@/components/shared/Loading'
+import DashboardChunkSkeleton from '@/components/shared/loaders/DashboardChunkSkeleton'
 import AllRoutes from '@/components/route/AllRoutes'
 import type { LayoutType } from '@/@types/theme'
 
@@ -10,7 +10,13 @@ interface ViewsProps {
 
 const Views = (props: ViewsProps) => {
     return (
-        <Suspense fallback={<Loading loading={true} className="w-full" />}>
+        <Suspense
+            fallback={
+                <div className="w-full px-4 py-6 md:px-6">
+                    <DashboardChunkSkeleton />
+                </div>
+            }
+        >
             <AllRoutes {...props} />
         </Suspense>
     )

@@ -1,9 +1,15 @@
 import { Request, Response } from 'express'
-import PDFDocument from 'pdfkit'
 import { logAccess } from '../../services/common/LogService'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import { createOrUpdateLicense } from '../../services/pmc/ApplicantService'
-import type { ApplicantRepository, BusinessProfileRepository, LicenseRepository, DistrictRepository, TehsilRepository } from '../../../domain/repositories/pmc'
+import { paginateArray, parsePaginationParams } from '../../../infrastructure/utils/pagination'
+import type {
+  ApplicantRepository,
+  BusinessProfileRepository,
+  LicenseRepository,
+  DistrictRepository,
+  TehsilRepository,
+} from '../../../domain/repositories/pmc'
 import {
   applicantRepositoryMongo,
   businessProfileRepositoryMongo,
@@ -11,6 +17,8 @@ import {
   districtRepositoryMongo,
   tehsilRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
+import { pdfJobQueueService, buildPdfJobAcceptedResponse } from '../../services/pmc/PdfJobQueueService'
+import type { PdfArtifact } from '../../services/pmc/PdfGenerationRuntime'
 
 type AuthRequest = Request & { user?: any }
 
@@ -30,6 +38,32 @@ const defaultDeps: LicenseDeps = {
   tehsilRepo: tehsilRepositoryMongo,
 }
 
+function getRequesterKeys(req: AuthRequest) {
+  const userId = req.user?._id ? String(req.user._id) : req.user?.id ? String(req.user.id) : null
+  return userId ? [`user:${userId}`, `ip:${req.ip}`] : [`ip:${req.ip}`]
+}
+
+function sendPdfArtifact(res: Response, artifact: PdfArtifact) {
+  res.setHeader('Content-Type', artifact.mimeType)
+  res.setHeader('Content-Disposition', `attachment; filename="${artifact.filename}"`)
+  res.setHeader('Content-Length', artifact.size)
+  res.setHeader('X-Generated-At', artifact.generatedAt.toISOString())
+  return res.send(artifact.buffer)
+}
+
+function sendQueuedPdfResponse(res: Response, jobId: string, status: string, data: Record<string, unknown> = {}) {
+  return res.status(202).json({
+    ...buildPdfJobAcceptedResponse({
+      jobId,
+      type: 'license',
+      status: status as any,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }),
+    data,
+  })
+}
+
 function toFiniteNumber(value: unknown): number | null {
   const numeric = Number(value)
   return Number.isFinite(numeric) ? numeric : null
@@ -42,51 +76,67 @@ function toDateOnly(value: unknown): string | null {
   return parsed.toISOString().slice(0, 10)
 }
 
-function buildLicensePdf(res: Response, data: Record<string, any>) {
-  const doc = new PDFDocument({ size: 'A4', layout: 'landscape', margin: 40 })
-  res.setHeader('Content-Type', 'application/pdf')
-  res.setHeader('Content-Disposition', 'attachment; filename="license.pdf"')
-  doc.pipe(res)
+async function buildLicensePdfData(applicant: any, license?: any) {
+  const numericId = (applicant as any)?.numericId ?? (license as any)?.applicantId
 
-  const pageWidth = doc.page.width
-  const pageHeight = doc.page.height
-  const left = doc.page.margins.left
-  const right = pageWidth - doc.page.margins.right
+  const businessProfile = numericId
+    ? await defaultDeps.businessProfileRepo.findByApplicantId(Number(numericId))
+    : null
 
-  doc.rect(left, 30, right - left, pageHeight - 60).lineWidth(1).stroke()
+  const district = businessProfile?.districtId
+    ? await defaultDeps.districtRepo.findByDistrictId(businessProfile.districtId)
+    : null
+  const tehsil = businessProfile?.tehsilId
+    ? await defaultDeps.tehsilRepo.findByTehsilId(businessProfile.tehsilId)
+    : null
 
-  doc.fontSize(22).text('Plastic Management License', left, 48, { align: 'center' })
-  doc.moveDown(1.5)
+  return {
+    license_number:
+      (license as any)?.licenseNumber ??
+      (license as any)?.license_number ??
+      (applicant as any)?.trackingNumber ??
+      '',
+    license_duration:
+      (license as any)?.licenseDuration ??
+      (license as any)?.license_duration ??
+      '1 Year',
+    owner_name:
+      (license as any)?.ownerName ??
+      (license as any)?.owner_name ??
+      `${(applicant as any)?.firstName || ''} ${(applicant as any)?.lastName || ''}`.trim(),
+    business_name:
+      (license as any)?.businessName ??
+      (license as any)?.business_name ??
+      businessProfile?.businessName ??
+      businessProfile?.name ??
+      'N/A',
+    address: (license as any)?.address ?? businessProfile?.postalAddress ?? 'N/A',
+    cnic_number: (applicant as any)?.cnic,
+    district_name: district?.districtName ?? null,
+    tehsil_name: tehsil?.tehsilName ?? null,
+    date_of_issue:
+      toDateOnly((license as any)?.dateOfIssue ?? (license as any)?.date_of_issue) ??
+      new Date().toISOString().slice(0, 10),
+  }
+}
 
-  const startY = 110
-  const colGap = 30
-  const colWidth = (right - left - colGap) / 2
+async function respondWithLicensePdfJob(
+  req: AuthRequest,
+  res: Response,
+  pdfData: Awaited<ReturnType<typeof buildLicensePdfData>>
+) {
+  const result = await pdfJobQueueService.generateOrQueue('license', pdfData, getRequesterKeys(req))
 
-  const rows: Array<[string, string]> = [
-    ['License Number', data.license_number || ''],
-    ['License Duration', data.license_duration || ''],
-    ['Owner Name', data.owner_name || ''],
-    ['Business Name', data.business_name || ''],
-    ['CNIC', data.cnic_number || ''],
-    ['Address', data.address || ''],
-    ['District', data.district_name || ''],
-    ['Tehsil', data.tehsil_name || ''],
-    ['Date of Issue', data.date_of_issue || ''],
-  ]
+  if (result.mode === 'inline') {
+    return sendPdfArtifact(res, result.artifact)
+  }
 
-  doc.fontSize(12)
-  let y = startY
-  rows.forEach(([label, value], index) => {
-    const x = index % 2 === 0 ? left + 20 : left + colWidth + colGap + 20
-    if (index % 2 === 0 && index > 0) y += 26
-    doc.font('Helvetica-Bold').text(`${label}:`, x, y, { width: 110 })
-    doc.font('Helvetica').text(value, x + 120, y, { width: colWidth - 120 })
+  return res.status(202).json({
+    ...buildPdfJobAcceptedResponse(result.job),
+    data: {
+      licenseNumber: pdfData.license_number,
+    },
   })
-
-  doc.moveTo(left + 20, pageHeight - 120).lineTo(left + 300, pageHeight - 120).stroke()
-  doc.fontSize(10).text('Authorized Signature', left + 20, pageHeight - 110)
-
-  doc.end()
 }
 
 export const generateLicensePdf = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -105,26 +155,7 @@ export const generateLicensePdf = asyncHandler(async (req: AuthRequest, res: Res
   }
 
   await createOrUpdateLicense((applicant as any).numericId)
-
-  const businessProfile = await defaultDeps.businessProfileRepo.findByApplicantId((applicant as any).numericId)
-  const district = businessProfile?.districtId
-    ? await defaultDeps.districtRepo.findByDistrictId(businessProfile.districtId)
-    : null
-  const tehsil = businessProfile?.tehsilId
-    ? await defaultDeps.tehsilRepo.findByTehsilId(businessProfile.tehsilId)
-    : null
-
-  const data = {
-    license_number: (applicant as any).trackingNumber,
-    license_duration: '1 Year',
-    owner_name: `${(applicant as any).firstName} ${(applicant as any).lastName || ''}`.trim(),
-    business_name: businessProfile?.businessName || businessProfile?.name || 'N/A',
-    address: businessProfile?.postalAddress || 'N/A',
-    cnic_number: (applicant as any).cnic,
-    district_name: district?.districtName,
-    tehsil_name: tehsil?.tehsilName,
-    date_of_issue: new Date().toISOString().slice(0, 10),
-  }
+  const data = await buildLicensePdfData(applicant)
 
   await logAccess({
     userId: req.user?._id ? String(req.user._id) : undefined,
@@ -135,7 +166,8 @@ export const generateLicensePdf = asyncHandler(async (req: AuthRequest, res: Res
     ipAddress: req.ip,
     endpoint: req.originalUrl,
   })
-  return buildLicensePdf(res, data)
+
+  return respondWithLicensePdfJob(req, res, data)
 })
 
 export const licensePdf = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -156,28 +188,7 @@ export const licensePdf = asyncHandler(async (req: AuthRequest, res: Response) =
   }
 
   const applicant = await defaultDeps.applicantRepo.findByNumericId((license as any).applicantId)
-  const businessProfile = applicant
-    ? await defaultDeps.businessProfileRepo.findByApplicantId((applicant as any).numericId)
-    : null
-
-  const district = businessProfile?.districtId
-    ? await defaultDeps.districtRepo.findByDistrictId(businessProfile.districtId)
-    : null
-  const tehsil = businessProfile?.tehsilId
-    ? await defaultDeps.tehsilRepo.findByTehsilId(businessProfile.tehsilId)
-    : null
-
-  const data = {
-    license_number: (license as any).licenseNumber ?? (license as any).license_number,
-    license_duration: (license as any).licenseDuration ?? (license as any).license_duration,
-    owner_name: (license as any).ownerName ?? (license as any).owner_name,
-    business_name: (license as any).businessName ?? (license as any).business_name,
-    address: (license as any).address,
-    cnic_number: (applicant as any)?.cnic,
-    district_name: district?.districtName,
-    tehsil_name: tehsil?.tehsilName,
-    date_of_issue: toDateOnly((license as any).dateOfIssue ?? (license as any).date_of_issue),
-  }
+  const data = await buildLicensePdfData(applicant, license)
 
   await logAccess({
     userId: req.user?._id ? String(req.user._id) : undefined,
@@ -188,12 +199,13 @@ export const licensePdf = asyncHandler(async (req: AuthRequest, res: Response) =
     ipAddress: req.ip,
     endpoint: req.originalUrl,
   })
-  return buildLicensePdf(res, data)
+
+  return respondWithLicensePdfJob(req, res, data)
 })
 
 export const licenseByUser = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user
-  if (!user) return res.json([])
+  if (!user) return res.json(paginateArray([], parsePaginationParams(req.query)))
 
   const districtsPromise = defaultDeps.districtRepo.list()
   const tehsilsPromise = defaultDeps.tehsilRepo.list()
@@ -218,11 +230,7 @@ export const licenseByUser = asyncHandler(async (req: AuthRequest, res: Response
     ? defaultDeps.businessProfileRepo.listByApplicantIds(applicantIds)
     : Promise.resolve([])
 
-  const [profiles, districts, tehsils] = await Promise.all([
-    profilesPromise,
-    districtsPromise,
-    tehsilsPromise,
-  ])
+  const [profiles, districts, tehsils] = await Promise.all([profilesPromise, districtsPromise, tehsilsPromise])
 
   const profilesByApplicantId = new Map<number, any>()
   for (const profile of profiles as any[]) {
@@ -247,13 +255,11 @@ export const licenseByUser = asyncHandler(async (req: AuthRequest, res: Response
   }
 
   return res.json(
-    licenses.map((license: any) =>
-      serializeLicense(
-        license,
-        profilesByApplicantId,
-        districtNameById,
-        tehsilNameById
-      )
+    paginateArray(
+      licenses.map((license: any) =>
+        serializeLicense(license, profilesByApplicantId, districtNameById, tehsilNameById)
+      ),
+      parsePaginationParams(req.query)
     )
   )
 })
@@ -289,4 +295,3 @@ function serializeLicense(
     created_at: license.createdAt ?? license.created_at,
   }
 }
-

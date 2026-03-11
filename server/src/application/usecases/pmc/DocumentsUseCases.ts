@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import { createUploader, validateAndSanitizeUploadedFile } from '../../../interfaces/http/middlewares/upload'
 import { env } from '../../../infrastructure/config/env'
-import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
+import { paginateArray, parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
 import { ApplicantFeeModel } from '../../../infrastructure/database/models/pmc/ApplicantFee'
 import { ApplicantDocumentModel } from '../../../infrastructure/database/models/pmc/ApplicantDocument'
 import { DistrictPlasticCommitteeDocumentModel } from '../../../infrastructure/database/models/pmc/DistrictPlasticCommitteeDocument'
@@ -217,7 +217,7 @@ export const uploadDistrictDocument = [
   }),
 ]
 
-export const listDistrictDocuments = asyncHandler(async (_req: Request, res: Response) => {
+export const listDistrictDocuments = asyncHandler(async (req: Request, res: Response) => {
   const docs = await defaultDeps.districtDocRepo.list()
   const districts = await defaultDeps.districtRepo.list()
   const users = await defaultDeps.userRepo.listByIds(docs.map((d: any) => String((d as any).uploadedBy)).filter(Boolean))
@@ -236,7 +236,7 @@ export const listDistrictDocuments = asyncHandler(async (_req: Request, res: Res
       : null,
     document: toDocumentUrl((doc as any).documentPath),
   }))
-  return res.json(data)
+  return res.json(paginateArray(data, parsePaginationParams(req.query)))
 })
 
 export const downloadLatestApplicantDocument = asyncHandler(async (req: AuthRequest, res: Response) => {

@@ -4,6 +4,7 @@ import { alertRepositoryMongo, alertRecipientRepositoryMongo, alertTemplateRepos
 import { AlertService } from '../../services/pmc/AlertService'
 import { PaymentVerificationService } from '../../services/pmc/PaymentVerificationService'
 import { AlertChannel, AlertType } from '../../../domain/models/Alert'
+import { paginateResponse, parsePaginationParams } from '../../../infrastructure/utils/pagination'
 
 type AuthRequest = Request & { user?: any }
 
@@ -27,19 +28,14 @@ export const getApplicantAlerts = asyncHandler(async (req: AuthRequest, res: Res
       return res.status(400).json({ success: false, message: 'Applicant ID not found in session' })
     }
 
-    const limit = Math.min(parseInt(req.query.limit as string) || 20, 100)
-    const offset = parseInt(req.query.offset as string) || 0
+    const { page, limit, skip } = parsePaginationParams(req.query)
 
-    const alerts = await alertService.getApplicantAlerts(applicantId, limit, offset)
+    const [alerts, total] = await Promise.all([
+      alertService.getApplicantAlerts(applicantId, limit, skip),
+      alertRepositoryMongo.countByFilter({ applicantId }),
+    ])
 
-    res.json({
-      success: true,
-      data: alerts,
-      pagination: {
-        limit,
-        offset,
-      },
-    })
+    res.json(paginateResponse(alerts, { page, limit, total }))
   } catch (error) {
     res.status(500).json({ success: false, message: 'An error occurred' })
   }
@@ -338,8 +334,7 @@ export const adminGetAllAlerts = asyncHandler(async (req: AuthRequest, res: Resp
       return res.status(403).json({ success: false, message: 'Insufficient permissions' })
     }
 
-    const limit = Math.min(parseInt(req.query.limit as string) || 50, 500)
-    const offset = parseInt(req.query.offset as string) || 0
+    const { page, limit, skip } = parsePaginationParams(req.query)
     const status = req.query.status as string
     const type = req.query.type as string
 
@@ -347,18 +342,10 @@ export const adminGetAllAlerts = asyncHandler(async (req: AuthRequest, res: Resp
     if (status) filter.status = status
     if (type) filter.type = type
 
-    const alerts = await alertRepositoryMongo.listByFilter(filter, limit, offset)
+    const alerts = await alertRepositoryMongo.listByFilter(filter, limit, skip)
     const count = await alertRepositoryMongo.countByFilter(filter)
 
-    res.json({
-      success: true,
-      data: alerts,
-      pagination: {
-        limit,
-        offset,
-        total: count,
-      },
-    })
+    res.json(paginateResponse(alerts, { page, limit, total: count }))
   } catch (error) {
     res.status(500).json({ success: false, message: 'An error occurred' })
   }

@@ -1,5 +1,4 @@
-import { useRef, useEffect, useCallback, useMemo } from 'react'
-import ApexChart from 'react-apexcharts'
+import { lazy, Suspense, useRef, useEffect, useCallback, useMemo } from 'react'
 import {
     apexLineChartDefaultOption,
     apexBarChartDefaultOption,
@@ -11,8 +10,10 @@ import { DIR_RTL } from '@/constants/theme.constant'
 import type { ApexOptions } from 'apexcharts'
 import type { Direction } from '@/@types/theme'
 import type { ReactNode } from 'react'
+import DashboardChunkSkeleton from './loaders/DashboardChunkSkeleton'
 
 const notDonut = ['line', 'bar', 'area']
+const ApexChart = lazy(() => import('react-apexcharts'))
 
 type ChartType = 'line' | 'bar' | 'area' | 'donut' | 'radar'
 
@@ -110,21 +111,30 @@ const Chart = (props: ChartProps) => {
     }
 
     return (
-        <div
-            ref={chartRef}
-            style={direction === DIR_RTL ? { direction: 'ltr' } : {}}
-            className="chartRef"
+        <Suspense
+            fallback={
+                <DashboardChunkSkeleton
+                    variant="chart"
+                    className={className}
+                />
+            }
         >
-            <ApexChart
-                options={options}
-                type={type}
-                series={series}
-                width={width}
-                height={height}
-                className={className}
-                {...rest}
-            />
-        </div>
+            <div
+                ref={chartRef}
+                style={direction === DIR_RTL ? { direction: 'ltr' } : {}}
+                className="chartRef"
+            >
+                <ApexChart
+                    options={options}
+                    type={type}
+                    series={series}
+                    width={width}
+                    height={height}
+                    className={className}
+                    {...rest}
+                />
+            </div>
+        </Suspense>
     )
 }
 
