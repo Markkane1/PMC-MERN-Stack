@@ -5,8 +5,13 @@ import { Request, Response, NextFunction } from 'express'
  * based on endpoint type
  */
 export const cacheHeadersMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  if (req.path.includes('/profile')) {
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate')
+    res.set('Pragma', 'no-cache')
+    res.set('Expires', '0')
+  }
   // Reference data - cache 1 hour publicly
-  if (req.path.includes('/districts') || req.path.includes('/tehsils')) {
+  else if (req.path.includes('/districts') || req.path.includes('/tehsils')) {
     res.set('Cache-Control', 'public, max-age=3600')
     res.set('Vary', 'Accept-Encoding')
   }

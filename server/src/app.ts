@@ -39,6 +39,14 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 })
 
+const captchaLimiter = rateLimit({
+  windowMs: authWindowMs,
+  max: 30,
+  message: 'Too many CAPTCHA requests, try again later',
+  standardHeaders: true,
+  legacyHeaders: false,
+})
+
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 100, // 100 requests per minute per IP
@@ -187,12 +195,14 @@ export function createApp() {
       '/api/accounts/find-user/',
       '/api/accounts/reset-forgot-password',
       '/api/accounts/reset-forgot-password/',
-      '/api/accounts/generate-captcha',
-      '/api/accounts/generate-captcha/',
     ]
 
     authRoutes.forEach((route) => {
       app.use(route, loginLimiter)
+    })
+
+    ;['/api/accounts/generate-captcha', '/api/accounts/generate-captcha/'].forEach((route) => {
+      app.use(route, captchaLimiter)
     })
   }
 

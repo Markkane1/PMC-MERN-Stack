@@ -161,9 +161,14 @@ function AuthProvider({ children }: AuthProviderProps) {
             }
             // eslint-disable-next-line  @typescript-eslint/no-explicit-any
         } catch (errors: any) {
+            const message =
+                errors?.response?.data?.error ||
+                errors?.response?.data?.message ||
+                errors?.message ||
+                errors.toString()
             return {
                 status: 'failed',
-                message: errors?.response?.data?.message || errors.toString(),
+                message,
             }
         }
     }
@@ -190,9 +195,14 @@ function AuthProvider({ children }: AuthProviderProps) {
             }
             // eslint-disable-next-line  @typescript-eslint/no-explicit-any
         } catch (errors: any) {
+            const message =
+                errors?.response?.data?.error ||
+                errors?.response?.data?.message ||
+                errors?.message ||
+                errors.toString()
             return {
                 status: 'failed',
-                message: errors?.response?.data?.message || errors.toString(),
+                message,
             }
         }
     }

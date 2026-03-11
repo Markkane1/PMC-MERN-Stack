@@ -109,11 +109,20 @@ const SignInForm = (props: SignInFormProps) => {
             })
 
             if (result?.status === 'failed') {
-                if (result.message.includes('CAPTCHA')) {
+                const authMessage = result.message || ''
+
+                if (/captcha/i.test(authMessage)) {
                     setMessage?.('Incorrect CAPTCHA, please try again.')
                     await loadCaptcha()
-                } else if (result.message.includes('400')) {
-                    setMessage?.('Invalid Credentials!')
+                } else if (/invalid credentials/i.test(authMessage)) {
+                    setMessage?.('Invalid credentials!')
+                } else if (
+                    /too many (login attempts|captcha requests)/i.test(
+                        authMessage,
+                    ) ||
+                    /429/.test(authMessage)
+                ) {
+                    setMessage?.('Too many attempts. Please try again later.')
                 } else {
                     setMessage?.(
                         'Technical Error! Please try again or email at fdm@epd.punjab.gov.pk',
