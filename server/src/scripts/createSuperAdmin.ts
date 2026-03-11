@@ -8,7 +8,7 @@ const username = process.argv[2] || 'superadmin'
 const rawPasswordArg = process.argv[3]
 const forceReset = process.argv.includes('--reset')
 const passwordArg = rawPasswordArg && !rawPasswordArg.startsWith('--') ? rawPasswordArg : undefined
-const password = passwordArg || `PMC-${crypto.randomBytes(6).toString('base64url')}`
+const plainTextPassword = passwordArg || `PMC-${crypto.randomBytes(6).toString('base64url')}`
 
 async function run() {
   await mongoose.connect(env.mongoUri, {
@@ -22,7 +22,7 @@ async function run() {
       process.exit(0)
     }
 
-    const passwordHash = await bcrypt.hash(password, 10)
+    const passwordHash = await bcrypt.hash(plainTextPassword, 10)
     await UserModel.updateOne(
       { _id: existing._id },
       {
@@ -38,11 +38,11 @@ async function run() {
 
     console.log('Superadmin updated.')
     console.log(`username: ${username}`)
-    console.log(`password: ${password}`)
+    console.log(`password: ${plainTextPassword}`)
     process.exit(0)
   }
 
-  const passwordHash = await bcrypt.hash(password, 10)
+  const passwordHash = await bcrypt.hash(plainTextPassword, 10)
   await UserModel.create({
     username,
     passwordHash,
@@ -54,7 +54,7 @@ async function run() {
 
   console.log('Superadmin created.')
   console.log(`username: ${username}`)
-  console.log(`password: ${password}`)
+  console.log(`password: ${plainTextPassword}`)
 }
 
 run().catch((err) => {

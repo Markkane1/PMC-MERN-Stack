@@ -50,7 +50,7 @@ Default API base URL: `http://localhost:4000/api`
 - `npm run db:index`: create database indexes
 - `npm run cleanup:bak`: remove backup collections
 - `npm run ensure:applicant-perms`: normalize applicant permissions
-- `npm run superadmin:static`: create static super admin
+- `npm run superadmin:static`: create or update the static super admin; the script hashes `SUPERADMIN_PASSWORD` into `User.passwordHash`
 
 ## Notes
 

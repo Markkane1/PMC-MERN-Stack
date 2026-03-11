@@ -19,6 +19,9 @@ const ExternalServiceTokenSchema = new Schema<ExternalServiceTokenDocument>(
   { timestamps: true }
 )
 
+ExternalServiceTokenSchema.index({ serviceName: 1, createdAt: -1 })
+ExternalServiceTokenSchema.index({ serviceName: 1, expiresAt: 1 })
+
 ExternalServiceTokenSchema.methods.isExpired = function isExpired(this: ExternalServiceTokenDocument) {
   return new Date() > this.expiresAt
 }

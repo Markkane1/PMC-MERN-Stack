@@ -57,8 +57,22 @@ const apiLimiter = rateLimit({
 const shouldApplyRuntimeRateLimits =
   env.nodeEnv !== 'test' || env.enableRateLimitsInTest
 
+function normalizeRequestPath(url: string): string {
+  const pathname = url.split('?')[0] || '/'
+  if (pathname === '/') return pathname
+  return pathname.replace(/\/+$/, '')
+}
+
+function isCaptchaRequest(req: Request): boolean {
+  return normalizeRequestPath(req.originalUrl) === '/api/accounts/generate-captcha'
+}
+
 // HTTPS redirect for production
 function httpsRedirect(req: Request, res: Response, next: NextFunction) {
+  if (env.trustProxy) {
+    return next()
+  }
+
   if (env.nodeEnv === 'production' && !req.secure && req.get('x-forwarded-proto') !== 'https') {
     const host = req.get('host')
     if (!host) {
@@ -83,8 +97,8 @@ export function createApp() {
   // Security: hide framework signature header
   app.disable('x-powered-by')
 
-  if (env.nodeEnv === 'production') {
-    // Needed when running behind reverse proxies for secure cookies/IP/rate limits.
+  if (env.trustProxy) {
+    // Trust the reverse proxy when TLS terminates upstream (for cookies/IP handling).
     app.set('trust proxy', 1)
   }
 
@@ -155,9 +169,15 @@ export function createApp() {
   // Keep disabled in test mode to avoid non-deterministic throttling in integration suites.
   if (shouldApplyRuntimeRateLimits) {
     // IP-based rate limiting (100 requests/min per IP)
-    app.use(ipRateLimitingMiddleware)
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      if (isCaptchaRequest(req)) return next()
+      return ipRateLimitingMiddleware(req, res, next)
+    })
     // Endpoint-based rate limiting (1000 requests/min per endpoint)
-    app.use(endpointRateLimitingMiddleware)
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      if (isCaptchaRequest(req)) return next()
+      return endpointRateLimitingMiddleware(req, res, next)
+    })
     // User-based rate limiting (for authenticated requests)
     app.use(userRateLimitingMiddleware)
   }
@@ -180,8 +200,12 @@ export function createApp() {
   app.use(responseTimeMonitor.middleware())
 
   if (shouldApplyRuntimeRateLimits) {
-    // Apply general rate limiting to all API routes
-    app.use('/api/', apiLimiter)
+    // Apply general rate limiting to all API routes except CAPTCHA,
+    // which uses its own dedicated limiter to avoid login-page reload lockouts.
+    app.use('/api/', (req: Request, res: Response, next: NextFunction) => {
+      if (isCaptchaRequest(req)) return next()
+      return apiLimiter(req, res, next)
+    })
 
     // Apply strict rate limiting to auth endpoints
     const authRoutes = [

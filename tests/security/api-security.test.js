@@ -261,6 +261,18 @@ describe('S5 Express & API Security', () => {
     expect(res.headers['x-powered-by']).toBeUndefined()
   })
 
+  it('serves a lightweight API health endpoint independent of optional services', async () => {
+    const res = await request(app)
+      .get('/api/health')
+      .set('X-Forwarded-For', nextIp())
+      .set('X-Forwarded-Proto', 'https')
+
+    expect(res.status).toBe(200)
+    expect(res.body).toHaveProperty('status', 'ok')
+    expect(typeof res.body.timestamp).toBe('string')
+    expect(Number.isNaN(Date.parse(res.body.timestamp))).toBe(false)
+  })
+
   it('enforces strict CORS policy for disallowed origin and valid preflight for allowed origin', async () => {
     const evilOrigin = 'https://evil.com'
     const allowedOrigin = 'http://localhost:5173'
@@ -316,6 +328,46 @@ describe('S5 Express & API Security', () => {
     expect(first429Attempt).toBeGreaterThan(0)
     expect(first429Attempt).toBeLessThan(15)
     expect(retryAfterSeen).toBe(true)
+  })
+
+  it('keeps captcha traffic out of the shared IP and API rate-limit buckets', async () => {
+    const sameIp = '10.99.99.98'
+
+    for (let i = 0; i < 100; i += 1) {
+      const res = await request(app)
+        .get('/api/does-not-exist')
+        .set('X-Forwarded-For', sameIp)
+        .set('X-Forwarded-Proto', 'https')
+
+      expect(res.status).toBe(404)
+    }
+
+    const captchaRes = await request(app)
+      .get('/api/accounts/generate-captcha/')
+      .set('X-Forwarded-For', sameIp)
+      .set('X-Forwarded-Proto', 'https')
+
+    expect(captchaRes.status).toBe(200)
+    expect(captchaRes.body).toHaveProperty('captcha_image')
+    expect(captchaRes.body).toHaveProperty('captcha_token')
+  })
+
+  it('applies the dedicated captcha rate limit after 30 requests per 15 minutes', async () => {
+    const sameIp = '10.99.99.97'
+    let first429Attempt = -1
+
+    for (let i = 1; i <= 31; i += 1) {
+      const res = await request(app)
+        .get('/api/accounts/generate-captcha/')
+        .set('X-Forwarded-For', sameIp)
+        .set('X-Forwarded-Proto', 'https')
+
+      if (res.status === 429 && first429Attempt === -1) {
+        first429Attempt = i
+      }
+    }
+
+    expect(first429Attempt).toBe(31)
   })
 
   it('does not expose password/passwordHash/__v in user-returning GET responses', async () => {

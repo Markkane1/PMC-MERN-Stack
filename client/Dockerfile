@@ -9,7 +9,7 @@ ENV VITE_API_URL=${VITE_API_URL}
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 COPY . .
 RUN npm run build
@@ -25,4 +25,3 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD wget -q -O - http://127.0.0.1/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
-

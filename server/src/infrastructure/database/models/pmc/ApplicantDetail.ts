@@ -49,6 +49,7 @@ const ApplicantDetailSchema = new Schema<ApplicantDetailDocument>(
 ApplicantDetailSchema.index({ assignedGroup: 1, createdAt: -1 })
 ApplicantDetailSchema.index({ applicationStatus: 1, createdAt: -1 })
 ApplicantDetailSchema.index({ assignedGroup: 1, applicationStatus: 1, createdAt: -1 })
+ApplicantDetailSchema.index({ createdBy: 1, createdAt: -1 })
 ApplicantDetailSchema.index({ assigned_group: 1, created_at: -1 })
 ApplicantDetailSchema.index({ application_status: 1, created_at: -1 })
 ApplicantDetailSchema.index({ assigned_group: 1, application_status: 1, created_at: -1 })

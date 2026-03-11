@@ -244,6 +244,9 @@ InspectionReportSchema.index({ actualDate: -1, status: 1 })
 InspectionReportSchema.index({ overallCompliance: 1 })
 InspectionReportSchema.index({ isActive: 1, status: 1 })
 InspectionReportSchema.index({ followUpRequired: 1, followUpDate: 1 })
+InspectionReportSchema.index({ applicantId: 1, status: 1, actualDate: -1 })
+InspectionReportSchema.index({ inspectorId: 1, status: 1, isActive: 1, actualDate: -1 })
+InspectionReportSchema.index({ applicantId: 1, isActive: 1, actualDate: -1 })
 
 // ============ MIDDLEWARE ============
 

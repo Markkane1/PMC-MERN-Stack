@@ -148,6 +148,7 @@ Backend variables:
 - `MONGO_URI`
 - `CORS_ORIGIN`
 - `APP_URL`
+- `TRUST_PROXY`
 - `UPLOAD_DIR`
 - `JWT_SECRET`
 - `JWT_EXPIRES_IN`
@@ -166,7 +167,7 @@ Backend variables:
 - `PLMIS_DEPT_CODE`
 - `PLMIS_REDIRECT_URL`
 - `SUPERADMIN_USERNAME`
-- `SUPERADMIN_PASSWORD`
+- `SUPERADMIN_PASSWORD` (plaintext setup input; scripts hash it into the Mongo `passwordHash` field)
 - `IDM_CLUBS_JSON`
 - `IDM_DISTRICTS_JSON`
 - `TEHSILS_JSON`

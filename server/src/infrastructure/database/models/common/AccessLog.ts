@@ -29,4 +29,8 @@ const AccessLogSchema = new Schema<AccessLogDocument>(
   { timestamps: true }
 )
 
+AccessLogSchema.index({ timestamp: -1, createdAt: -1 })
+AccessLogSchema.index({ username: 1, timestamp: -1, createdAt: -1 })
+AccessLogSchema.index({ endpoint: 1, timestamp: -1, createdAt: -1 })
+
 export const AccessLogModel = mongoose.model<AccessLogDocument>('AccessLog', AccessLogSchema, 'AccessLog')

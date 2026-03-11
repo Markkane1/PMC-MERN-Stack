@@ -23,4 +23,9 @@ const ApiLogSchema = new Schema<ApiLogDocument>(
   { timestamps: true }
 )
 
+ApiLogSchema.index({ createdAt: -1 })
+ApiLogSchema.index({ endpoint: 1, createdAt: -1 })
+ApiLogSchema.index({ serviceName: 1, createdAt: -1 })
+ApiLogSchema.index({ statusCode: 1, createdAt: -1 })
+
 export const ApiLogModel = mongoose.model<ApiLogDocument>('ApiLog', ApiLogSchema, 'ApiLog')

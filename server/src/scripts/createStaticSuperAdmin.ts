@@ -4,13 +4,13 @@ import { env } from '../infrastructure/config/env'
 import { UserModel } from '../infrastructure/database/models/accounts/User'
 
 const username = process.env.SUPERADMIN_USERNAME || 'superadmin'
-const password = process.env.SUPERADMIN_PASSWORD || 'SuperAdmin@123'
+const plainTextPassword = process.env.SUPERADMIN_PASSWORD || 'SuperAdmin@123'
 
 async function run() {
   await mongoose.connect(env.mongoUri)
 
   const existing = await UserModel.findOne({ username })
-  const passwordHash = await bcrypt.hash(password, 10)
+  const passwordHash = await bcrypt.hash(plainTextPassword, 10)
 
   if (existing) {
     existing.passwordHash = passwordHash

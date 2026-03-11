@@ -29,4 +29,9 @@ const AuditLogSchema = new Schema<AuditLogDocument>(
   { timestamps: true }
 )
 
+AuditLogSchema.index({ userId: 1, createdAt: -1 })
+AuditLogSchema.index({ userId: 1, timestamp: -1, createdAt: -1 })
+AuditLogSchema.index({ action: 1, timestamp: -1, createdAt: -1 })
+AuditLogSchema.index({ modelName: 1, timestamp: -1, createdAt: -1 })
+
 export const AuditLogModel = mongoose.model<AuditLogDocument>('AuditLog', AuditLogSchema, 'AuditLog')

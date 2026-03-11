@@ -27,264 +27,23 @@ import {
   userAuditLogRepositoryMongo,
 } from '../../../infrastructure/database/repositories/accounts'
 
-const PERMISSION_KEYS = [
-  'pmc.add_applicantdetail',
-  'pmc.add_applicantdocument',
-  'pmc.add_applicantfieldresponse',
-  'pmc.add_applicantmanualfields',
-  'pmc.add_applicationassignment',
-  'pmc.add_businessprofile',
-  'pmc.add_byproduct',
-  'pmc.add_collector',
-  'pmc.add_consumer',
-  'pmc.add_districtplasticcommitteedocument',
-  'pmc.add_inspectionreport',
-  'pmc.add_plasticitem',
-  'pmc.add_producer',
-  'pmc.add_product',
-  'pmc.add_psidtracking',
-  'pmc.add_rawmaterial',
-  'pmc.add_recycler',
-  'pmc.change_applicantdetail',
-  'pmc.change_applicantmanualfields',
-  'pmc.change_applicationassignment',
-  'pmc.change_businessprofile',
-  'pmc.change_collector',
-  'pmc.change_consumer',
-  'pmc.change_inspectionreport',
-  'pmc.change_producer',
-  'pmc.change_recycler',
-  'pmc.delete_applicantdetail',
-  'pmc.delete_businessprofile',
-  'pmc.delete_inspectionreport',
-  'pmc.view_applicantdetail',
-  'pmc.view_applicantdocument',
-  'pmc.view_applicantfee',
-  'pmc.view_applicantfieldresponse',
-  'pmc.view_applicantmanualfields',
-  'pmc.view_applicationassignment',
-  'pmc.view_businessprofile',
-  'pmc.view_byproduct',
-  'pmc.view_collector',
-  'pmc.view_consumer',
-  'pmc.view_district',
-  'pmc.view_districtplasticcommitteedocument',
-  'pmc.view_inspectionreport',
-  'pmc.view_license',
-  'pmc.view_plasticitem',
-  'pmc.view_producer',
-  'pmc.view_product',
-  'pmc.view_psidtracking',
-  'pmc.view_rawmaterial',
-  'pmc.view_recycler',
-  'pmc.view_singleuseplasticssnapshot',
-  'pmc.view_tehsil',
-]
-
-const buildPermission = (permissionKey: string) => {
-  const [appLabel, codename] = permissionKey.split('.')
-  const action = codename.split('_')[0]
-  const modelName = codename.split('_').slice(1).join('_')
-  const label = modelName.replace(/_/g, ' ')
-  const name = `Can ${action} ${label}`
-  return { permissionKey, name, codename, appLabel, modelName }
+type PermissionSeed = {
+  permissionKey: string
+  name: string
+  codename: string
+  appLabel?: string
+  modelName?: string
 }
 
-const PERMISSION_SEEDS = PERMISSION_KEYS.map(buildPermission)
-
-const DEFAULT_GROUP_PERMISSIONS: Record<string, string[]> = {
-  APPLICANT: [
-    'pmc.view_applicantdetail',
-    'pmc.add_applicantdetail',
-    'pmc.change_applicantdetail',
-    'pmc.view_applicantdocument',
-    'pmc.add_applicantdocument',
-    'pmc.view_businessprofile',
-    'pmc.add_businessprofile',
-    'pmc.change_businessprofile',
-    'pmc.view_producer',
-    'pmc.add_producer',
-    'pmc.change_producer',
-    'pmc.view_consumer',
-    'pmc.add_consumer',
-    'pmc.change_consumer',
-    'pmc.view_collector',
-    'pmc.add_collector',
-    'pmc.change_collector',
-    'pmc.view_recycler',
-    'pmc.add_recycler',
-    'pmc.change_recycler',
-    'pmc.view_district',
-    'pmc.view_tehsil',
-    'pmc.view_product',
-    'pmc.view_byproduct',
-    'pmc.view_plasticitem',
-    'pmc.view_rawmaterial',
-    'pmc.view_license',
-    'pmc.add_psidtracking',
-    'pmc.view_psidtracking',
-  ],
-  LSO: [
-    'pmc.view_applicantdetail',
-    'pmc.change_applicantdetail',
-    'pmc.view_applicantdocument',
-    'pmc.view_businessprofile',
-    'pmc.view_applicantfee',
-    'pmc.view_psidtracking',
-    'pmc.view_license',
-    'pmc.view_applicationassignment',
-    'pmc.add_applicationassignment',
-    'pmc.change_applicationassignment',
-    'pmc.view_applicantfieldresponse',
-    'pmc.view_applicantmanualfields',
-    'pmc.view_district',
-    'pmc.view_tehsil',
-    'pmc.view_product',
-    'pmc.view_byproduct',
-    'pmc.view_plasticitem',
-    'pmc.view_rawmaterial',
-  ],
-  LSM: [
-    'pmc.view_applicantdetail',
-    'pmc.change_applicantdetail',
-    'pmc.view_applicantdocument',
-    'pmc.view_businessprofile',
-    'pmc.view_applicantfee',
-    'pmc.view_psidtracking',
-    'pmc.view_license',
-    'pmc.view_applicationassignment',
-    'pmc.add_applicationassignment',
-    'pmc.change_applicationassignment',
-    'pmc.view_applicantfieldresponse',
-    'pmc.view_applicantmanualfields',
-    'pmc.view_district',
-    'pmc.view_tehsil',
-    'pmc.view_product',
-    'pmc.view_byproduct',
-    'pmc.view_plasticitem',
-    'pmc.view_rawmaterial',
-  ],
-  LSM2: [
-    'pmc.view_applicantdetail',
-    'pmc.change_applicantdetail',
-    'pmc.view_applicantdocument',
-    'pmc.view_businessprofile',
-    'pmc.view_applicantfee',
-    'pmc.view_psidtracking',
-    'pmc.view_license',
-    'pmc.view_applicationassignment',
-    'pmc.add_applicationassignment',
-    'pmc.change_applicationassignment',
-    'pmc.view_applicantfieldresponse',
-    'pmc.view_applicantmanualfields',
-    'pmc.view_district',
-    'pmc.view_tehsil',
-    'pmc.view_product',
-    'pmc.view_byproduct',
-    'pmc.view_plasticitem',
-    'pmc.view_rawmaterial',
-  ],
-  TL: [
-    'pmc.view_applicantdetail',
-    'pmc.change_applicantdetail',
-    'pmc.view_applicantdocument',
-    'pmc.view_businessprofile',
-    'pmc.view_applicantfee',
-    'pmc.view_psidtracking',
-    'pmc.view_license',
-    'pmc.view_applicationassignment',
-    'pmc.add_applicationassignment',
-    'pmc.change_applicationassignment',
-    'pmc.view_applicantfieldresponse',
-    'pmc.view_applicantmanualfields',
-    'pmc.view_district',
-    'pmc.view_tehsil',
-    'pmc.view_product',
-    'pmc.view_byproduct',
-    'pmc.view_plasticitem',
-    'pmc.view_rawmaterial',
-  ],
-  DO: [
-    'pmc.view_applicantdetail',
-    'pmc.change_applicantdetail',
-    'pmc.view_applicantdocument',
-    'pmc.view_businessprofile',
-    'pmc.view_applicantfee',
-    'pmc.view_psidtracking',
-    'pmc.view_license',
-    'pmc.view_applicationassignment',
-    'pmc.add_applicationassignment',
-    'pmc.change_applicationassignment',
-    'pmc.view_applicantfieldresponse',
-    'pmc.view_applicantmanualfields',
-    'pmc.view_district',
-    'pmc.view_tehsil',
-    'pmc.view_product',
-    'pmc.view_byproduct',
-    'pmc.view_plasticitem',
-    'pmc.view_rawmaterial',
-    'pmc.view_inspectionreport',
-  ],
-  DEO: [
-    'pmc.view_applicantdetail',
-    'pmc.change_applicantdetail',
-    'pmc.view_applicantdocument',
-    'pmc.view_businessprofile',
-    'pmc.view_applicantfee',
-    'pmc.view_psidtracking',
-    'pmc.view_license',
-    'pmc.view_applicationassignment',
-    'pmc.add_applicationassignment',
-    'pmc.change_applicationassignment',
-    'pmc.view_applicantfieldresponse',
-    'pmc.view_applicantmanualfields',
-    'pmc.view_district',
-    'pmc.view_tehsil',
-    'pmc.view_product',
-    'pmc.view_byproduct',
-    'pmc.view_plasticitem',
-    'pmc.view_rawmaterial',
-    'pmc.view_inspectionreport',
-  ],
-  DG: [
-    'pmc.view_applicantdetail',
-    'pmc.change_applicantdetail',
-    'pmc.view_applicantdocument',
-    'pmc.view_businessprofile',
-    'pmc.view_applicantfee',
-    'pmc.view_psidtracking',
-    'pmc.view_license',
-    'pmc.view_applicationassignment',
-    'pmc.add_applicationassignment',
-    'pmc.change_applicationassignment',
-    'pmc.view_applicantfieldresponse',
-    'pmc.view_applicantmanualfields',
-    'pmc.view_district',
-    'pmc.view_tehsil',
-    'pmc.view_product',
-    'pmc.view_byproduct',
-    'pmc.view_plasticitem',
-    'pmc.view_rawmaterial',
-    'pmc.view_inspectionreport',
-  ],
-  'Download License': [
-    'pmc.view_license',
-    'pmc.view_applicantdetail',
-    'pmc.view_businessprofile',
-    'pmc.view_applicantdocument',
-    'pmc.view_psidtracking',
-    'pmc.view_applicantfee',
-    'pmc.view_district',
-    'pmc.view_tehsil',
-  ],
-  Inspector: [
-    'pmc.view_inspectionreport',
-    'pmc.add_inspectionreport',
-    'pmc.change_inspectionreport',
-    'pmc.view_district',
-    'pmc.view_tehsil',
-  ],
+const { PERMISSION_SEEDS, DEFAULT_GROUP_PERMISSIONS } = require('../../config/permissionRegistry') as {
+  PERMISSION_SEEDS: PermissionSeed[]
+  DEFAULT_GROUP_PERMISSIONS: Record<string, string[]>
 }
+
+const PERMISSION_ORDER = new Map(
+  PERMISSION_SEEDS.map((permission, index) => [permission.permissionKey, index] as const)
+)
+const VALID_PERMISSION_KEYS = new Set(PERMISSION_SEEDS.map((permission) => permission.permissionKey))
 
 
 type AdminUseCaseDeps = {
@@ -303,6 +62,41 @@ const defaultDeps: AdminUseCaseDeps = {
 
 
 const ROLE_DASHBOARD_KEY = 'role_dashboard_map'
+
+function normalizePermissionKeys(permissionKeys: unknown): string[] {
+  if (!Array.isArray(permissionKeys)) return []
+
+  const seen = new Set<string>()
+  const normalized: string[] = []
+
+  for (const permissionKey of permissionKeys) {
+    if (typeof permissionKey !== 'string') continue
+    if (!VALID_PERMISSION_KEYS.has(permissionKey)) continue
+    if (seen.has(permissionKey)) continue
+
+    seen.add(permissionKey)
+    normalized.push(permissionKey)
+  }
+
+  return normalized.sort((left, right) => {
+    const leftIndex = PERMISSION_ORDER.get(left) ?? Number.MAX_SAFE_INTEGER
+    const rightIndex = PERMISSION_ORDER.get(right) ?? Number.MAX_SAFE_INTEGER
+    return leftIndex - rightIndex || left.localeCompare(right)
+  })
+}
+
+function serializePermission(
+  permission: Pick<PermissionSeed, 'permissionKey' | 'name' | 'codename' | 'appLabel' | 'modelName'> & { id?: string }
+) {
+  return {
+    id: permission.id || permission.permissionKey,
+    name: permission.name,
+    codename: permission.codename,
+    app_label: permission.appLabel,
+    model_name: permission.modelName,
+    permission_key: permission.permissionKey,
+  }
+}
 
 function isValidObjectId(value: string): boolean {
   return mongoose.Types.ObjectId.isValid(value)
@@ -360,9 +154,8 @@ async function computeEffectivePermissions(
   deps: AdminUseCaseDeps = defaultDeps
 ) {
   const groupDocs = groups.length ? await deps.groupRepo.listByNames(groups) : []
-  const groupPermissions = groupDocs.flatMap((group) => group.permissions || [])
-  const merged = new Set<string>([...groupPermissions, ...directPermissions])
-  return Array.from(merged)
+  const groupPermissions = groupDocs.flatMap((group) => normalizePermissionKeys(group.permissions || []))
+  return normalizePermissionKeys([...groupPermissions, ...directPermissions])
 }
 
 async function syncUsersForGroup(groupName: string, deps: AdminUseCaseDeps = defaultDeps) {
@@ -377,16 +170,23 @@ async function syncUsersForGroup(groupName: string, deps: AdminUseCaseDeps = def
 }
 
 export const listPermissions = asyncHandler(async (_req: Request, res: Response) => {
-  const permissions = await defaultDeps.permissionRepo.list()
+  const existingPermissions = await defaultDeps.permissionRepo.list()
+  const existingByKey = new Map<string, (typeof existingPermissions)[number]>(
+    existingPermissions.map((permission) => [permission.permissionKey, permission])
+  )
+
   return res.json(
-    permissions.map((permission) => ({
-      id: permission.id,
-      name: permission.name,
-      codename: permission.codename,
-      app_label: permission.appLabel,
-      model_name: permission.modelName,
-      permission_key: permission.permissionKey,
-    }))
+    PERMISSION_SEEDS.map((permission) => {
+      const existing = existingByKey.get(permission.permissionKey)
+      return serializePermission({
+        id: existing?.id != null ? String(existing.id) : undefined,
+        permissionKey: permission.permissionKey,
+        name: permission.name,
+        codename: permission.codename,
+        appLabel: permission.appLabel,
+        modelName: permission.modelName,
+      })
+    })
   )
 })
 
@@ -397,8 +197,6 @@ export const resetPermissions = asyncHandler(async (req: AuthRequest, res: Respo
   }
 
   const permissionKeys = PERMISSION_SEEDS.map((p) => p.permissionKey)
-  const validSet = new Set(permissionKeys)
-
   await PermissionModel.deleteMany({})
   if (PERMISSION_SEEDS.length) {
     await PermissionModel.insertMany(PERMISSION_SEEDS)
@@ -408,18 +206,18 @@ export const resetPermissions = asyncHandler(async (req: AuthRequest, res: Respo
   for (const group of groups) {
     const groupName = group.name
     const defaultPerms = DEFAULT_GROUP_PERMISSIONS[groupName] || DEFAULT_GROUP_PERMISSIONS[groupName?.toUpperCase?.()] || null
-    let nextPermissions = (group.permissions || []).filter((p: string) => validSet.has(p))
+    let nextPermissions = normalizePermissionKeys(group.permissions || [])
     if (['Super', 'Admin'].includes(groupName)) {
       nextPermissions = [...permissionKeys]
     } else if (defaultPerms) {
-      nextPermissions = defaultPerms.filter((p) => validSet.has(p))
+      nextPermissions = normalizePermissionKeys(defaultPerms)
     }
     await GroupModel.updateOne({ _id: group._id }, { permissions: nextPermissions })
   }
 
   const users = await UserModel.find({}).lean()
   for (const user of users) {
-    const direct = ((user as any).directPermissions || []).filter((p: string) => validSet.has(p))
+    const direct = normalizePermissionKeys((user as any).directPermissions || [])
     const groupsForUser = (user.groups || [])
     const effective = await computeEffectivePermissions(groupsForUser, direct, defaultDeps)
     await UserModel.updateOne({ _id: user._id }, { directPermissions: direct, permissions: effective })
@@ -439,7 +237,7 @@ export const listGroups = asyncHandler(async (_req: Request, res: Response) => {
     groups.map((group) => ({
       id: group.id,
       name: group.name,
-      permissions: group.permissions || [],
+      permissions: normalizePermissionKeys(group.permissions || []),
     }))
   )
 })
@@ -457,7 +255,7 @@ export const createGroup = asyncHandler(async (req: AuthRequest, res: Response) 
 
   const created = await defaultDeps.groupRepo.create({
     name: String(name),
-    permissions: Array.isArray(permissions) ? permissions : [],
+    permissions: normalizePermissionKeys(permissions),
   })
 
   logAdminAction(req, 'group.create', 'group', String(created.id), {
@@ -487,7 +285,7 @@ export const updateGroup = asyncHandler(async (req: AuthRequest, res: Response) 
 
   const updatePayload: Record<string, unknown> = {}
   if (name) updatePayload.name = String(name)
-  if (Array.isArray(permissions)) updatePayload.permissions = permissions
+  if (Array.isArray(permissions)) updatePayload.permissions = normalizePermissionKeys(permissions)
 
   const updated = await defaultDeps.groupRepo.updateById(id, updatePayload)
   if (!updated) {
@@ -521,7 +319,7 @@ export const updateGroup = asyncHandler(async (req: AuthRequest, res: Response) 
   return res.json({
     id: updated.id,
     name: updated.name,
-    permissions: updated.permissions || [],
+    permissions: normalizePermissionKeys(updated.permissions || []),
   })
 })
 
@@ -567,8 +365,8 @@ export const listUsers = asyncHandler(async (req: AuthRequest, res: Response) =>
       first_name: user.firstName,
       last_name: user.lastName,
       groups: user.groups || [],
-      permissions: user.permissions || [],
-      direct_permissions: user.directPermissions || [],
+      permissions: normalizePermissionKeys(user.permissions || []),
+      direct_permissions: normalizePermissionKeys(user.directPermissions || []),
       is_active: user.isActive,
       is_superadmin: user.isSuperadmin || false,
     }))
@@ -595,7 +393,9 @@ export const updateUser = asyncHandler(async (req: AuthRequest, res: Response) =
   }
 
   const nextGroups = Array.isArray(groups) ? groups : user.groups || []
-  const nextDirect = Array.isArray(direct_permissions) ? direct_permissions : user.directPermissions || []
+  const nextDirect = Array.isArray(direct_permissions)
+    ? normalizePermissionKeys(direct_permissions)
+    : normalizePermissionKeys(user.directPermissions || [])
   const effective = await computeEffectivePermissions(nextGroups, nextDirect, defaultDeps)
 
   const updated = await defaultDeps.userRepo.updateById(id, {
@@ -621,8 +421,8 @@ export const updateUser = asyncHandler(async (req: AuthRequest, res: Response) =
     first_name: updated.firstName,
     last_name: updated.lastName,
     groups: updated.groups || [],
-    permissions: updated.permissions || [],
-    direct_permissions: updated.directPermissions || [],
+    permissions: normalizePermissionKeys(updated.permissions || []),
+    direct_permissions: normalizePermissionKeys(updated.directPermissions || []),
     is_active: updated.isActive,
   })
 })

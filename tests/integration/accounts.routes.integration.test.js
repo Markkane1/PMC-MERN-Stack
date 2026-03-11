@@ -14,6 +14,8 @@ jest.setTimeout(60000)
 describe('Accounts API Integration', () => {
   let app
   let UserModel
+  let GroupModel
+  let PermissionModel
   let userRepositoryMongo
   let regularUser
   let superUser
@@ -25,6 +27,8 @@ describe('Accounts API Integration', () => {
   beforeAll(async () => {
     app = await bootstrapTestApp()
     ;({ UserModel } = require('../../server/dist/infrastructure/database/models/accounts/User.js'))
+    ;({ GroupModel } = require('../../server/dist/infrastructure/database/models/accounts/Group.js'))
+    ;({ PermissionModel } = require('../../server/dist/infrastructure/database/models/accounts/Permission.js'))
     ;({ userRepositoryMongo } = require('../../server/dist/infrastructure/database/repositories/accounts/index.js'))
   })
 
@@ -134,6 +138,58 @@ describe('Accounts API Integration', () => {
       .set('Authorization', `Bearer ${regularToken}`)
 
     expect(response.status).toBe(403)
+  })
+
+  it('should expose only canonical permissions and filter legacy keys from groups and users', async () => {
+    await PermissionModel.create({
+      name: 'Can delete group',
+      codename: 'delete_group',
+      appLabel: 'auth',
+      modelName: 'group',
+      permissionKey: 'auth.delete_group',
+    })
+
+    await GroupModel.create({
+      name: 'Legacy Reviewers',
+      permissions: ['auth.delete_group', 'pmc.view_license'],
+    })
+
+    await UserModel.findByIdAndUpdate(regularUser._id, {
+      groups: ['Legacy Reviewers'],
+      permissions: ['auth.delete_group', 'pmc.view_license'],
+      directPermissions: ['auth.delete_group', 'pmc.view_license'],
+    })
+
+    const [permissionsResponse, groupsResponse, usersResponse] = await Promise.all([
+      request(app)
+        .get('/api/accounts/admin/permissions/')
+        .set('Authorization', `Bearer ${superToken}`),
+      request(app)
+        .get('/api/accounts/admin/groups/')
+        .set('Authorization', `Bearer ${superToken}`),
+      request(app)
+        .get('/api/accounts/admin/users/')
+        .set('Authorization', `Bearer ${superToken}`),
+    ])
+
+    expect(permissionsResponse.status).toBe(200)
+    expect(
+      permissionsResponse.body.some((permission) => permission.permission_key === 'auth.delete_group'),
+    ).toBe(false)
+    expect(
+      permissionsResponse.body.some((permission) => permission.permission_key === 'pmc.view_license'),
+    ).toBe(true)
+
+    expect(groupsResponse.status).toBe(200)
+    const legacyGroup = groupsResponse.body.find((group) => group.name === 'Legacy Reviewers')
+    expect(legacyGroup).toBeTruthy()
+    expect(legacyGroup.permissions).toEqual(['pmc.view_license'])
+
+    expect(usersResponse.status).toBe(200)
+    const returnedUser = usersResponse.body.find((user) => user.username === 'regular.user')
+    expect(returnedUser).toBeTruthy()
+    expect(returnedUser.direct_permissions).toEqual(['pmc.view_license'])
+    expect(returnedUser.permissions).toEqual(['pmc.view_license'])
   })
 
   it('should return admin users list for super user and avoid sensitive passwordHash exposure', async () => {

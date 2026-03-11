@@ -3,7 +3,7 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 COPY tsconfig.json ./
 COPY src ./src
@@ -26,4 +26,3 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
   CMD wget -q -O - http://127.0.0.1:4000/monitoring/health || exit 1
 
 CMD ["node", "dist/server.js"]
-

@@ -35,4 +35,9 @@ const UserSchema = new Schema<UserDocument>(
   { timestamps: true }
 )
 
+// Auth and admin flows primarily look up users by username/email and filter active users by group.
+UserSchema.index({ username: 1, isActive: 1 })
+UserSchema.index({ email: 1, isActive: 1 }, { sparse: true })
+UserSchema.index({ groups: 1, isActive: 1 })
+
 export const UserModel = mongoose.model<UserDocument>('User', UserSchema, 'User')
