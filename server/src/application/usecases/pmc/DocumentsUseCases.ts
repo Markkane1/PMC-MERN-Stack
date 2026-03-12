@@ -117,14 +117,19 @@ export const uploadApplicantDocument = [
         const unsettledFees = allFees?.filter((fee: any) => !fee.isSettled && fee.status !== 'SETTLED') || []
         
         if (unsettledFees && unsettledFees.length > 0) {
-          // Mark all unsettled fees as settled using ApplicantFeeModel
-          for (const fee of unsettledFees) {
-            await ApplicantFeeModel.findByIdAndUpdate(
-              (fee as any)._id,
-              { isSettled: true, status: 'SETTLED', settledAt: new Date(), settledBy: req.user?._id },
-              { new: true }
-            )
-          }
+          const feeIds = unsettledFees.map((fee: any) => (fee as any)._id).filter(Boolean)
+          const settledAt = new Date()
+          await ApplicantFeeModel.updateMany(
+            { _id: { $in: feeIds } },
+            {
+              $set: {
+                isSettled: true,
+                status: 'SETTLED',
+                settledAt,
+                settledBy: req.user?._id,
+              },
+            }
+          )
           
           console.log(
             `✓ Fee settlement: ${unsettledFees.length} fee(s) settled for applicant ${applicantId} due to fee verification document`

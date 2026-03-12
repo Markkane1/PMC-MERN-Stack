@@ -58,6 +58,26 @@ describe('cacheInvalidation', () => {
     expect(cacheManagerMock.delPattern).toHaveBeenCalledWith('statistics:*')
   })
 
+  it('should invalidate account profile, permission, and configuration caches', async () => {
+    await cacheInvalidation.invalidateUserProfiles(['user-1', 'user-2'])
+    expect(cacheManagerMock.del).toHaveBeenCalledWith('accounts:user-profile:user-1')
+    expect(cacheManagerMock.del).toHaveBeenCalledWith('accounts:user-profile:user-2')
+
+    vi.clearAllMocks()
+    await cacheInvalidation.invalidatePermissionLists()
+    expect(cacheManagerMock.del).toHaveBeenCalledWith('accounts:permissions:list')
+
+    vi.clearAllMocks()
+    await cacheInvalidation.invalidateRoleDashboardConfig()
+    expect(cacheManagerMock.del).toHaveBeenCalledWith('accounts:config:role-dashboard')
+
+    vi.clearAllMocks()
+    await cacheInvalidation.invalidateServiceConfigurations(['ePay', 'sms'])
+    expect(cacheManagerMock.del).toHaveBeenCalledWith('accounts:config:service-configurations:list')
+    expect(cacheManagerMock.del).toHaveBeenCalledWith('accounts:config:service:ePay')
+    expect(cacheManagerMock.del).toHaveBeenCalledWith('accounts:config:service:sms')
+  })
+
   it('should clear all cache entries', async () => {
     await cacheInvalidation.clearAll()
     expect(cacheManagerMock.clear).toHaveBeenCalledTimes(1)

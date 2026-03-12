@@ -36,7 +36,7 @@ resilienceRouter.get('/rate-limits', (req: Request, res: Response) => {
  */
 resilienceRouter.get('/rate-limits/ip/:ip', (req: Request, res: Response) => {
   const { ip } = req.params
-  const status = ipRateLimiter.isAllowed(ip)
+  const status = ipRateLimiter.getStatus(ip)
 
   res.json({
     success: true,

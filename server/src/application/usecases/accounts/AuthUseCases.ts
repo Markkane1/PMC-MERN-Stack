@@ -21,6 +21,7 @@ import {
   districtRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
 import { setAuthCookie, clearAuthCookie } from '../../../interfaces/http/utils/authCookies'
+import { getClientIpAddress, loginRateLimiter } from '../../../infrastructure/resilience/rateLimiting'
 
 const captchaCache = new NodeCache({ stdTTL: 300 })
 const CAPTCHA_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -155,6 +156,8 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   if (!valid) {
     return res.status(401).json({ error: 'Invalid credentials' })
   }
+
+  loginRateLimiter.reset(getClientIpAddress(req.headers as Record<string, unknown>, req.socket.remoteAddress))
 
   const tokens = signTokens(String(user.id))
   setAuthCookie(res, tokens.access)

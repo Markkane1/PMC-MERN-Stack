@@ -125,6 +125,7 @@ describe('PaymentStatusComponent', () => {
 
     await screen.findByText('Verify Payment')
     fireEvent.click(screen.getByText('Verify Payment'))
+    await screen.findByText('Amount Paid')
 
     fireEvent.change(screen.getByRole('spinbutton'), {
       target: { value: '1500' },
@@ -133,8 +134,11 @@ describe('PaymentStatusComponent', () => {
       target: { value: 'TXN-12345' },
     })
 
-    const verifyButtons = screen.getAllByRole('button', { name: 'Verify Payment' })
-    fireEvent.click(verifyButtons[1])
+    const submitButton = screen.getAllByRole('button', { name: 'Verify Payment' }).at(-1)
+    if (!submitButton) {
+      throw new Error('Verify submit button was not rendered')
+    }
+    fireEvent.click(submitButton)
 
     await waitFor(() => {
       expect(mockVerifyPayment).toHaveBeenCalledWith(303, 1500, 'TXN-12345')

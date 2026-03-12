@@ -1,4 +1,11 @@
 import { cacheManager } from './cacheManager'
+import {
+  ACCOUNT_PERMISSION_LIST_CACHE_KEY,
+  ACCOUNT_ROLE_DASHBOARD_CACHE_KEY,
+  ACCOUNT_SERVICE_CONFIGURATION_LIST_CACHE_KEY,
+  accountServiceConfigurationCacheKey,
+  accountUserProfileCacheKey,
+} from './cacheKeys'
 
 /**
  * Cache invalidation helper functions
@@ -60,6 +67,29 @@ export const cacheInvalidation = {
     await cacheManager.delPattern('inspection:*')
     await cacheManager.delPattern('statistics:*')
     console.log('✅ Inspection report caches invalidated')
+  },
+
+  async invalidateUserProfiles(userIds: string[] = []): Promise<void> {
+    await Promise.all(userIds.map((userId) => cacheManager.del(accountUserProfileCacheKey(userId))))
+  },
+
+  async invalidatePermissionLists(): Promise<void> {
+    await cacheManager.del(ACCOUNT_PERMISSION_LIST_CACHE_KEY)
+  },
+
+  async invalidateRoleDashboardConfig(): Promise<void> {
+    await cacheManager.del(ACCOUNT_ROLE_DASHBOARD_CACHE_KEY)
+  },
+
+  async invalidateServiceConfigurations(serviceNames: string[] = []): Promise<void> {
+    await cacheManager.del(ACCOUNT_SERVICE_CONFIGURATION_LIST_CACHE_KEY)
+    if (serviceNames.length) {
+      await Promise.all(
+        Array.from(new Set(serviceNames.filter(Boolean))).map((serviceName) =>
+          cacheManager.del(accountServiceConfigurationCacheKey(serviceName))
+        )
+      )
+    }
   },
 
   /**

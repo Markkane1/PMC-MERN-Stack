@@ -59,54 +59,90 @@ export class PaymentVerificationService {
    */
   async getPaymentStatus(applicantId: number): Promise<PaymentStatus> {
     try {
-      const totalDue = await this.feeRepo.sumFeeByApplicantId(applicantId)
-
-      const paidEntries = await this.psidRepo.listPaidByApplicantId(applicantId)
-      const paid = paidEntries.reduce((sum, entry: any) => {
-        const amount = Number(entry?.amountPaid ?? entry?.amountWithinDueDate ?? 0)
-        return sum + (Number.isFinite(amount) ? amount : 0)
-      }, 0)
-
-      const lastPayment = paidEntries
-        .map((entry: any) => {
-          const value = entry?.paidDate || entry?.updatedAt || entry?.createdAt
-          return value ? new Date(value) : null
-        })
-        .filter((d): d is Date => !!d && !Number.isNaN(d.getTime()))
-        .sort((a, b) => b.getTime() - a.getTime())[0]
-
-      const remainingBalance = Math.max(0, totalDue - paid)
-      const isPaid = remainingBalance <= 0
-      const isPartiallyPaid = paid > 0 && !isPaid
-      const paymentPercentage = totalDue > 0 ? Math.min(100, Math.round((paid / totalDue) * 100)) : 100
-      const nextDueDate = this.calculateNextDue(lastPayment)
-      const daysOverdue = !isPaid ? this.calculateDaysOverdue(nextDueDate) : 0
-
-      let status: PaymentStatus['status'] = 'PENDING'
-      if (isPaid) {
-        status = 'PAID'
-      } else if (isPartiallyPaid) {
-        status = 'PARTIAL'
-      } else if (daysOverdue > 0) {
-        status = 'OVERDUE'
-      }
-      
-      return {
-        applicantId,
-        totalDue,
-        totalPaid: paid,
-        remainingBalance,
-        isPaid,
-        isPartiallyPaid,
-        lastPaymentDate: lastPayment,
-        nextDueDate,
-        daysOverdue,
-        status,
-        paymentPercentage,
-      }
+      const statuses = await this.getPaymentStatusesForApplicants([applicantId])
+      return statuses.get(applicantId) || this.buildPaymentStatus(applicantId, 0, 0)
     } catch (error) {
       throw new Error(`Failed to get payment status: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
+  }
+
+  async getPaymentStatusesForApplicants(applicantIds: number[]): Promise<Map<number, PaymentStatus>> {
+    const normalizedApplicantIds = Array.from(
+      new Set(applicantIds.map((applicantId) => Number(applicantId)).filter((applicantId) => Number.isFinite(applicantId)))
+    )
+
+    if (!normalizedApplicantIds.length) {
+      return new Map()
+    }
+
+    const applicantIdSet = new Set(normalizedApplicantIds)
+    const [fees, psidEntries] = await Promise.all([
+      this.feeRepo.listByApplicantIds
+        ? this.feeRepo.listByApplicantIds(normalizedApplicantIds)
+        : this.feeRepo.list().then((items) =>
+            items.filter((fee: any) => applicantIdSet.has(Number(fee?.applicantId ?? fee?.applicant_id)))
+          ),
+      this.psidRepo.list().then((items) =>
+        items.filter((entry: any) => applicantIdSet.has(Number(entry?.applicantId ?? entry?.applicant_id)))
+      ),
+    ])
+
+    const totalDueByApplicant = new Map<number, number>()
+    for (const fee of fees as any[]) {
+      const applicantId = Number((fee as any)?.applicantId ?? (fee as any)?.applicant_id)
+      if (!Number.isFinite(applicantId) || !applicantIdSet.has(applicantId)) continue
+
+      const amount = Number((fee as any)?.feeAmount ?? (fee as any)?.fee_amount ?? 0)
+      if (!Number.isFinite(amount)) continue
+
+      totalDueByApplicant.set(applicantId, (totalDueByApplicant.get(applicantId) || 0) + amount)
+    }
+
+    const totalPaidByApplicant = new Map<number, number>()
+    const lastPaymentByApplicant = new Map<number, Date>()
+    for (const entry of psidEntries as any[]) {
+      const applicantId = Number((entry as any)?.applicantId ?? (entry as any)?.applicant_id)
+      if (!Number.isFinite(applicantId) || !applicantIdSet.has(applicantId)) continue
+
+      const paymentStatus = String((entry as any)?.paymentStatus ?? (entry as any)?.payment_status ?? '').toUpperCase()
+      if (!['PAID', 'CONFIRMED', 'SUCCESS', 'COMPLETED'].includes(paymentStatus)) continue
+
+      const amount = Number(
+        (entry as any)?.amountPaid ??
+          (entry as any)?.amount_paid ??
+          (entry as any)?.amountWithinDueDate ??
+          (entry as any)?.amount_within_due_date ??
+          0
+      )
+      if (Number.isFinite(amount)) {
+        totalPaidByApplicant.set(applicantId, (totalPaidByApplicant.get(applicantId) || 0) + amount)
+      }
+
+      const paidAtRaw =
+        (entry as any)?.paidDate ??
+        (entry as any)?.paid_date ??
+        (entry as any)?.updatedAt ??
+        (entry as any)?.createdAt
+      const paidAt = paidAtRaw ? new Date(paidAtRaw) : null
+      if (paidAt && Number.isFinite(paidAt.getTime())) {
+        const current = lastPaymentByApplicant.get(applicantId)
+        if (!current || paidAt.getTime() > current.getTime()) {
+          lastPaymentByApplicant.set(applicantId, paidAt)
+        }
+      }
+    }
+
+    return new Map(
+      normalizedApplicantIds.map((applicantId) => [
+        applicantId,
+        this.buildPaymentStatus(
+          applicantId,
+          totalDueByApplicant.get(applicantId) || 0,
+          totalPaidByApplicant.get(applicantId) || 0,
+          lastPaymentByApplicant.get(applicantId)
+        ),
+      ])
+    )
   }
 
   /**
@@ -332,6 +368,43 @@ export class PaymentVerificationService {
     return diffDays
   }
 
+  private buildPaymentStatus(
+    applicantId: number,
+    totalDue: number,
+    totalPaid: number,
+    lastPaymentDate?: Date
+  ): PaymentStatus {
+    const remainingBalance = Math.max(0, totalDue - totalPaid)
+    const isPaid = remainingBalance <= 0
+    const isPartiallyPaid = totalPaid > 0 && !isPaid
+    const paymentPercentage = totalDue > 0 ? Math.min(100, Math.round((totalPaid / totalDue) * 100)) : 100
+    const nextDueDate = this.calculateNextDue(lastPaymentDate)
+    const daysOverdue = !isPaid ? this.calculateDaysOverdue(nextDueDate) : 0
+
+    let status: PaymentStatus['status'] = 'PENDING'
+    if (isPaid) {
+      status = 'PAID'
+    } else if (isPartiallyPaid) {
+      status = 'PARTIAL'
+    } else if (daysOverdue > 0) {
+      status = 'OVERDUE'
+    }
+
+    return {
+      applicantId,
+      totalDue,
+      totalPaid,
+      remainingBalance,
+      isPaid,
+      isPartiallyPaid,
+      lastPaymentDate,
+      nextDueDate,
+      daysOverdue,
+      status,
+      paymentPercentage,
+    }
+  }
+
   /**
    * Generate payment summary report
    * @param districtId - Optional district filter
@@ -392,46 +465,7 @@ export class PaymentVerificationService {
         }
       }
 
-      const [fees, psidEntries] = await Promise.all([
-        applicantIds.length && this.feeRepo.listByApplicantIds
-          ? this.feeRepo.listByApplicantIds(applicantIds)
-          : this.feeRepo.list(),
-        this.psidRepo.list(),
-      ])
-
-      const applicantIdSet = new Set(applicantIds)
-      const dueByApplicant = new Map<number, number>()
-      for (const fee of fees as any[]) {
-        const applicantId = Number((fee as any)?.applicantId ?? (fee as any)?.applicant_id)
-        if (!Number.isFinite(applicantId) || !applicantIdSet.has(applicantId)) continue
-        const amount = Number((fee as any)?.feeAmount ?? (fee as any)?.fee_amount ?? 0)
-        if (!Number.isFinite(amount)) continue
-        dueByApplicant.set(applicantId, (dueByApplicant.get(applicantId) || 0) + amount)
-      }
-
-      const paidByApplicant = new Map<number, number>()
-      const lastPaidAtByApplicant = new Map<number, Date>()
-      for (const entry of psidEntries as any[]) {
-        const applicantId = Number((entry as any)?.applicantId ?? (entry as any)?.applicant_id)
-        if (!Number.isFinite(applicantId) || !applicantIdSet.has(applicantId)) continue
-
-        const paymentStatus = String((entry as any)?.paymentStatus ?? (entry as any)?.payment_status ?? '').toUpperCase()
-        if (!['PAID', 'CONFIRMED', 'SUCCESS', 'COMPLETED'].includes(paymentStatus)) continue
-
-        const amount = Number((entry as any)?.amountPaid ?? (entry as any)?.amount_paid ?? (entry as any)?.amountWithinDueDate ?? (entry as any)?.amount_within_due_date ?? 0)
-        if (Number.isFinite(amount)) {
-          paidByApplicant.set(applicantId, (paidByApplicant.get(applicantId) || 0) + amount)
-        }
-
-        const paidAtRaw = (entry as any)?.paidDate ?? (entry as any)?.paid_date ?? (entry as any)?.updatedAt ?? (entry as any)?.createdAt
-        const paidAt = paidAtRaw ? new Date(paidAtRaw) : null
-        if (paidAt && Number.isFinite(paidAt.getTime())) {
-          const current = lastPaidAtByApplicant.get(applicantId)
-          if (!current || paidAt.getTime() > current.getTime()) {
-            lastPaidAtByApplicant.set(applicantId, paidAt)
-          }
-        }
-      }
+      const paymentStatuses = await this.getPaymentStatusesForApplicants(applicantIds)
 
       let totalPaymentRequired = 0
       let totalPaymentReceived = 0
@@ -439,19 +473,12 @@ export class PaymentVerificationService {
       let overdueCount = 0
 
       for (const applicantId of applicantIds) {
-        const totalDue = dueByApplicant.get(applicantId) || 0
-        const totalPaid = paidByApplicant.get(applicantId) || 0
-        const remainingBalance = Math.max(0, totalDue - totalPaid)
-        totalPaymentRequired += totalDue
-        totalPaymentReceived += totalPaid
-        totalPending += remainingBalance
+        const status = paymentStatuses.get(applicantId) || this.buildPaymentStatus(applicantId, 0, 0)
+        totalPaymentRequired += status.totalDue
+        totalPaymentReceived += status.totalPaid
+        totalPending += status.remainingBalance
 
-        if (remainingBalance > 0 && totalPaid <= 0) {
-          const dueDate = this.calculateNextDue(lastPaidAtByApplicant.get(applicantId))
-          if (this.calculateDaysOverdue(dueDate) > 0) {
-            overdueCount += 1
-          }
-        }
+        if (status.status === 'OVERDUE') overdueCount += 1
       }
 
       const paymentCollectionRate = totalPaymentRequired > 0

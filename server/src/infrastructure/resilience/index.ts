@@ -5,10 +5,11 @@
 
 // Rate limiting
 export {
-  TokenBucketLimiter,
-  IpRateLimiter,
-  EndpointRateLimiter,
-  UserRateLimiter,
+  CacheBackedRateLimiter,
+  generalApiRateLimiter,
+  loginRateLimiter,
+  captchaRateLimiter,
+  profileRateLimiter,
   ipRateLimiter,
   endpointRateLimiter,
   userRateLimiter,
@@ -43,11 +44,16 @@ export {
 
 // Middleware
 export {
+  generalApiRateLimitingMiddleware,
+  loginRateLimitingMiddleware,
+  captchaRateLimitingMiddleware,
+  profileRateLimitingMiddleware,
   ipRateLimitingMiddleware,
   endpointRateLimitingMiddleware,
   userRateLimitingMiddleware,
   getRateLimitingStats,
   resetRateLimits,
+  getClientIp,
 } from './middleware'
 
 // Routes

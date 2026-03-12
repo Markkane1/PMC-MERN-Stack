@@ -18,11 +18,13 @@ import {
   createOrUpdateLicense,
   maybeCreateSubmitted,
   maybeUpdateTrackingNumber,
+  serializeAggregatedApplicantDetail,
 } from '../../services/pmc/ApplicantService'
 import { invalidatePmcDashboardCaches } from '../../services/pmc/DashboardCacheService'
 import { parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
 import { parallelQueriesWithMetadata } from '../../../infrastructure/utils/parallelQueries'
 import { cacheManager } from '../../../infrastructure/cache/cacheManager'
+import { aggregateApplicantListDetails } from '../../../infrastructure/database/aggregations'
 
 type ApplicantUseCaseDeps = {
   applicantRepo: ApplicantRepository
@@ -326,18 +328,12 @@ async function filterByUserGroups(req: AuthRequest) {
 
 export const listApplicants = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { filter } = await filterByUserGroups(req)
-  
-  // Parse pagination parameters (page and pageSize from query)
-  const { page, pageSize } = parsePaginationParams(req.query)
-  
-  // Use paginated repository method
-  const result = await defaultDeps.applicantRepo.listPaginated(filter, page, pageSize)
-  
-  // Assemble details for paginated data
-  const data = await Promise.all(result.data.map((a) => assembleApplicantDetail(a)))
-  
-  // Return paginated response
-  res.json(paginateResponse(data, result.pagination))
+
+  const { page, limit } = parsePaginationParams(req.query)
+  const result = await aggregateApplicantListDetails({ filter, page, limit })
+  const data = result.data.map((row: any) => serializeAggregatedApplicantDetail(row))
+
+  res.json(paginateResponse(data, { page, limit, total: result.total }))
 })
 
 export const getApplicant = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -496,22 +492,39 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
     const filter = clauses.length ? { $and: clauses } : {}
     const computePayload = async (): Promise<CachedApplicantListPayload> => {
       const queryStartedAt = Date.now()
-      const result = await defaultDeps.applicantRepo.listPaginated(
+      if (compactMode) {
+        const result = await defaultDeps.applicantRepo.listPaginated(
+          filter,
+          pagination.page,
+          pagination.limit,
+          { createdAt: -1 },
+          COMPACT_APPLICANT_PROJECTION
+        )
+        const queryDuration = Date.now() - queryStartedAt
+        const assembleStartedAt = Date.now()
+        const data = await assembleApplicantDetailsCompact(result.data as any[])
+        const assembleDuration = Date.now() - assembleStartedAt
+        return {
+          data,
+          total: result.pagination.total,
+          queryDuration,
+          assembleDuration,
+        }
+      }
+
+      const result = await aggregateApplicantListDetails({
         filter,
-        pagination.page,
-        pagination.limit,
-        { createdAt: -1 },
-        compactMode ? COMPACT_APPLICANT_PROJECTION : undefined
-      )
+        page: pagination.page,
+        limit: pagination.limit,
+        sort: { createdAt: -1, created_at: -1, numericId: -1, numeric_id: -1 },
+      })
       const queryDuration = Date.now() - queryStartedAt
       const assembleStartedAt = Date.now()
-      const data = compactMode
-        ? await assembleApplicantDetailsCompact(result.data as any[])
-        : await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
+      const data = (result.data as any[]).map((row: any) => serializeAggregatedApplicantDetail(row))
       const assembleDuration = Date.now() - assembleStartedAt
       return {
         data,
-        total: result.pagination.total,
+        total: result.total,
         queryDuration,
         assembleDuration,
       }
@@ -567,22 +580,39 @@ export const listApplicantsMain = asyncHandler(async (req: AuthRequest, res: Res
   const { filter } = await filterByUserGroups(req)
   const computePayload = async (): Promise<CachedApplicantListPayload> => {
     const queryStartedAt = Date.now()
-    const result = await defaultDeps.applicantRepo.listPaginated(
+    if (compactMode) {
+      const result = await defaultDeps.applicantRepo.listPaginated(
+        filter,
+        pagination.page,
+        pagination.limit,
+        { createdAt: -1 },
+        COMPACT_APPLICANT_PROJECTION
+      )
+      const queryDuration = Date.now() - queryStartedAt
+      const assembleStartedAt = Date.now()
+      const data = await assembleApplicantDetailsCompact(result.data as any[])
+      const assembleDuration = Date.now() - assembleStartedAt
+      return {
+        data,
+        total: result.pagination.total,
+        queryDuration,
+        assembleDuration,
+      }
+    }
+
+    const result = await aggregateApplicantListDetails({
       filter,
-      pagination.page,
-      pagination.limit,
-      { createdAt: -1 },
-      compactMode ? COMPACT_APPLICANT_PROJECTION : undefined
-    )
+      page: pagination.page,
+      limit: pagination.limit,
+      sort: { createdAt: -1, created_at: -1, numericId: -1, numeric_id: -1 },
+    })
     const queryDuration = Date.now() - queryStartedAt
     const assembleStartedAt = Date.now()
-    const data = compactMode
-      ? await assembleApplicantDetailsCompact(result.data as any[])
-      : await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
+    const data = (result.data as any[]).map((row: any) => serializeAggregatedApplicantDetail(row))
     const assembleDuration = Date.now() - assembleStartedAt
     return {
       data,
-      total: result.pagination.total,
+      total: result.total,
       queryDuration,
       assembleDuration,
     }
@@ -666,22 +696,39 @@ export const listApplicantsMainDO = asyncHandler(async (req: AuthRequest, res: R
 
   const computePayload = async (): Promise<CachedApplicantListPayload> => {
     const queryStartedAt = Date.now()
-    const result = await defaultDeps.applicantRepo.listPaginated(
-      { $and: clauses },
-      pagination.page,
-      pagination.limit,
-      { createdAt: -1 },
-      compactMode ? COMPACT_APPLICANT_PROJECTION : undefined
-    )
+    if (compactMode) {
+      const result = await defaultDeps.applicantRepo.listPaginated(
+        { $and: clauses },
+        pagination.page,
+        pagination.limit,
+        { createdAt: -1 },
+        COMPACT_APPLICANT_PROJECTION
+      )
+      const queryDuration = Date.now() - queryStartedAt
+      const assembleStartedAt = Date.now()
+      const data = await assembleApplicantDetailsCompact(result.data as any[])
+      const assembleDuration = Date.now() - assembleStartedAt
+      return {
+        data,
+        total: result.pagination.total,
+        queryDuration,
+        assembleDuration,
+      }
+    }
+
+    const result = await aggregateApplicantListDetails({
+      filter: { $and: clauses },
+      page: pagination.page,
+      limit: pagination.limit,
+      sort: { createdAt: -1, created_at: -1, numericId: -1, numeric_id: -1 },
+    })
     const queryDuration = Date.now() - queryStartedAt
     const assembleStartedAt = Date.now()
-    const data = compactMode
-      ? await assembleApplicantDetailsCompact(result.data as any[])
-      : await Promise.all(result.data.map((a: any) => assembleApplicantDetail(a)))
+    const data = (result.data as any[]).map((row: any) => serializeAggregatedApplicantDetail(row))
     const assembleDuration = Date.now() - assembleStartedAt
     return {
       data,
-      total: result.pagination.total,
+      total: result.total,
       queryDuration,
       assembleDuration,
     }

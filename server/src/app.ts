@@ -4,7 +4,6 @@ import cookieParser from 'cookie-parser'
 import helmet from 'helmet'
 import compression from 'compression'
 import morgan from 'morgan'
-import rateLimit from 'express-rate-limit'
 import mongoSanitize from 'express-mongo-sanitize'
 import { env } from './infrastructure/config/env'
 import { errorHandler } from './interfaces/http/middlewares/error'
@@ -20,39 +19,12 @@ import {
 } from './infrastructure/http'
 import { monitoringMiddleware, SystemMetricsCollector, monitoringRouter } from './infrastructure/monitoring'
 import {
-  ipRateLimitingMiddleware,
-  endpointRateLimitingMiddleware,
-  userRateLimitingMiddleware,
+  generalApiRateLimitingMiddleware,
+  loginRateLimitingMiddleware,
+  captchaRateLimitingMiddleware,
   resilienceRouter,
 } from './infrastructure/resilience'
 import { haRouter, healthCheckAggregator } from './infrastructure/ha'
-
-// Rate limiting for different endpoint types
-const authWindowMs = 15 * 60 * 1000
-const authMaxAttempts = 10
-
-const loginLimiter = rateLimit({
-  windowMs: authWindowMs,
-  max: authMaxAttempts,
-  message: 'Too many login attempts, try again later',
-  standardHeaders: true,
-  legacyHeaders: false,
-})
-
-const captchaLimiter = rateLimit({
-  windowMs: authWindowMs,
-  max: 30,
-  message: 'Too many CAPTCHA requests, try again later',
-  standardHeaders: true,
-  legacyHeaders: false,
-})
-
-const apiLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 100, // 100 requests per minute per IP
-  standardHeaders: true,
-  legacyHeaders: false,
-})
 
 const shouldApplyRuntimeRateLimits =
   env.nodeEnv !== 'test' || env.enableRateLimitsInTest
@@ -65,6 +37,10 @@ function normalizeRequestPath(url: string): string {
 
 function isCaptchaRequest(req: Request): boolean {
   return normalizeRequestPath(req.originalUrl) === '/api/accounts/generate-captcha'
+}
+
+function isLoginRequest(req: Request): boolean {
+  return normalizeRequestPath(req.originalUrl) === '/api/accounts/login'
 }
 
 // HTTPS redirect for production
@@ -168,18 +144,20 @@ export function createApp() {
   // Week 6: Rate Limiting & Resilience
   // Keep disabled in test mode to avoid non-deterministic throttling in integration suites.
   if (shouldApplyRuntimeRateLimits) {
-    // IP-based rate limiting (100 requests/min per IP)
-    app.use((req: Request, res: Response, next: NextFunction) => {
-      if (isCaptchaRequest(req)) return next()
-      return ipRateLimitingMiddleware(req, res, next)
+    app.use('/api/', (req: Request, res: Response, next: NextFunction) => {
+      if (isCaptchaRequest(req) || isLoginRequest(req)) {
+        return next()
+      }
+      return generalApiRateLimitingMiddleware(req, res, next)
     })
-    // Endpoint-based rate limiting (1000 requests/min per endpoint)
-    app.use((req: Request, res: Response, next: NextFunction) => {
-      if (isCaptchaRequest(req)) return next()
-      return endpointRateLimitingMiddleware(req, res, next)
+
+    ;['/api/accounts/login', '/api/accounts/login/'].forEach((route) => {
+      app.use(route, loginRateLimitingMiddleware)
     })
-    // User-based rate limiting (for authenticated requests)
-    app.use(userRateLimitingMiddleware)
+
+    ;['/api/accounts/generate-captcha', '/api/accounts/generate-captcha/'].forEach((route) => {
+      app.use(route, captchaRateLimitingMiddleware)
+    })
   }
 
   // Enforce strict request body limits to reduce abuse risk.
@@ -198,37 +176,6 @@ export function createApp() {
   
   // Performance monitoring (tracks response times)
   app.use(responseTimeMonitor.middleware())
-
-  if (shouldApplyRuntimeRateLimits) {
-    // Apply general rate limiting to all API routes except CAPTCHA,
-    // which uses its own dedicated limiter to avoid login-page reload lockouts.
-    app.use('/api/', (req: Request, res: Response, next: NextFunction) => {
-      if (isCaptchaRequest(req)) return next()
-      return apiLimiter(req, res, next)
-    })
-
-    // Apply strict rate limiting to auth endpoints
-    const authRoutes = [
-      '/api/accounts/login',
-      '/api/accounts/login/',
-      '/api/accounts/register',
-      '/api/accounts/register/',
-      '/api/accounts/logout',
-      '/api/accounts/logout/',
-      '/api/accounts/find-user',
-      '/api/accounts/find-user/',
-      '/api/accounts/reset-forgot-password',
-      '/api/accounts/reset-forgot-password/',
-    ]
-
-    authRoutes.forEach((route) => {
-      app.use(route, loginLimiter)
-    })
-
-    ;['/api/accounts/generate-captcha', '/api/accounts/generate-captcha/'].forEach((route) => {
-      app.use(route, captchaLimiter)
-    })
-  }
 
   // API routes
   app.use('/api', apiRouter)

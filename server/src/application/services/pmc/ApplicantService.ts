@@ -169,6 +169,166 @@ function buildBaseApplicantPayload(applicant: any) {
   }
 }
 
+function serializeApplicantFees(fees: any[]) {
+  return fees.map((fee: any) => ({
+    id: fee.numericId || fee._id || fee.id,
+    applicant: fee.applicantId ?? fee.applicant_id,
+    fee_amount: fee.feeAmount ?? fee.fee_amount,
+    is_settled: fee.isSettled ?? fee.is_settled,
+    reason: fee.reason,
+    created_at: fee.createdAt ?? fee.created_at,
+    updated_at: fee.updatedAt ?? fee.updated_at,
+  }))
+}
+
+function serializePsidTrackingRows(psidTracking: any[]) {
+  return psidTracking.map((psid: any) => ({
+    id: psid._id || psid.id,
+    applicant_id: psid.applicantId ?? psid.applicant_id,
+    dept_transaction_id: psid.deptTransactionId ?? psid.dept_transaction_id,
+    due_date: psid.dueDate ? new Date(psid.dueDate).toISOString().slice(0, 10) : psid.due_date ? new Date(psid.due_date).toISOString().slice(0, 10) : null,
+    expiry_date: psid.expiryDate ?? psid.expiry_date,
+    amount_within_due_date: psid.amountWithinDueDate ?? psid.amount_within_due_date,
+    amount_after_due_date: psid.amountAfterDueDate ?? psid.amount_after_due_date,
+    consumer_name: psid.consumerName ?? psid.consumer_name,
+    mobile_no: psid.mobileNo ?? psid.mobile_no,
+    cnic: psid.cnic,
+    email: psid.email,
+    district_id: psid.districtId ?? psid.district_id,
+    amount_bifurcation: psid.amountBifurcation ?? psid.amount_bifurcation,
+    consumer_number: psid.consumerNumber ?? psid.consumer_number,
+    status: psid.status,
+    message: psid.message,
+    payment_status: psid.paymentStatus ?? psid.payment_status,
+    amount_paid: psid.amountPaid ?? psid.amount_paid,
+    paid_date: psid.paidDate ? new Date(psid.paidDate).toISOString().slice(0, 10) : psid.paid_date ? new Date(psid.paid_date).toISOString().slice(0, 10) : null,
+    paid_time: psid.paidTime ?? psid.paid_time,
+    bank_code: psid.bankCode ?? psid.bank_code,
+    created_at: psid.createdAt ?? psid.created_at,
+  }))
+}
+
+function buildCompactApplicantPayload(
+  applicant: any,
+  relations: {
+    assignments?: any[]
+    submitted?: any | null
+    fees?: any[]
+  }
+) {
+  const base = buildBaseApplicantPayload(applicant)
+  const applicantAssignments = (relations.assignments || []).map((assignment) => serializeAssignment(assignment))
+  const applicantFees = relations.fees || []
+  const totalFeeAmount = applicantFees.reduce(
+    (sum: number, fee: any) => sum + Number((fee.feeAmount ?? fee.fee_amount) || 0),
+    0
+  )
+  const verifiedFeeAmount = applicantFees
+    .filter((fee: any) => Boolean(fee.isSettled ?? fee.is_settled))
+    .reduce((sum: number, fee: any) => sum + Number((fee.feeAmount ?? fee.fee_amount) || 0), 0)
+
+  return {
+    ...base,
+    has_identity_document: false,
+    has_fee_challan: applicantFees.length > 0,
+    is_downloaded_fee_challan: applicantFees.length > 0,
+    businessprofile: null,
+    producer: null,
+    consumer: null,
+    collector: null,
+    recycler: null,
+    applicationassignment: applicantAssignments,
+    applicationdocument: [],
+    submittedapplication: relations.submitted
+      ? {
+          id: (relations.submitted as any).id ?? (relations.submitted as any)._id,
+          applicant_id: (relations.submitted as any).applicantId ?? (relations.submitted as any).applicant_id,
+          created_at: (relations.submitted as any).createdAt ?? (relations.submitted as any).created_at,
+          updated_at: (relations.submitted as any).updatedAt ?? (relations.submitted as any).updated_at,
+        }
+      : null,
+    field_responses: [],
+    applicantfees: [],
+    total_fee_amount: totalFeeAmount,
+    verified_fee_amount: verifiedFeeAmount,
+    manual_fields: null,
+    psid_tracking: [],
+  }
+}
+
+function buildDetailedApplicantPayload(
+  applicant: any,
+  relations: {
+    businessProfile?: any | null
+    district?: any | null
+    tehsil?: any | null
+    producer?: any | null
+    consumer?: any | null
+    collector?: any | null
+    recycler?: any | null
+    assignments?: any[]
+    documents?: any[]
+    submitted?: any | null
+    fieldResponses?: any[]
+    fees?: any[]
+    manualFields?: any | null
+    psidTracking?: any[]
+  }
+) {
+  const documents = relations.documents || []
+  const fees = relations.fees || []
+  const psidTracking = relations.psidTracking || []
+
+  const hasIdentityDocument = documents.some(
+    (d: any) => ((d.documentDescription ?? d.document_description) || '') === 'Identity Document'
+  )
+  const hasFeeChallan =
+    documents.some((d: any) => ((d.documentDescription ?? d.document_description) || '') === 'Fee Challan') ||
+    psidTracking.length > 0
+  const isDownloadedFeeChallan = fees.length > 0 && psidTracking.length === 0
+
+  const businessProfileData = serializeBusinessProfile(relations.businessProfile) as any
+  if (businessProfileData) {
+    businessProfileData.district_name = relations.district?.districtName ?? relations.district?.district_name ?? null
+    businessProfileData.tehsil_name = relations.tehsil?.tehsilName ?? relations.tehsil?.tehsil_name ?? null
+  }
+
+  return {
+    id: applicant.numericId ?? applicant.numeric_id ?? applicant.id,
+    first_name: applicant.firstName ?? applicant.first_name,
+    last_name: applicant.lastName ?? applicant.last_name,
+    applicant_designation: applicant.applicantDesignation ?? applicant.applicant_designation,
+    gender: applicant.gender,
+    cnic: applicant.cnic,
+    email: applicant.email,
+    mobile_operator: applicant.mobileOperator ?? applicant.mobile_operator,
+    mobile_no: applicant.mobileNo ?? applicant.mobile_no,
+    application_status: applicant.applicationStatus ?? applicant.application_status,
+    tracking_number: applicant.trackingNumber ?? applicant.tracking_number,
+    remarks: applicant.remarks,
+    assigned_group: applicant.assignedGroup ?? applicant.assigned_group,
+    registration_for: applicant.registrationFor ?? applicant.registration_for,
+    tracking_hash: applicant.trackingHash ?? applicant.tracking_hash,
+    created_at: applicant.createdAt ?? applicant.created_at,
+    updated_at: applicant.updatedAt ?? applicant.updated_at,
+    has_identity_document: hasIdentityDocument,
+    has_fee_challan: hasFeeChallan,
+    is_downloaded_fee_challan: isDownloadedFeeChallan,
+    businessprofile: businessProfileData,
+    producer: serializeProducer(relations.producer),
+    consumer: serializeConsumer(relations.consumer),
+    collector: serializeCollector(relations.collector),
+    recycler: serializeRecycler(relations.recycler),
+    applicationassignment: (relations.assignments || []).map((assignment: any) => serializeAssignment(assignment)),
+    applicationdocument: documents.map((document: any) => serializeApplicantDocument(document)),
+    submittedapplication: relations.submitted || null,
+    field_responses: (relations.fieldResponses || []).map((response: any) => serializeApplicantFieldResponse(response)),
+    applicantfees: serializeApplicantFees(fees),
+    manual_fields: serializeApplicantManualFields(relations.manualFields),
+    psid_tracking: serializePsidTrackingRows(psidTracking),
+  }
+}
+
 async function findSubmittedByApplicantIds(applicantIds: number[], deps: ApplicantServiceDeps) {
   if (!applicantIds.length) return []
   if (deps.applicationSubmittedRepo.listByApplicantIds) {
@@ -226,91 +386,24 @@ export async function assembleApplicantDetailsCompact(applicants: any[], deps: A
   }
 
   return applicants.map((applicant: any) => {
-    const base = buildBaseApplicantPayload(applicant)
     const applicantId = resolveApplicantId(applicant)
 
     if (!applicantId) {
-      return {
-        ...base,
-        has_identity_document: false,
-        has_fee_challan: false,
-        is_downloaded_fee_challan: false,
-        businessprofile: null,
-        producer: null,
-        consumer: null,
-        collector: null,
-        recycler: null,
-        applicationassignment: [],
-        applicationdocument: [],
-        submittedapplication: null,
-        field_responses: [],
-        applicantfees: [],
-        total_fee_amount: 0,
-        verified_fee_amount: 0,
-        manual_fields: null,
-        psid_tracking: [],
-      }
+      return buildCompactApplicantPayload(applicant, {})
     }
 
-    const applicantAssignments = (assignmentsByApplicant.get(applicantId) || []).map((a) => serializeAssignment(a))
-    const applicantSubmitted = submittedByApplicant.get(applicantId)
-    const applicantFees = feesByApplicant.get(applicantId) || []
-    const totalFeeAmount = applicantFees.reduce((sum: number, fee: any) => sum + Number(fee.feeAmount || 0), 0)
-    const verifiedFeeAmount = applicantFees
-      .filter((fee: any) => Boolean(fee.isSettled))
-      .reduce((sum: number, fee: any) => sum + Number(fee.feeAmount || 0), 0)
-
-    return {
-      ...base,
-      has_identity_document: false,
-      has_fee_challan: applicantFees.length > 0,
-      is_downloaded_fee_challan: applicantFees.length > 0,
-      businessprofile: null,
-      producer: null,
-      consumer: null,
-      collector: null,
-      recycler: null,
-      applicationassignment: applicantAssignments,
-      applicationdocument: [],
-      submittedapplication: applicantSubmitted
-        ? {
-            id: (applicantSubmitted as any).id ?? (applicantSubmitted as any)._id,
-            applicant_id: (applicantSubmitted as any).applicantId,
-            created_at: (applicantSubmitted as any).createdAt,
-            updated_at: (applicantSubmitted as any).updatedAt,
-          }
-        : null,
-      field_responses: [],
-      applicantfees: [],
-      total_fee_amount: totalFeeAmount,
-      verified_fee_amount: verifiedFeeAmount,
-      manual_fields: null,
-      psid_tracking: [],
-    }
+    return buildCompactApplicantPayload(applicant, {
+      assignments: assignmentsByApplicant.get(applicantId) || [],
+      submitted: submittedByApplicant.get(applicantId) || null,
+      fees: feesByApplicant.get(applicantId) || [],
+    })
   })
 }
 
 export async function assembleApplicantDetail(applicant: any, deps: ApplicantServiceDeps = defaultDeps) {
   const applicantId = resolveApplicantId(applicant)
   if (!applicantId) {
-    return {
-      ...buildBaseApplicantPayload(applicant),
-      has_identity_document: false,
-      has_fee_challan: false,
-      is_downloaded_fee_challan: false,
-      businessprofile: null,
-      producer: null,
-      consumer: null,
-      collector: null,
-      recycler: null,
-      applicationassignment: [],
-      applicationdocument: [],
-      submittedapplication: null,
-      field_responses: [],
-      applicantfees: [],
-      manual_fields: null,
-      psid_tracking: [],
-    }
+    return buildDetailedApplicantPayload(applicant, {})
   }
   const [
     businessProfile,
@@ -340,88 +433,46 @@ export async function assembleApplicantDetail(applicant: any, deps: ApplicantSer
     deps.psidTrackingRepo.listPaidByApplicantId(applicantId),
   ])
 
-  const hasIdentityDocument = documents.some((d: any) => (d.documentDescription || '') === 'Identity Document')
-  const hasFeeChallan =
-    documents.some((d: any) => (d.documentDescription || '') === 'Fee Challan') || psidTracking.length > 0
-  const isDownloadedFeeChallan = fees.length > 0 && psidTracking.length === 0
+  const [district, tehsil] = businessProfile
+    ? await Promise.all([
+        businessProfile.districtId ? deps.districtRepo.findByDistrictId(businessProfile.districtId) : null,
+        businessProfile.tehsilId ? deps.tehsilRepo.findByTehsilId(businessProfile.tehsilId) : null,
+      ])
+    : [null, null]
 
-  let businessProfileData = serializeBusinessProfile(businessProfile) as any
-  if (businessProfile) {
-    const [district, tehsil] = await Promise.all([
-      businessProfile.districtId ? deps.districtRepo.findByDistrictId(businessProfile.districtId) : null,
-      businessProfile.tehsilId ? deps.tehsilRepo.findByTehsilId(businessProfile.tehsilId) : null,
-    ])
-    if (businessProfileData) {
-      businessProfileData.district_name = district?.districtName || null
-      businessProfileData.tehsil_name = tehsil?.tehsilName || null
-    }
-  }
+  return buildDetailedApplicantPayload(applicant, {
+    businessProfile,
+    district,
+    tehsil,
+    producer,
+    consumer,
+    collector,
+    recycler,
+    assignments,
+    documents,
+    submitted,
+    fieldResponses,
+    fees,
+    manualFields,
+    psidTracking,
+  })
+}
 
-  const psidTrackingSerialized = (psidTracking as any[]).map((psid: any) => ({
-    id: psid._id || psid.id,
-    applicant_id: psid.applicantId,
-    dept_transaction_id: psid.deptTransactionId,
-    due_date: psid.dueDate ? psid.dueDate.toISOString().slice(0, 10) : null,
-    expiry_date: psid.expiryDate,
-    amount_within_due_date: psid.amountWithinDueDate,
-    amount_after_due_date: psid.amountAfterDueDate,
-    consumer_name: psid.consumerName,
-    mobile_no: psid.mobileNo,
-    cnic: psid.cnic,
-    email: psid.email,
-    district_id: psid.districtId,
-    amount_bifurcation: psid.amountBifurcation,
-    consumer_number: psid.consumerNumber,
-    status: psid.status,
-    message: psid.message,
-    payment_status: psid.paymentStatus,
-    amount_paid: psid.amountPaid,
-    paid_date: psid.paidDate ? psid.paidDate.toISOString().slice(0, 10) : null,
-    paid_time: psid.paidTime,
-    bank_code: psid.bankCode,
-    created_at: psid.createdAt,
-  }))
-
-  return {
-    id: applicant.numericId,
-    first_name: applicant.firstName,
-    last_name: applicant.lastName,
-    applicant_designation: applicant.applicantDesignation,
-    gender: applicant.gender,
-    cnic: applicant.cnic,
-    email: applicant.email,
-    mobile_operator: applicant.mobileOperator,
-    mobile_no: applicant.mobileNo,
-    application_status: applicant.applicationStatus,
-    tracking_number: applicant.trackingNumber,
-    remarks: applicant.remarks,
-    assigned_group: applicant.assignedGroup,
-    registration_for: applicant.registrationFor,
-    tracking_hash: applicant.trackingHash,
-    created_at: applicant.createdAt,
-    updated_at: applicant.updatedAt,
-    has_identity_document: hasIdentityDocument,
-    has_fee_challan: hasFeeChallan,
-    is_downloaded_fee_challan: isDownloadedFeeChallan,
-    businessprofile: businessProfileData,
-    producer: serializeProducer(producer),
-    consumer: serializeConsumer(consumer),
-    collector: serializeCollector(collector),
-    recycler: serializeRecycler(recycler),
-    applicationassignment: assignments.map((a: any) => serializeAssignment(a)),
-    applicationdocument: documents.map((d: any) => serializeApplicantDocument(d)),
-    submittedapplication: submitted,
-    field_responses: fieldResponses.map((f: any) => serializeApplicantFieldResponse(f)),
-    applicantfees: fees.map((f: any) => ({
-      id: f.numericId || f._id || f.id,
-      applicant: f.applicantId,
-      fee_amount: f.feeAmount,
-      is_settled: f.isSettled,
-      reason: f.reason,
-      created_at: f.createdAt,
-      updated_at: f.updatedAt,
-    })),
-    manual_fields: serializeApplicantManualFields(manualFields),
-    psid_tracking: psidTrackingSerialized,
-  }
+export function serializeAggregatedApplicantDetail(row: any) {
+  return buildDetailedApplicantPayload(row, {
+    businessProfile: row.businessProfileDoc || row.businessProfile || null,
+    district: row.districtDoc || null,
+    tehsil: row.tehsilDoc || null,
+    producer: row.producerDoc || null,
+    consumer: row.consumerDoc || null,
+    collector: row.collectorDoc || null,
+    recycler: row.recyclerDoc || null,
+    assignments: row.assignmentDocs || [],
+    documents: row.documentDocs || [],
+    submitted: row.submittedDoc || null,
+    fieldResponses: row.fieldResponseDocs || [],
+    fees: row.feeDocs || [],
+    manualFields: row.manualFieldDoc || null,
+    psidTracking: row.psidTrackingDocs || [],
+  })
 }

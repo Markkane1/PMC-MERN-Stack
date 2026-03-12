@@ -1,17 +1,22 @@
 /**
- * Week 6: Rate Limiting
- * Implements token bucket algorithm with IP-based, endpoint-based, and user-based limiting
+ * Cache-backed rate limiting primitives.
+ * Uses an in-process LRU+TTL store so counters survive across requests without Redis.
  */
 
-interface TokenBucket {
-  tokens: number
-  lastRefillTime: number
+import { LruTtlCache } from '../cache/lru'
+
+type RateLimitEntry = {
+  count: number
+  windowStart: number
+  blockUntil: number
 }
 
 export interface RateLimitConfig {
-  maxTokens: number // Max concurrent tokens
-  refillRate: number // Tokens per second
-  windowMs?: number // Time window in ms (alternative to refillRate)
+  maxRequests: number
+  windowMs: number
+  backoffBaseMs?: number
+  maxBackoffMs?: number
+  keyPrefix?: string
 }
 
 export interface RateLimitStatus {
@@ -19,232 +24,188 @@ export interface RateLimitStatus {
   limit: number
   resetTime: number
   allowed: boolean
+  retryAfterMs: number
 }
 
-/**
- * Token bucket rate limiter
- * Uses token bucket algorithm for smooth rate limiting
- */
-export class TokenBucketLimiter {
-  private buckets: Map<string, TokenBucket> = new Map()
-  private config: RateLimitConfig
+const DEFAULT_CACHE_SIZE = 10_000
+const rateLimitCache = new LruTtlCache<RateLimitEntry>(DEFAULT_CACHE_SIZE)
 
-  constructor(config: RateLimitConfig) {
-    this.config = {
-      ...config,
-      refillRate: config.refillRate ?? 100 / 1000, // 100 tokens per second default
-    } as RateLimitConfig
+function nowMs() {
+  return Date.now()
+}
+
+export class CacheBackedRateLimiter {
+  constructor(private readonly config: RateLimitConfig) {}
+
+  isAllowed(key: string): RateLimitStatus {
+    const now = nowMs()
+    const cacheKey = this.getCacheKey(key)
+    const existing = rateLimitCache.get(cacheKey)
+
+    const windowStart =
+      existing && now - existing.windowStart < this.config.windowMs
+        ? existing.windowStart
+        : now
+    const windowReset = windowStart + this.config.windowMs
+    const entry: RateLimitEntry = existing && now < windowReset
+      ? { ...existing, windowStart }
+      : { count: 0, windowStart: now, blockUntil: 0 }
+
+    if (entry.blockUntil > now) {
+      rateLimitCache.set(cacheKey, entry, this.getEntryTtlMs(entry, windowReset))
+      return this.toStatus(entry, false, windowReset)
+    }
+
+    entry.count += 1
+    const allowed = entry.count <= this.config.maxRequests
+
+    if (!allowed) {
+      const overflowCount = entry.count - this.config.maxRequests
+      const backoffBaseMs = this.config.backoffBaseMs ?? 0
+      const backoffMs = backoffBaseMs > 0
+        ? Math.min(
+            this.config.maxBackoffMs ?? this.config.windowMs,
+            backoffBaseMs * 2 ** Math.max(0, overflowCount - 1)
+          )
+        : Math.max(0, windowReset - now)
+
+      entry.blockUntil = Math.min(windowReset, now + backoffMs)
+    } else {
+      entry.blockUntil = 0
+    }
+
+    rateLimitCache.set(cacheKey, entry, this.getEntryTtlMs(entry, windowReset))
+    return this.toStatus(entry, allowed, windowReset)
   }
 
-  /**
-   * Check and consume tokens for a key
-   */
-  isAllowed(key: string, tokensRequired: number = 1): RateLimitStatus {
-    const now = Date.now()
-    let bucket = this.buckets.get(key)
-
-    // Initialize or refill bucket
-    if (!bucket) {
-      bucket = {
-        tokens: this.config.maxTokens,
-        lastRefillTime: now,
-      }
-      this.buckets.set(key, bucket)
-    }
-
-    // Refill tokens based on elapsed time
-    const elapsedMs = now - bucket.lastRefillTime
-    const refillTokens = (elapsedMs * this.config.refillRate) / 1000
-    bucket.tokens = Math.min(this.config.maxTokens, bucket.tokens + refillTokens)
-    bucket.lastRefillTime = now
-
-    // Check if allowed
-    const allowed = bucket.tokens >= tokensRequired
-    if (allowed) {
-      bucket.tokens -= tokensRequired
-    }
-
-    const resetTime = now + (tokensRequired * 1000) / this.config.refillRate
-
-    return {
-      remaining: Math.floor(bucket.tokens),
-      limit: this.config.maxTokens,
-      resetTime,
-      allowed,
-    }
-  }
-
-  /**
-   * Get current status without consuming
-   */
   getStatus(key: string): RateLimitStatus {
-    const now = Date.now()
-    let bucket = this.buckets.get(key)
+    const now = nowMs()
+    const cacheKey = this.getCacheKey(key)
+    const entry = rateLimitCache.get(cacheKey)
 
-    if (!bucket) {
+    if (!entry) {
       return {
-        remaining: this.config.maxTokens,
-        limit: this.config.maxTokens,
-        resetTime: now + 60000,
+        remaining: this.config.maxRequests,
+        limit: this.config.maxRequests,
+        resetTime: now + this.config.windowMs,
         allowed: true,
+        retryAfterMs: 0,
       }
     }
 
-    const elapsedMs = now - bucket.lastRefillTime
-    const refillTokens = (elapsedMs * this.config.refillRate) / 1000
-    const tokens = Math.min(this.config.maxTokens, bucket.tokens + refillTokens)
-
-    return {
-      remaining: Math.floor(tokens),
-      limit: this.config.maxTokens,
-      resetTime: now + ((this.config.maxTokens - tokens) * 1000) / this.config.refillRate,
-      allowed: tokens >= 1,
+    const windowReset = entry.windowStart + this.config.windowMs
+    if (windowReset <= now) {
+      rateLimitCache.delete(cacheKey)
+      return {
+        remaining: this.config.maxRequests,
+        limit: this.config.maxRequests,
+        resetTime: now + this.config.windowMs,
+        allowed: true,
+        retryAfterMs: 0,
+      }
     }
+
+    const allowed = entry.blockUntil <= now && entry.count < this.config.maxRequests
+    return this.toStatus(entry, allowed, windowReset)
   }
 
-  /**
-   * Reset rate limit for a key
-   */
   reset(key: string): void {
-    this.buckets.delete(key)
-  }
-
-  /**
-   * Clear all rate limits
-   */
-  clear(): void {
-    this.buckets.clear()
-  }
-
-  /**
-   * Get all active rate limits (for monitoring)
-   */
-  getAllLimits(): Record<string, RateLimitStatus> {
-    const result: Record<string, RateLimitStatus> = {}
-    for (const [key] of this.buckets) {
-      result[key] = this.getStatus(key)
-    }
-    return result
-  }
-}
-
-/**
- * IP-based rate limiter
- * Limits requests per IP address
- */
-export class IpRateLimiter {
-  private limiter: TokenBucketLimiter
-
-  constructor(requestsPerMinute: number = 100) {
-    // Convert requests per minute to tokens per second
-    this.limiter = new TokenBucketLimiter({
-      maxTokens: requestsPerMinute,
-      refillRate: requestsPerMinute / 60,
-    })
-  }
-
-  isAllowed(ip: string): RateLimitStatus {
-    return this.limiter.isAllowed(ip)
-  }
-
-  reset(ip: string): void {
-    this.limiter.reset(ip)
+    rateLimitCache.delete(this.getCacheKey(key))
   }
 
   clear(): void {
-    this.limiter.clear()
-  }
-}
-
-/**
- * Endpoint-based rate limiter
- * Limits requests per endpoint (path + method)
- */
-export class EndpointRateLimiter {
-  private limiters: Map<string, TokenBucketLimiter> = new Map()
-  private defaultConfig: RateLimitConfig
-
-  constructor(defaultRequestsPerMinute: number = 1000) {
-    this.defaultConfig = {
-      maxTokens: defaultRequestsPerMinute,
-      refillRate: defaultRequestsPerMinute / 60,
-    }
-  }
-
-  isAllowed(path: string, method: string, tokensRequired: number = 1): RateLimitStatus {
-    const key = `${method.toUpperCase()} ${path}`
-    let limiter = this.limiters.get(key)
-
-    if (!limiter) {
-      limiter = new TokenBucketLimiter(this.defaultConfig)
-      this.limiters.set(key, limiter)
-    }
-
-    return limiter.isAllowed(key, tokensRequired)
-  }
-
-  getStatus(path: string, method: string): RateLimitStatus {
-    const key = `${method.toUpperCase()} ${path}`
-    const limiter = this.limiters.get(key)
-
-    if (!limiter) {
-      return {
-        remaining: this.defaultConfig.maxTokens,
-        limit: this.defaultConfig.maxTokens,
-        resetTime: Date.now() + 60000,
-        allowed: true,
+    const prefix = `${this.config.keyPrefix || 'rate'}:`
+    for (const [cacheKey] of rateLimitCache.entries()) {
+      if (cacheKey.startsWith(prefix)) {
+        rateLimitCache.delete(cacheKey)
       }
     }
-
-    return limiter.getStatus(key)
-  }
-
-  reset(path: string, method: string): void {
-    const key = `${method.toUpperCase()} ${path}`
-    this.limiters.delete(key)
-  }
-
-  clear(): void {
-    this.limiters.clear()
   }
 
   getStats(): Record<string, RateLimitStatus> {
+    const prefix = `${this.config.keyPrefix || 'rate'}:`
     const result: Record<string, RateLimitStatus> = {}
-    for (const [key, limiter] of this.limiters) {
-      result[key] = limiter.getStatus(key)
+
+    for (const [cacheKey] of rateLimitCache.entries()) {
+      if (!cacheKey.startsWith(prefix)) {
+        continue
+      }
+
+      const key = cacheKey.slice(prefix.length)
+      result[key] = this.getStatus(key)
     }
+
     return result
   }
-}
 
-/**
- * User-based rate limiter (for authenticated requests)
- * Limits requests per user ID
- */
-export class UserRateLimiter {
-  private limiter: TokenBucketLimiter
-
-  constructor(requestsPerMinute: number = 500) {
-    this.limiter = new TokenBucketLimiter({
-      maxTokens: requestsPerMinute,
-      refillRate: requestsPerMinute / 60,
-    })
+  private getCacheKey(key: string) {
+    return `${this.config.keyPrefix || 'rate'}:${key}`
   }
 
-  isAllowed(userId: string | number): RateLimitStatus {
-    return this.limiter.isAllowed(String(userId))
+  private getEntryTtlMs(entry: RateLimitEntry, windowReset: number) {
+    return Math.max(1_000, Math.max(windowReset, entry.blockUntil || 0) - nowMs())
   }
 
-  reset(userId: string | number): void {
-    this.limiter.reset(String(userId))
-  }
+  private toStatus(entry: RateLimitEntry, allowed: boolean, windowReset: number): RateLimitStatus {
+    const now = nowMs()
+    const resetTime = entry.blockUntil > now ? entry.blockUntil : windowReset
+    const remaining = allowed
+      ? Math.max(0, this.config.maxRequests - entry.count)
+      : 0
 
-  clear(): void {
-    this.limiter.clear()
+    return {
+      remaining,
+      limit: this.config.maxRequests,
+      resetTime,
+      allowed,
+      retryAfterMs: Math.max(0, resetTime - now),
+    }
   }
 }
 
-// Default instances
-export const ipRateLimiter = new IpRateLimiter(100) // 100 requests/min per IP
-export const endpointRateLimiter = new EndpointRateLimiter(1000) // 1000 requests/min per endpoint
-export const userRateLimiter = new UserRateLimiter(500) // 500 requests/min per user
+export function getClientIpAddress(headers: Record<string, unknown>, remoteAddress?: string | null): string {
+  const forwardedFor = typeof headers['x-forwarded-for'] === 'string'
+    ? headers['x-forwarded-for'].split(',')[0]?.trim()
+    : ''
+  const realIp = typeof headers['x-real-ip'] === 'string' ? headers['x-real-ip'] : ''
+  return forwardedFor || realIp || remoteAddress || 'unknown'
+}
+
+export const generalApiRateLimiter = new CacheBackedRateLimiter({
+  maxRequests: 200,
+  windowMs: 60_000,
+  keyPrefix: 'general-api',
+})
+
+export const loginRateLimiter = new CacheBackedRateLimiter({
+  maxRequests: 10,
+  windowMs: 15 * 60 * 1000,
+  backoffBaseMs: 30_000,
+  maxBackoffMs: 15 * 60 * 1000,
+  keyPrefix: 'login',
+})
+
+export const captchaRateLimiter = new CacheBackedRateLimiter({
+  maxRequests: 30,
+  windowMs: 15 * 60 * 1000,
+  keyPrefix: 'captcha',
+})
+
+export const profileRateLimiter = new CacheBackedRateLimiter({
+  maxRequests: 120,
+  windowMs: 60_000,
+  keyPrefix: 'profile',
+})
+
+// Backward-compatible exports for resilience routes.
+export const ipRateLimiter = generalApiRateLimiter
+export const endpointRateLimiter = new CacheBackedRateLimiter({
+  maxRequests: 1000,
+  windowMs: 60_000,
+  keyPrefix: 'endpoint',
+})
+export const userRateLimiter = new CacheBackedRateLimiter({
+  maxRequests: 500,
+  windowMs: 60_000,
+  keyPrefix: 'user',
+})

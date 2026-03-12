@@ -33,16 +33,10 @@ export const exportApplicantsWithPayment = asyncHandler(async (req: AuthRequest,
       applicantFeeRepositoryMongo,
       psidTrackingRepositoryMongo
     )
-
-    const paymentMap = new Map()
-    for (const applicant of applicants) {
-      try {
-        const status = await paymentService.getPaymentStatus((applicant as any).numericId)
-        paymentMap.set((applicant as any).numericId, status)
-      } catch (error) {
-        console.error(`Failed to get payment status for applicant ${(applicant as any).numericId}`)
-      }
-    }
+    const applicantIds = applicants
+      .map((applicant) => Number((applicant as any).numericId))
+      .filter((applicantId) => Number.isFinite(applicantId))
+    const paymentMap = await paymentService.getPaymentStatusesForApplicants(applicantIds)
 
     const buffer = await ExcelExportService.exportApplicantsWithPayment(applicants, paymentMap)
 

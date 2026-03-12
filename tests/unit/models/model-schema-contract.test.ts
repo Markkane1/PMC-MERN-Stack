@@ -225,7 +225,7 @@ describe('Mongoose model schema contract coverage', () => {
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create()
     await mongooseBase.connect(mongoServer.getUri())
-  })
+  }, 60_000)
 
   afterEach(async () => {
     for (const model of models) {
@@ -237,7 +237,7 @@ describe('Mongoose model schema contract coverage', () => {
     await mongooseBase.connection.dropDatabase()
     await mongooseBase.disconnect()
     await mongoServer.stop()
-  })
+  }, 60_000)
 
   it('should discover mongoose models exported under server model directories', () => {
     expect(models.length).toBeGreaterThan(20)

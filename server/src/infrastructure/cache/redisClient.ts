@@ -1,36 +1,89 @@
-import Redis from 'ioredis'
+import IORedis from 'ioredis'
+import { LRUCache } from 'lru-cache'
 
-let redisInstance: Redis | null = null
+const LRU_FALLBACK_MAX_ENTRIES = 500
+const LRU_FALLBACK_TTL_MS = 5 * 60 * 1000
 
-// Minimal dummy client that satisfies the subset of methods used by CacheManager
-class NoopRedis {
-  async get(_key: string) { return null }
-  async setex(_key: string, _ttl: number, _val: string) { return 'OK' }
-  async del(_key: string, ..._rest: string[]) { return 0 }
-  async keys(_pattern: string) { return [] }
-  async ping() { return 'PONG' }
-  async info(_section?: string) { return '' }
-  async quit() { return Promise.resolve('OK') }
+export interface CacheClient {
+  get(key: string): Promise<string | null>
+  setex(key: string, ttl: number, value: string): Promise<string>
+  del(key: string, ...rest: string[]): Promise<number>
+  keys(pattern: string): Promise<string[]>
+  ping(): Promise<string>
+  info(section?: string): Promise<string>
+  quit(): Promise<string>
 }
-const noopRedis = new NoopRedis() as unknown as Redis
+
+let redisInstance: CacheClient | null = null
+
+function wildcardPatternToRegex(pattern: string) {
+  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')
+  return new RegExp(`^${escaped}$`)
+}
+
+class LruRedisFallback implements CacheClient {
+  private readonly cache = new LRUCache<string, string>({
+    max: LRU_FALLBACK_MAX_ENTRIES,
+    ttl: LRU_FALLBACK_TTL_MS,
+  })
+
+  async get(key: string) {
+    return this.cache.get(key) ?? null
+  }
+
+  async setex(key: string, ttl: number, value: string) {
+    this.cache.set(key, value, { ttl: ttl * 1000 })
+    return 'OK'
+  }
+
+  async del(key: string, ...rest: string[]) {
+    const keys = [key, ...rest]
+    let deleted = 0
+    for (const targetKey of keys) {
+      if (this.cache.delete(targetKey)) {
+        deleted += 1
+      }
+    }
+    return deleted
+  }
+
+  async keys(pattern: string) {
+    const regex = wildcardPatternToRegex(pattern)
+    return Array.from(this.cache.keys()).filter((key) => regex.test(key))
+  }
+
+  async ping() {
+    return 'PONG'
+  }
+
+  async info(_section?: string) {
+    return `used_memory_human:lru-fallback (${this.cache.size} entries)\r`
+  }
+
+  async quit() {
+    this.cache.clear()
+    return 'OK'
+  }
+}
+
+const lruFallback = new LruRedisFallback()
 
 /**
- * Returns either a real Redis client or a no-op stub when Redis is not
- * configured. The environment variable `REDIS_HOST` is used as a simple
- * indicator; you may also use a dedicated `REDIS_ENABLED=false` flag.
+ * Returns either a real Redis client or an in-memory LRU-backed fallback when Redis
+ * is not configured. The fallback implements the subset of Redis methods used by the app.
  */
-export function getRedisClient(): Redis {
-  const configured = !!process.env.REDIS_HOST
+export function getRedisClient(): CacheClient {
+  const configured = Boolean(process.env.REDIS_HOST)
   if (!configured) {
     if (!redisInstance) {
-      console.warn('⚠️ Redis not configured, using no-op cache client')
-      redisInstance = noopRedis
+      console.warn('Redis not configured, using in-memory LRU cache client')
+      redisInstance = lruFallback
     }
     return redisInstance
   }
 
   if (!redisInstance) {
-    redisInstance = new Redis({
+    const rawClient = new IORedis({
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT || '6379'),
       password: process.env.REDIS_PASSWORD,
@@ -41,32 +94,42 @@ export function getRedisClient(): Redis {
       },
       maxRetriesPerRequest: 3,
       enableReadyCheck: false,
-      enableOfflineQueue: false, // avoid queuing when disconnected
+      enableOfflineQueue: false,
       lazyConnect: false,
     })
 
-    redisInstance.on('error', (err) => {
-      console.error('❌ Redis error:', err.message)
+    rawClient.on('error', (err) => {
+      console.error('Redis error:', err.message)
     })
 
-    redisInstance.on('connect', () => {
-      console.log('✅ Redis connected')
+    rawClient.on('connect', () => {
+      console.log('Redis connected')
     })
 
-    redisInstance.on('disconnect', () => {
-      console.log('⚠️  Redis disconnected')
+    rawClient.on('disconnect', () => {
+      console.log('Redis disconnected')
     })
+
+    redisInstance = {
+      get: (key) => rawClient.get(key),
+      setex: (key, ttl, value) => rawClient.setex(key, ttl, value),
+      del: (key, ...rest) => rawClient.del(key, ...rest),
+      keys: (pattern) => rawClient.keys(pattern),
+      ping: () => rawClient.ping(),
+      info: (section) => (section ? rawClient.info(section) : rawClient.info()),
+      quit: () => rawClient.quit(),
+    }
   }
 
-  return redisInstance
+  return redisInstance!
 }
 
 export async function closeRedis(): Promise<void> {
   if (redisInstance) {
     await redisInstance.quit()
     redisInstance = null
-    console.log('✅ Redis connection closed')
+    console.log('Cache client connection closed')
   }
 }
 
-export { Redis }
+export { IORedis as Redis }

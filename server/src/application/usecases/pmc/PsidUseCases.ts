@@ -19,6 +19,8 @@ import {
 import { invalidatePmcDashboardCaches } from '../../services/pmc/DashboardCacheService'
 import { ExternalServiceTokenModel } from '../../../infrastructure/database/models/common/ExternalServiceToken'
 import { ServiceConfigurationModel } from '../../../infrastructure/database/models/common/ServiceConfiguration'
+import { cacheManager } from '../../../infrastructure/cache/cacheManager'
+import { accountServiceConfigurationCacheKey } from '../../../infrastructure/cache/cacheKeys'
 
 type AuthRequest = Request & { user?: any }
 
@@ -294,12 +296,18 @@ type ServiceConfig = {
 }
 
 async function getServiceConfig(serviceName: string): Promise<ServiceConfig | null> {
+  const cacheKey = accountServiceConfigurationCacheKey(serviceName)
+  const cached = await cacheManager.get<ServiceConfig>(cacheKey)
+  if (cached) {
+    return cached
+  }
+
   const rawConfig = await mongoose.connection.db
     ?.collection('ServiceConfiguration')
     .findOne({ $or: [{ service_name: serviceName }, { serviceName }] } as any)
 
   if (rawConfig) {
-    return {
+    const config = {
       serviceName: (rawConfig as any).serviceName || (rawConfig as any).service_name,
       authEndpoint: (rawConfig as any).authEndpoint || (rawConfig as any).auth_endpoint,
       generatePsidEndpoint: (rawConfig as any).generatePsidEndpoint || (rawConfig as any).generate_psid_endpoint,
@@ -308,11 +316,13 @@ async function getServiceConfig(serviceName: string): Promise<ServiceConfig | nu
       clientId: (rawConfig as any).clientId || (rawConfig as any).client_id,
       clientSecret: (rawConfig as any).clientSecret || (rawConfig as any).client_secret,
     }
+    await cacheManager.set(cacheKey, config)
+    return config
   }
 
   const config = await ServiceConfigurationModel.findOne({ serviceName }).lean()
   if (config) {
-    return {
+    const mapped = {
       serviceName: config.serviceName,
       authEndpoint: config.authEndpoint,
       generatePsidEndpoint: config.generatePsidEndpoint,
@@ -320,9 +330,11 @@ async function getServiceConfig(serviceName: string): Promise<ServiceConfig | nu
       clientId: config.clientId,
       clientSecret: config.clientSecret,
     }
+    await cacheManager.set(cacheKey, mapped)
+    return mapped
   }
   const legacy = await ServiceConfigurationModel.findOne({ service_name: serviceName } as any).lean()
-  return legacy
+  const mappedLegacy = legacy
     ? {
         serviceName: (legacy as any).serviceName || (legacy as any).service_name,
         authEndpoint: (legacy as any).authEndpoint || (legacy as any).auth_endpoint,
@@ -333,6 +345,10 @@ async function getServiceConfig(serviceName: string): Promise<ServiceConfig | nu
         clientSecret: (legacy as any).clientSecret || (legacy as any).client_secret,
       }
     : null
+  if (mappedLegacy) {
+    await cacheManager.set(cacheKey, mappedLegacy)
+  }
+  return mappedLegacy
 }
 
 async function getOrRefreshToken(config: ServiceConfig) {

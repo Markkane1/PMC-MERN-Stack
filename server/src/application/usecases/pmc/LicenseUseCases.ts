@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { logAccess } from '../../services/common/LogService'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
 import { createOrUpdateLicense } from '../../services/pmc/ApplicantService'
-import { paginateArray, parsePaginationParams } from '../../../infrastructure/utils/pagination'
+import { paginateArray, parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
 import type {
   ApplicantRepository,
   BusinessProfileRepository,
@@ -17,6 +17,7 @@ import {
   districtRepositoryMongo,
   tehsilRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
+import { aggregateLicenseList } from '../../../infrastructure/database/aggregations'
 import { pdfJobQueueService, buildPdfJobAcceptedResponse } from '../../services/pmc/PdfJobQueueService'
 import type { PdfArtifact } from '../../services/pmc/PdfGenerationRuntime'
 
@@ -207,59 +208,39 @@ export const licenseByUser = asyncHandler(async (req: AuthRequest, res: Response
   const user = req.user
   if (!user) return res.json(paginateArray([], parsePaginationParams(req.query)))
 
-  const districtsPromise = defaultDeps.districtRepo.list()
-  const tehsilsPromise = defaultDeps.tehsilRepo.list()
+  const pagination = parsePaginationParams(req.query)
 
-  let licenses: any[] = []
+  let filter: Record<string, unknown> = {}
   if (user.groups && user.groups.length > 0) {
-    licenses = await defaultDeps.licenseRepo.list()
+    filter = {}
   } else {
     const applicants = await defaultDeps.applicantRepo.list({ createdBy: user._id })
     const applicantIds = applicants.map((a: any) => (a as any).numericId)
-    licenses = await defaultDeps.licenseRepo.listByApplicantIds(applicantIds)
+    filter = applicantIds.length
+      ? {
+          $or: [
+            { applicantId: { $in: applicantIds } },
+            { applicant_id: { $in: applicantIds } },
+            { applicant_id: { $in: applicantIds.map(String) } },
+          ],
+        }
+      : { _id: null }
   }
 
-  const applicantIds = Array.from(
-    new Set(
-      licenses
-        .map((license) => toFiniteNumber((license as any)?.applicantId ?? (license as any)?.applicant_id))
-        .filter((id): id is number => Number.isFinite(id))
-    )
-  )
-  const profilesPromise = applicantIds.length
-    ? defaultDeps.businessProfileRepo.listByApplicantIds(applicantIds)
-    : Promise.resolve([])
-
-  const [profiles, districts, tehsils] = await Promise.all([profilesPromise, districtsPromise, tehsilsPromise])
-
-  const profilesByApplicantId = new Map<number, any>()
-  for (const profile of profiles as any[]) {
-    const applicantId = toFiniteNumber((profile as any)?.applicantId ?? (profile as any)?.applicant_id)
-    if (applicantId !== null) profilesByApplicantId.set(applicantId, profile)
-  }
-
-  const districtNameById = new Map<number, string>()
-  for (const district of districts as any[]) {
-    const districtId = toFiniteNumber((district as any)?.districtId ?? (district as any)?.district_id)
-    if (districtId !== null) {
-      districtNameById.set(districtId, String((district as any)?.districtName ?? (district as any)?.district_name ?? ''))
-    }
-  }
-
-  const tehsilNameById = new Map<number, string>()
-  for (const tehsil of tehsils as any[]) {
-    const tehsilId = toFiniteNumber((tehsil as any)?.tehsilId ?? (tehsil as any)?.tehsil_id)
-    if (tehsilId !== null) {
-      tehsilNameById.set(tehsilId, String((tehsil as any)?.tehsilName ?? (tehsil as any)?.tehsil_name ?? ''))
-    }
-  }
+  const result = await aggregateLicenseList({
+    filter,
+    page: pagination.page,
+    limit: pagination.limit,
+  })
 
   return res.json(
-    paginateArray(
-      licenses.map((license: any) =>
-        serializeLicense(license, profilesByApplicantId, districtNameById, tehsilNameById)
-      ),
-      parsePaginationParams(req.query)
+    paginateResponse(
+      result.data.map((license: any) => serializeLicense(license)),
+      {
+        page: pagination.page,
+        limit: pagination.limit,
+        total: result.total,
+      }
     )
   )
 })
@@ -271,9 +252,12 @@ function serializeLicense(
   tehsilNameById?: Map<number, string>
 ) {
   const applicantId = toFiniteNumber(license?.applicantId ?? license?.applicant_id)
-  const profile = applicantId !== null ? profilesByApplicantId?.get(applicantId) : null
+  const embeddedProfile = license?.businessProfileDoc || null
+  const profile = applicantId !== null ? profilesByApplicantId?.get(applicantId) || embeddedProfile : embeddedProfile
   const districtId = toFiniteNumber(profile?.districtId ?? profile?.district_id)
   const tehsilId = toFiniteNumber(profile?.tehsilId ?? profile?.tehsil_id)
+  const embeddedDistrictName = license?.districtDoc?.districtName ?? license?.districtDoc?.district_name ?? null
+  const embeddedTehsilName = license?.tehsilDoc?.tehsilName ?? license?.tehsilDoc?.tehsil_name ?? null
 
   return {
     id: license._id || license.id,
@@ -288,8 +272,8 @@ function serializeLicense(
     address: license.address ?? profile?.postalAddress ?? profile?.postal_address,
     date_of_issue: toDateOnly(license.dateOfIssue ?? license.date_of_issue),
     applicant_id: applicantId,
-    district_name: districtId !== null ? districtNameById?.get(districtId) ?? null : null,
-    tehsil_name: tehsilId !== null ? tehsilNameById?.get(tehsilId) ?? null : null,
+    district_name: districtId !== null ? districtNameById?.get(districtId) ?? embeddedDistrictName : embeddedDistrictName,
+    tehsil_name: tehsilId !== null ? tehsilNameById?.get(tehsilId) ?? embeddedTehsilName : embeddedTehsilName,
     city_name: profile?.cityTownVillage ?? profile?.city_town_village ?? null,
     is_active: license.isActive ?? license.is_active ?? true,
     created_at: license.createdAt ?? license.created_at,

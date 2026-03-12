@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import { BrowserRouter } from 'react-router-dom'
 import PaymentDashboard from '@/views/PaymentDashboard'
@@ -66,18 +66,14 @@ describe('PaymentDashboard Component', () => {
         expect(screen.getByText(/Payment Management/i)).toBeInTheDocument()
     })
 
-    test('should display payment status', async () => {
+    test('should display payment status', () => {
         renderComponent()
-        await waitFor(() => {
-            expect(screen.getByRole('heading', { name: /Payment Status/i })).toBeInTheDocument()
-        })
+        expect(screen.getByRole('heading', { name: /Payment Status/i })).toBeInTheDocument()
     })
 
-    test('should show payment breakdown', async () => {
+    test('should show payment breakdown', () => {
         renderComponent()
-        await waitFor(() => {
-            expect(screen.getByText(/Registration Fee/i)).toBeInTheDocument()
-        })
+        expect(screen.getByText(/Registration Fee/i)).toBeInTheDocument()
     })
 
     test('should handle applicant ID from params or localStorage', () => {
@@ -85,10 +81,8 @@ describe('PaymentDashboard Component', () => {
         expect(screen.getByText(/Payment Management/i)).toBeInTheDocument()
     })
 
-    test('should display deadline information', async () => {
+    test('should display deadline information', () => {
         renderComponent()
-        await waitFor(() => {
-            expect(screen.getByText(/Payment Deadline/i)).toBeInTheDocument()
-        })
+        expect(screen.getByText(/Payment Deadline/i)).toBeInTheDocument()
     })
 })

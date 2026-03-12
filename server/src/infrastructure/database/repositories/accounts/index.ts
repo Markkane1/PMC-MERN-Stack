@@ -4,6 +4,13 @@ import { UserProfileModel } from '../../models/accounts/UserProfile'
 import { GroupModel } from '../../models/accounts/Group'
 import { PermissionModel } from '../../models/accounts/Permission'
 import { UserAuditLogModel } from '../../models/accounts/UserAuditLog'
+import { cacheManager } from '../../../cache/cacheManager'
+import {
+  ACCOUNT_PERMISSION_LIST_CACHE_KEY,
+  accountUserProfileCacheKey,
+} from '../../../cache/cacheKeys'
+
+const ACCOUNT_CACHE_TTL_SECONDS = 300
 
 const mapUser = (user: any) => ({
   id: user._id.toString(),
@@ -110,8 +117,14 @@ export const userRepositoryMongo: UserRepository = {
 
 export const userProfileRepositoryMongo: UserProfileRepository = {
   async findByUserId(userId: string) {
+    const cacheKey = accountUserProfileCacheKey(userId)
+    const cached = await cacheManager.get<any>(cacheKey)
+    if (cached) {
+      return cached
+    }
+
     const profile = await UserProfileModel.findOne({ userId }).lean()
-    return profile
+    const mapped = profile
       ? {
           id: profile._id.toString(),
           userId: profile.userId.toString(),
@@ -122,11 +135,28 @@ export const userProfileRepositoryMongo: UserProfileRepository = {
           updatedAt: (profile as any).updatedAt,
         }
       : null
+    if (mapped) {
+      await cacheManager.set(cacheKey, mapped, { ttl: ACCOUNT_CACHE_TTL_SECONDS })
+    }
+    return mapped
   },
 
   async listByUserIds(userIds: string[]) {
-    const profiles = await UserProfileModel.find({ userId: { $in: userIds } }).lean()
-    return profiles.map((profile) => ({
+    const uniqueIds = Array.from(new Set(userIds.filter(Boolean)))
+    const cachedProfiles = await Promise.all(
+      uniqueIds.map(async (userId) => [userId, await cacheManager.get<any>(accountUserProfileCacheKey(userId))] as const)
+    )
+
+    const cachedByUserId = new Map(
+      cachedProfiles.filter((entry): entry is readonly [string, any] => entry[1] != null)
+    )
+    const missingUserIds = uniqueIds.filter((userId) => !cachedByUserId.has(userId))
+
+    const profiles = missingUserIds.length
+      ? await UserProfileModel.find({ userId: { $in: missingUserIds } }).lean()
+      : []
+
+    const mappedProfiles = profiles.map((profile) => ({
       id: profile._id.toString(),
       userId: profile.userId.toString(),
       districtId: profile.districtId,
@@ -135,6 +165,16 @@ export const userProfileRepositoryMongo: UserProfileRepository = {
       createdAt: (profile as any).createdAt,
       updatedAt: (profile as any).updatedAt,
     }))
+
+    await Promise.all(
+      mappedProfiles.map((profile) =>
+        cacheManager.set(accountUserProfileCacheKey(profile.userId), profile, { ttl: ACCOUNT_CACHE_TTL_SECONDS })
+      )
+    )
+
+    return uniqueIds
+      .map((userId) => cachedByUserId.get(userId) || mappedProfiles.find((profile) => profile.userId === userId) || null)
+      .filter(Boolean)
   },
 
   async create(profile: any) {
@@ -144,7 +184,7 @@ export const userProfileRepositoryMongo: UserProfileRepository = {
       districtName: profile.districtName,
       districtShortName: profile.districtShortName,
     })
-    return {
+    const mapped = {
       id: created._id.toString(),
       userId: created.userId.toString(),
       districtId: created.districtId,
@@ -153,6 +193,8 @@ export const userProfileRepositoryMongo: UserProfileRepository = {
       createdAt: (created as any).createdAt,
       updatedAt: (created as any).updatedAt,
     }
+    await cacheManager.set(accountUserProfileCacheKey(mapped.userId), mapped, { ttl: ACCOUNT_CACHE_TTL_SECONDS })
+    return mapped
   },
 }
 
@@ -246,8 +288,13 @@ export const groupRepositoryMongo: GroupRepository = {
 
 export const permissionRepositoryMongo: PermissionRepository = {
   async list() {
+    const cached = await cacheManager.get<any[]>(ACCOUNT_PERMISSION_LIST_CACHE_KEY)
+    if (cached) {
+      return cached
+    }
+
     const permissions = await PermissionModel.find({}).lean()
-    return permissions.map((permission) => ({
+    const mapped = permissions.map((permission) => ({
       id: permission._id.toString(),
       sourceId: (permission as any).sourceId,
       name: permission.name,
@@ -259,9 +306,17 @@ export const permissionRepositoryMongo: PermissionRepository = {
       createdAt: (permission as any).createdAt,
       updatedAt: (permission as any).updatedAt,
     }))
+    await cacheManager.set(ACCOUNT_PERMISSION_LIST_CACHE_KEY, mapped, { ttl: ACCOUNT_CACHE_TTL_SECONDS })
+    return mapped
   },
 
   async listByKeys(keys: string[]) {
+    const cached = await cacheManager.get<any[]>(ACCOUNT_PERMISSION_LIST_CACHE_KEY)
+    if (cached) {
+      const keySet = new Set(keys)
+      return cached.filter((permission) => keySet.has(permission.permissionKey))
+    }
+
     const permissions = await PermissionModel.find({ permissionKey: { $in: keys } }).lean()
     return permissions.map((permission) => ({
       id: permission._id.toString(),

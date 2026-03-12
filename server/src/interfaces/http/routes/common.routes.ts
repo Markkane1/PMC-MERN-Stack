@@ -4,12 +4,7 @@ import { listNotifications, notificationCount, searchQuery } from '../controller
 
 export const commonRouter = Router()
 
-commonRouter.get('/health', (_req, res) =>
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-  })
-)
+commonRouter.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }))
 
 commonRouter.get('/notification/list', authenticate, listNotifications)
 commonRouter.get('/notification/count', authenticate, notificationCount)

@@ -14,6 +14,12 @@ import { AccessLogModel } from '../../../infrastructure/database/models/common/A
 import { ExternalServiceTokenModel } from '../../../infrastructure/database/models/common/ExternalServiceToken'
 import { ServiceConfigurationModel } from '../../../infrastructure/database/models/common/ServiceConfiguration'
 import { parsePaginationParams, paginateArray, paginateResponse } from '../../../infrastructure/utils/pagination'
+import { cacheManager } from '../../../infrastructure/cache/cacheManager'
+import { cacheInvalidation } from '../../../infrastructure/cache/cacheInvalidation'
+import {
+  ACCOUNT_ROLE_DASHBOARD_CACHE_KEY,
+  ACCOUNT_SERVICE_CONFIGURATION_LIST_CACHE_KEY,
+} from '../../../infrastructure/cache/cacheKeys'
 import type { AuthRequest } from '../../../interfaces/http/middlewares/auth'
 import type {
   UserRepository,
@@ -53,6 +59,8 @@ type AdminUseCaseDeps = {
   permissionRepo: PermissionRepository
   auditRepo: UserAuditLogRepository
 }
+
+type GroupPermissionLookup = Map<string, string[]>
 
 const defaultDeps: AdminUseCaseDeps = {
   userRepo: userRepositoryMongo,
@@ -152,18 +160,54 @@ function logAdminAction(
 async function computeEffectivePermissions(
   groups: string[],
   directPermissions: string[],
-  deps: AdminUseCaseDeps = defaultDeps
+  deps: AdminUseCaseDeps = defaultDeps,
+  groupPermissionLookup?: GroupPermissionLookup
 ) {
-  const groupDocs = groups.length ? await deps.groupRepo.listByNames(groups) : []
-  const groupPermissions = groupDocs.flatMap((group) => normalizePermissionKeys(group.permissions || []))
+  const groupDocs =
+    groups.length && !groupPermissionLookup ? await deps.groupRepo.listByNames(groups) : []
+  const groupPermissions = groups.flatMap((groupName) => {
+    if (groupPermissionLookup) {
+      return groupPermissionLookup.get(groupName) || []
+    }
+    const groupDoc = groupDocs.find((group) => group.name === groupName)
+    return normalizePermissionKeys(groupDoc?.permissions || [])
+  })
   return normalizePermissionKeys([...groupPermissions, ...directPermissions])
 }
 
-async function syncUsersForGroup(groupName: string, deps: AdminUseCaseDeps = defaultDeps) {
+async function buildGroupPermissionLookup(
+  groupNames: string[],
+  deps: AdminUseCaseDeps = defaultDeps
+): Promise<GroupPermissionLookup> {
+  const normalizedGroupNames = Array.from(
+    new Set(groupNames.filter((groupName): groupName is string => typeof groupName === 'string' && groupName.trim().length > 0))
+  )
+
+  if (!normalizedGroupNames.length) {
+    return new Map()
+  }
+
+  const groups = await deps.groupRepo.listByNames(normalizedGroupNames)
+  return new Map(
+    groups.map((group) => [group.name, normalizePermissionKeys(group.permissions || [])] as const)
+  )
+}
+
+async function syncUsersForGroup(
+  groupName: string,
+  deps: AdminUseCaseDeps = defaultDeps,
+  groupPermissionLookup?: GroupPermissionLookup
+) {
   const users = await deps.userRepo.listByGroup(groupName)
+  const lookup =
+    groupPermissionLookup ||
+    (await buildGroupPermissionLookup(
+      users.flatMap((user) => user.groups || []),
+      deps
+    ))
   for (const user of users) {
     const direct = user.directPermissions || []
-    const effective = await computeEffectivePermissions(user.groups || [], direct, deps)
+    const effective = await computeEffectivePermissions(user.groups || [], direct, deps, lookup)
     await deps.userRepo.updateById(String(user.id), {
       permissions: effective,
     })
@@ -219,15 +263,31 @@ export const resetPermissions = asyncHandler(async (req: AuthRequest, res: Respo
     await GroupModel.updateOne({ _id: group._id }, { permissions: nextPermissions })
   }
 
+  const groupPermissionLookup = new Map<string, string[]>(
+    groups.map((group) => {
+      const groupName = group.name
+      const defaultPerms =
+        DEFAULT_GROUP_PERMISSIONS[groupName] || DEFAULT_GROUP_PERMISSIONS[groupName?.toUpperCase?.()] || null
+      let nextPermissions = normalizePermissionKeys(group.permissions || [])
+      if (['Super', 'Admin'].includes(groupName)) {
+        nextPermissions = [...permissionKeys]
+      } else if (defaultPerms) {
+        nextPermissions = normalizePermissionKeys(defaultPerms)
+      }
+      return [groupName, nextPermissions] as const
+    })
+  )
+
   const users = await UserModel.find({}).lean()
   for (const user of users) {
     const direct = normalizePermissionKeys((user as any).directPermissions || [])
     const groupsForUser = (user.groups || [])
-    const effective = await computeEffectivePermissions(groupsForUser, direct, defaultDeps)
+    const effective = await computeEffectivePermissions(groupsForUser, direct, defaultDeps, groupPermissionLookup)
     await UserModel.updateOne({ _id: user._id }, { directPermissions: direct, permissions: effective })
   }
 
   logAdminAction(req, 'permissions.reset', 'permission', 'all', { count: permissionKeys.length })
+  await cacheInvalidation.invalidatePermissionLists()
 
   return res.json({
     message: 'Permissions reset successfully.',
@@ -305,17 +365,33 @@ export const updateGroup = asyncHandler(async (req: AuthRequest, res: Response) 
   if (oldName !== newName) {
     logAdminAction(req, 'group.rename', 'group', String(updated.id), { oldName, newName })
     const users = await defaultDeps.userRepo.listByGroup(oldName)
+    const groupPermissionLookup = await buildGroupPermissionLookup(
+      Array.from(
+        new Set(
+          users.flatMap((user) =>
+            (user.groups || []).map((groupName) => (groupName === oldName ? newName : groupName))
+          )
+        )
+      ),
+      defaultDeps
+    )
     for (const user of users) {
       const nextGroups = (user.groups || []).map((g) => (g === oldName ? newName : g))
       const direct = user.directPermissions || []
-      const effective = await computeEffectivePermissions(nextGroups, direct, defaultDeps)
+      const effective = await computeEffectivePermissions(nextGroups, direct, defaultDeps, groupPermissionLookup)
       await defaultDeps.userRepo.updateById(String(user.id), {
         groups: nextGroups,
         permissions: effective,
       })
     }
   } else if (Array.isArray(permissions)) {
-    await syncUsersForGroup(updated.name)
+    const users = await defaultDeps.userRepo.listByGroup(updated.name)
+    const groupPermissionLookup = await buildGroupPermissionLookup(
+      users.flatMap((user) => user.groups || []),
+      defaultDeps
+    )
+    groupPermissionLookup.set(updated.name, normalizePermissionKeys(updated.permissions || []))
+    await syncUsersForGroup(updated.name, defaultDeps, groupPermissionLookup)
     logAdminAction(req, 'group.permissions.update', 'group', String(updated.id), {
       name: updated.name,
       permissions: updated.permissions || [],
@@ -347,10 +423,18 @@ export const deleteGroup = asyncHandler(async (req: AuthRequest, res: Response) 
   logAdminAction(req, 'group.delete', 'group', String(existing.id), { name: existing.name })
 
   const users = await defaultDeps.userRepo.listByGroup(existing.name)
+  const groupPermissionLookup = await buildGroupPermissionLookup(
+    Array.from(
+      new Set(
+        users.flatMap((user) => (user.groups || []).filter((groupName) => groupName !== existing.name))
+      )
+    ),
+    defaultDeps
+  )
   for (const user of users) {
     const nextGroups = (user.groups || []).filter((g) => g !== existing.name)
     const direct = user.directPermissions || []
-    const effective = await computeEffectivePermissions(nextGroups, direct, defaultDeps)
+    const effective = await computeEffectivePermissions(nextGroups, direct, defaultDeps, groupPermissionLookup)
     await defaultDeps.userRepo.updateById(String(user.id), {
       groups: nextGroups,
       permissions: effective,
@@ -461,6 +545,7 @@ export const deleteUser = asyncHandler(async (req: AuthRequest, res: Response) =
 
   await UserModel.deleteOne({ _id: id })
   await UserProfileModel.deleteOne({ userId: id })
+  await cacheInvalidation.invalidateUserProfiles([String(id)])
 
   logAdminAction(req, 'user.delete', 'user', String(user.id), { username: user.username })
 
@@ -660,8 +745,13 @@ export const deleteSuperadmin = asyncHandler(async (req: AuthRequest, res: Respo
 
 
 export const getRoleDashboardConfig = asyncHandler(async (_req: Request, res: Response) => {
-  const doc = await SystemConfigModel.findOne({ key: ROLE_DASHBOARD_KEY }).lean()
-  const mappings = normalizeRoleDashboardMap(doc?.value || {})
+  const cached = await cacheManager.get<Record<string, string>>(ACCOUNT_ROLE_DASHBOARD_CACHE_KEY)
+  const mappings =
+    cached ||
+    normalizeRoleDashboardMap((await SystemConfigModel.findOne({ key: ROLE_DASHBOARD_KEY }).lean())?.value || {})
+  if (!cached) {
+    await cacheManager.set(ACCOUNT_ROLE_DASHBOARD_CACHE_KEY, mappings)
+  }
   return res.json({ mappings })
 })
 
@@ -679,6 +769,7 @@ export const updateRoleDashboardConfig = asyncHandler(async (req: AuthRequest, r
   logAdminAction(req, 'role_dashboard.update', 'system_config', String(updated?._id || ROLE_DASHBOARD_KEY), {
     mappings,
   })
+  await cacheManager.set(ACCOUNT_ROLE_DASHBOARD_CACHE_KEY, mappings)
 
   return res.json({ mappings })
 })
@@ -752,7 +843,11 @@ export const listAccessLogs = asyncHandler(async (req: AuthRequest, res: Respons
 })
 
 export const listServiceConfigurations = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const items = await ServiceConfigurationModel.find({}).sort({ serviceName: 1 }).lean()
+  const cached = await cacheManager.get<any[]>(ACCOUNT_SERVICE_CONFIGURATION_LIST_CACHE_KEY)
+  const items = cached || (await ServiceConfigurationModel.find({}).sort({ serviceName: 1 }).lean())
+  if (!cached) {
+    await cacheManager.set(ACCOUNT_SERVICE_CONFIGURATION_LIST_CACHE_KEY, items)
+  }
   return res.json(paginateArray(items, parsePaginationParams(req.query)))
 })
 
@@ -771,6 +866,7 @@ export const createServiceConfiguration = asyncHandler(async (req: AuthRequest, 
     clientId: payload.clientId || undefined,
     clientSecret: payload.clientSecret || undefined,
   })
+  await cacheInvalidation.invalidateServiceConfigurations([String(created.serviceName || payload.serviceName)])
 
   return res.status(201).json(created)
 })
@@ -781,6 +877,11 @@ export const updateServiceConfiguration = asyncHandler(async (req: AuthRequest, 
 
   if (!isValidObjectId(id)) {
     return res.status(400).json({ message: 'Invalid service configuration id.' })
+  }
+
+  const existing = await ServiceConfigurationModel.findById(id).lean()
+  if (!existing) {
+    return res.status(404).json({ message: 'Service configuration not found.' })
   }
 
   const updated = await ServiceConfigurationModel.findByIdAndUpdate(
@@ -799,9 +900,10 @@ export const updateServiceConfiguration = asyncHandler(async (req: AuthRequest, 
     { new: true }
   )
 
-  if (!updated) {
-    return res.status(404).json({ message: 'Service configuration not found.' })
-  }
+  await cacheInvalidation.invalidateServiceConfigurations([
+    String(existing.serviceName || ''),
+    String(updated?.serviceName || payload.serviceName || ''),
+  ])
 
   return res.json(updated)
 })

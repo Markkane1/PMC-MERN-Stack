@@ -38,15 +38,16 @@ import {
   listExternalTokens,
 } from '../controllers/accounts/AdminController'
 import { authenticate, requireGroup } from '../middlewares/auth'
+import { profileRateLimitingMiddleware } from '../../../infrastructure/resilience'
 
 export const accountsRouter = Router()
 
 accountsRouter.post('/register/', register)
 accountsRouter.post('/login/', login)
 accountsRouter.post('/logout/', logout)
-accountsRouter.get('/profile/', authenticate, profile)
+accountsRouter.get('/profile/', authenticate, profileRateLimitingMiddleware, profile)
 accountsRouter.get('/role-dashboard/', authenticate, getRoleDashboardConfig)
-accountsRouter.patch('/profile/', authenticate, updateProfile)
+accountsRouter.patch('/profile/', authenticate, profileRateLimitingMiddleware, updateProfile)
 accountsRouter.post('/reset-password2/', authenticate, resetPassword)
 accountsRouter.post('/find-user/', findUser)
 accountsRouter.post('/reset-forgot-password/', resetForgotPassword)

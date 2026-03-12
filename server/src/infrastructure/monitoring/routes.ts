@@ -7,6 +7,7 @@ import { Router, Request, Response } from 'express'
 import { metricsCollector } from './metrics'
 import { generatePrometheusMetrics } from './prometheus'
 import { generatePerformanceReport, checkAlerts, AlertConfig } from './middleware'
+import { buildMonitoringHealthReport } from './health'
 
 export const monitoringRouter = Router()
 
@@ -38,21 +39,9 @@ monitoringRouter.get('/dashboard', (req: Request, res: Response) => {
  * GET /monitoring/health
  * Service health check
  */
-monitoringRouter.get('/health', (req: Request, res: Response) => {
-  const dashboard = metricsCollector.getDashboardSummary()
-  const system = metricsCollector.getLatestSystemMetrics()
-
-  const isHealthy =
-    dashboard.summary.totalRequests > 0 &&
-    dashboard.summary.avgResponseTime < 5000 && // <5s avg response
-    (!dashboard.system || dashboard.system.memoryPercent < 90) // <90% memory
-
-  res.status(isHealthy ? 200 : 503).json({
-    status: isHealthy ? 'healthy' : 'degraded',
-    uptime: system?.uptime || 0,
-    memory: dashboard.system || null,
-    requests: dashboard.summary.totalRequests,
-  })
+monitoringRouter.get('/health', async (req: Request, res: Response) => {
+  const report = await buildMonitoringHealthReport()
+  res.status(report.httpStatus).json(report)
 })
 
 /**

@@ -268,9 +268,30 @@ describe('S5 Express & API Security', () => {
       .set('X-Forwarded-Proto', 'https')
 
     expect(res.status).toBe(200)
-    expect(res.body).toHaveProperty('status', 'ok')
-    expect(typeof res.body.timestamp).toBe('string')
-    expect(Number.isNaN(Date.parse(res.body.timestamp))).toBe(false)
+    expect(res.body).toEqual({ status: 'ok' })
+  })
+
+  it('reports optional service degradation without failing the monitoring health endpoint', async () => {
+    const res = await request(app)
+      .get('/monitoring/health')
+      .set('X-Forwarded-For', nextIp())
+      .set('X-Forwarded-Proto', 'https')
+
+    expect(res.status).toBe(200)
+    expect(res.body).toHaveProperty('status', 'degraded')
+    expect(res.body.requiredServices).toHaveProperty('mongodb')
+    expect(res.body.requiredServices.mongodb).toMatchObject({
+      required: true,
+      healthy: true,
+      status: 'healthy',
+    })
+    expect(res.body.optionalServices).toHaveProperty('redis')
+    expect(res.body.optionalServices.redis).toMatchObject({
+      required: false,
+      healthy: false,
+      status: 'degraded',
+      mode: 'lru-fallback',
+    })
   })
 
   it('enforces strict CORS policy for disallowed origin and valid preflight for allowed origin', async () => {
@@ -309,6 +330,7 @@ describe('S5 Express & API Security', () => {
     const sameIp = '10.99.99.99'
     let first429Attempt = -1
     let retryAfterSeen = false
+    let headerSnapshot = null
 
     for (let i = 1; i <= 15; i += 1) {
       const res = await request(app)
@@ -319,15 +341,17 @@ describe('S5 Express & API Security', () => {
 
       if (res.status === 429 && first429Attempt === -1) {
         first429Attempt = i
+        headerSnapshot = res.headers
       }
       if (res.status === 429 && res.headers['retry-after']) {
         retryAfterSeen = true
       }
     }
 
-    expect(first429Attempt).toBeGreaterThan(0)
-    expect(first429Attempt).toBeLessThan(15)
+    expect(first429Attempt).toBe(11)
     expect(retryAfterSeen).toBe(true)
+    expect(Number(headerSnapshot['x-ratelimit-remaining'])).toBe(0)
+    expect(headerSnapshot['x-ratelimit-reset']).toBeDefined()
   })
 
   it('keeps captcha traffic out of the shared IP and API rate-limit buckets', async () => {
@@ -355,6 +379,7 @@ describe('S5 Express & API Security', () => {
   it('applies the dedicated captcha rate limit after 30 requests per 15 minutes', async () => {
     const sameIp = '10.99.99.97'
     let first429Attempt = -1
+    let firstSuccessHeaders = null
 
     for (let i = 1; i <= 31; i += 1) {
       const res = await request(app)
@@ -362,12 +387,50 @@ describe('S5 Express & API Security', () => {
         .set('X-Forwarded-For', sameIp)
         .set('X-Forwarded-Proto', 'https')
 
+      if (i === 1) {
+        firstSuccessHeaders = res.headers
+      }
       if (res.status === 429 && first429Attempt === -1) {
         first429Attempt = i
       }
     }
 
     expect(first429Attempt).toBe(31)
+    expect(firstSuccessHeaders['x-ratelimit-remaining']).toBeDefined()
+    expect(firstSuccessHeaders['x-ratelimit-reset']).toBeDefined()
+  })
+
+  it('applies the general API limit after 200 requests per minute per IP and always returns rate headers', async () => {
+    const sameIp = '10.99.99.96'
+    let finalResponse = null
+
+    for (let i = 1; i <= 201; i += 1) {
+      finalResponse = await request(app)
+        .get('/api/does-not-exist')
+        .set('X-Forwarded-For', sameIp)
+        .set('X-Forwarded-Proto', 'https')
+    }
+
+    expect(finalResponse.status).toBe(429)
+    expect(finalResponse.headers['x-ratelimit-remaining']).toBe('0')
+    expect(finalResponse.headers['x-ratelimit-reset']).toBeDefined()
+    expect(finalResponse.headers['retry-after']).toBeDefined()
+  })
+
+  it('applies the profile limit per authenticated user and returns standard rate headers', async () => {
+    const sameIp = '10.99.99.95'
+    let lastResponse = null
+
+    for (let i = 1; i <= 121; i += 1) {
+      lastResponse = await request(app)
+        .get('/api/accounts/profile/')
+        .set('X-Forwarded-For', sameIp)
+        .set('Authorization', `Bearer ${regularToken}`)
+    }
+
+    expect(lastResponse.status).toBe(429)
+    expect(lastResponse.headers['x-ratelimit-remaining']).toBe('0')
+    expect(lastResponse.headers['x-ratelimit-reset']).toBeDefined()
   })
 
   it('does not expose password/passwordHash/__v in user-returning GET responses', async () => {

@@ -23,7 +23,7 @@ describe('Mongoose model behavior: hooks, virtuals, and methods', () => {
   beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create()
     await mongooseBase.connect(mongoServer.getUri())
-  })
+  }, 60_000)
 
   beforeEach(async () => {
     await ApplicantDetailModel.deleteMany({})
@@ -37,7 +37,7 @@ describe('Mongoose model behavior: hooks, virtuals, and methods', () => {
     await mongooseBase.connection.dropDatabase()
     await mongooseBase.disconnect()
     await mongoServer.stop()
-  })
+  }, 60_000)
 
   it('should run ApplicantDetail pre-save hook and assign incremental numericId', async () => {
     const first = await ApplicantDetailModel.create({ firstName: 'Alice' })

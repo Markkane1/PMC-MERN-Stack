@@ -6,6 +6,7 @@ import ExcelJS from 'exceljs'
 import { paginateArray, parsePaginationParams, paginateResponse } from '../../../infrastructure/utils/pagination'
 import { parallelQueriesWithMetadata } from '../../../infrastructure/utils/parallelQueries'
 import { InspectionReportModel } from '../../../infrastructure/database/models/pmc/InspectionReport'
+import { aggregateInspectionReportList } from '../../../infrastructure/database/aggregations'
 import type { InspectionReportRepository, SingleUsePlasticsSnapshotRepository, DistrictRepository } from '../../../domain/repositories/pmc'
 import type { UserProfileRepository } from '../../../domain/repositories/accounts'
 import {
@@ -89,7 +90,7 @@ function toDateOnly(value: any) {
 }
 
 export const listInspectionReports = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { page, pageSize } = parsePaginationParams(req.query)
+  const { page, limit } = parsePaginationParams(req.query)
   const userProfile = req.user?._id ? await defaultDeps.userProfileRepo.findByUserId(String(req.user._id)) : null
 
   const filter: any = {}
@@ -101,20 +102,9 @@ export const listInspectionReports = asyncHandler(async (req: AuthRequest, res: 
     ]
   }
 
-  const skip = (page - 1) * pageSize
-  const { reports, total, districts } = await parallelQueriesWithMetadata({
-    reports: InspectionReportModel.find(filter)
-      .sort({ inspectionDate: -1, inspection_date: -1, createdAt: -1, created_at: -1 })
-      .skip(skip)
-      .limit(pageSize)
-      .lean(),
-    total: InspectionReportModel.countDocuments(filter),
-    districts: defaultDeps.districtRepo.list(),
-  })
-
-  const districtMap = new Map(districts.map((d: any) => [d.districtId, d.districtName]))
-  const data = reports.map((r: any) => serializeInspectionReport(r, districtMap))
-  return res.json(paginateResponse(data, { page, pageSize, total }))
+  const { data: reports, total } = await aggregateInspectionReportList({ filter, page, limit })
+  const data = reports.map((report: any) => serializeInspectionReport(report))
+  return res.json(paginateResponse(data, { page, limit, total }))
 })
 
 export const getInspectionReport = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -474,7 +464,7 @@ function serializeInspectionReport(report: any, districtMap?: Map<number, string
       : null,
     receipt_book_number: readField(report, 'receiptBookNumber', 'receipt_book_number'),
     receipt_number: readField(report, 'receiptNumber', 'receipt_number'),
-    district: districtMap?.get(districtId) || districtId,
+    district: districtMap?.get(districtId) || readField(report, 'districtName') || districtId,
     created_at: readField(report, 'createdAt', 'created_at'),
   }
 }
