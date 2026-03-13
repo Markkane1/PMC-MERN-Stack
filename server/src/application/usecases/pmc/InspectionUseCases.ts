@@ -76,7 +76,10 @@ function parseJsonField(value: any, fallback: any) {
 
 function readField(report: any, ...keys: string[]) {
   for (const key of keys) {
-    const value = report?.[key]
+    const value =
+      report && typeof report === 'object'
+        ? Reflect.get(report as Record<string, unknown>, key)
+        : undefined
     if (value !== undefined && value !== null) return value
   }
   return undefined

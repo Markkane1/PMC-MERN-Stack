@@ -121,7 +121,7 @@ describe('PaymentStatusComponent', () => {
     })
     mockVerifyPayment.mockResolvedValue({ success: true })
 
-    render(<PaymentStatusComponent applicantId="303" />)
+    render(<PaymentStatusComponent applicantId="303" allowManualVerification />)
 
     await screen.findByText('Verify Payment')
     fireEvent.click(screen.getByText('Verify Payment'))

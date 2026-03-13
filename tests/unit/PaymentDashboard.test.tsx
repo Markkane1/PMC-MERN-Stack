@@ -1,8 +1,13 @@
 // @vitest-environment jsdom
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
-import { BrowserRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import PaymentDashboard from '@/views/PaymentDashboard'
+
+const ROUTER_FUTURE_FLAGS = {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true,
+} as const
 
 vi.mock('react-router-dom', async () => {
     const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
@@ -55,9 +60,9 @@ vi.mock('@/components', () => ({
 describe('PaymentDashboard Component', () => {
     const renderComponent = () => {
         return render(
-            <BrowserRouter>
+            <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
                 <PaymentDashboard />
-            </BrowserRouter>
+            </MemoryRouter>
         )
     }
 

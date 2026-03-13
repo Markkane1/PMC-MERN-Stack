@@ -8,6 +8,7 @@ import { metricsCollector } from './metrics'
 import { generatePrometheusMetrics } from './prometheus'
 import { generatePerformanceReport, checkAlerts, AlertConfig } from './middleware'
 import { buildMonitoringHealthReport } from './health'
+import { authenticate, requireGroup } from '../../interfaces/http/middlewares/auth'
 
 export const monitoringRouter = Router()
 
@@ -43,6 +44,9 @@ monitoringRouter.get('/health', async (req: Request, res: Response) => {
   const report = await buildMonitoringHealthReport()
   res.status(report.httpStatus).json(report)
 })
+
+// Detailed monitoring data is operationally sensitive and should stay admin-only.
+monitoringRouter.use(authenticate, requireGroup(['Admin', 'Super']))
 
 /**
  * GET /monitoring/endpoints
@@ -200,10 +204,9 @@ monitoringRouter.get('/alerts', (req: Request, res: Response) => {
 
 /**
  * POST /monitoring/reset
- * Reset all metrics (requires auth in production)
+ * Reset all metrics
  */
 monitoringRouter.post('/reset', (req: Request, res: Response) => {
-  // TODO: Add authentication check in production
   metricsCollector.reset()
 
   res.json({

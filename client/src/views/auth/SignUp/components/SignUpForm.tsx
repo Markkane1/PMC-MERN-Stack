@@ -7,7 +7,6 @@ import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import type { CommonProps } from '@/@types/common'
-import { useSessionUser, useToken } from '@/store/authStore'
 import { useNavigate, useLocation } from 'react-router-dom' // Import useNavigate and useLocation
 import AxiosBase from '../../../../services/axios/AxiosBase'
 import axios from 'axios'
@@ -54,11 +53,6 @@ const validationSchema = z
 
 const SignUpForm = (props: SignUpFormProps) => {
     const { disableSubmit = false, className, setMessage } = props
-    const setUser = useSessionUser((state) => state.setUser)
-    const setSessionSignedIn = useSessionUser(
-        (state) => state.setSessionSignedIn,
-    )
-    const { setToken } = useToken()
     const [isSubmitting, setSubmitting] = useState<boolean>(false)
     const [captchaImage, setCaptchaImage] = useState('')
     const [captchaToken, setCaptchaToken] = useState('')
@@ -87,7 +81,7 @@ const SignUpForm = (props: SignUpFormProps) => {
     useEffect(() => {
         loadCaptcha()
     }, [])
-    const { signUp, signIn } = useAuth()
+    const { signUp } = useAuth()
 
     const {
         handleSubmit,
@@ -140,23 +134,18 @@ const SignUpForm = (props: SignUpFormProps) => {
                             'Technical Error! please try again after sometime or email at fdm@epd.punjab.gov.pk',
                         )
                     }
-                    // throw new Error(result.message);
                 } else {
-                    setSessionSignedIn(false)
-                    setToken('')
-                    const result2 = await signIn({
-                        username: email,
-                        password,
-                        captcha_input,
-                        captcha_token,
-                    })
+                    const nextSearch = redirectUrl
+                        ? `?redirectUrl=${encodeURIComponent(redirectUrl)}`
+                        : ''
 
-                    if (result2?.status === 'failed') {
-                        throw new Error(result2.message)
-                    } else {
-                        setUser({ email, userName: email.split('@')[0] })
-                        navigate(redirectUrl)
-                    }
+                    navigate(`/sign-in${nextSearch}`, {
+                        replace: true,
+                        state: {
+                            message:
+                                'Account created successfully. Please sign in.',
+                        },
+                    })
                 }
             } catch (error) {
                 if (axios.isAxiosError(error) && error.response) {

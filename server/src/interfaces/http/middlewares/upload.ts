@@ -56,9 +56,29 @@ export const IMAGE_PDF_EXTENSIONS = new Set([
 
 const SUSPICIOUS_CONTENT_PATTERN = /<script|javascript:|onerror=|onload=/i
 
+function pathExists(filePath: string) {
+  return fs.existsSync(filePath)
+}
+
+function createDirectory(dirPath: string) {
+  fs.mkdirSync(dirPath, { recursive: true })
+}
+
+function removeFile(filePath: string) {
+  fs.unlinkSync(filePath)
+}
+
+function readFileBuffer(filePath: string) {
+  return fs.readFileSync(filePath)
+}
+
+function writeFileBuffer(filePath: string, content: Buffer) {
+  fs.writeFileSync(filePath, content)
+}
+
 function ensureDir(dirPath: string) {
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true })
+  if (!pathExists(dirPath)) {
+    createDirectory(dirPath)
   }
 }
 
@@ -173,8 +193,8 @@ function throwUploadValidationError(message: string, statusCode = 400): never {
 
 function cleanupInvalidUpload(filePath: string) {
   try {
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath)
+    if (pathExists(filePath)) {
+      removeFile(filePath)
     }
   } catch {
     // Best-effort cleanup for rejected uploads.
@@ -197,7 +217,7 @@ export function validateAndSanitizeUploadedFile(
   mimeType: string
 ) {
   const ext = path.extname(originalName || '').toLowerCase()
-  const content = fs.readFileSync(filePath)
+  const content = readFileBuffer(filePath)
 
   if (!matchesSignature(content, ext)) {
     cleanupInvalidUpload(filePath)
@@ -208,7 +228,7 @@ export function validateAndSanitizeUploadedFile(
   if (containsSuspiciousContent) {
     if (mimeType.startsWith('image/')) {
       const sanitized = sanitizeImagePayload(content)
-      fs.writeFileSync(filePath, sanitized)
+      writeFileBuffer(filePath, sanitized)
       return
     }
 

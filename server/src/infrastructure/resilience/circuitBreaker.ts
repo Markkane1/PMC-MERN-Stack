@@ -173,11 +173,9 @@ export class CircuitBreakerManager {
    * Get status of all circuit breakers
    */
   getAllStatus(): Record<string, any> {
-    const result: Record<string, any> = {}
-    for (const [name, breaker] of this.breakers) {
-      result[name] = breaker.getStatus()
-    }
-    return result
+    return Object.fromEntries(
+      Array.from(this.breakers.entries()).map(([name, breaker]) => [name, breaker.getStatus()]),
+    ) as Record<string, any>
   }
 
   /**

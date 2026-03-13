@@ -7,6 +7,14 @@ const captchaResponse = {
 }
 
 async function mockUnauthenticatedApi(page: import('@playwright/test').Page) {
+  await page.route('**/api/**', async (route) => {
+    await route.fulfill({
+      status: 401,
+      contentType: 'application/json',
+      body: JSON.stringify({ message: 'Unauthorized' }),
+    })
+  })
+
   await page.route('**/api/accounts/profile/**', async (route) => {
     await route.fulfill({
       status: 401,
@@ -22,18 +30,18 @@ async function mockUnauthenticatedApi(page: import('@playwright/test').Page) {
       body: JSON.stringify(captchaResponse),
     })
   })
-
-  await page.route('**/api/**', async (route) => {
-    await route.fulfill({
-      status: 401,
-      contentType: 'application/json',
-      body: JSON.stringify({ message: 'Unauthorized' }),
-    })
-  })
 }
 
 async function mockAuthenticatedSignIn(page: import('@playwright/test').Page) {
   let signedIn = false
+
+  await page.route('**/api/**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({}),
+    })
+  })
 
   await page.route('**/api/accounts/profile/**', async (route) => {
     await route.fulfill({
@@ -97,14 +105,6 @@ async function mockAuthenticatedSignIn(page: import('@playwright/test').Page) {
       }),
     })
   })
-
-  await page.route('**/api/**', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({}),
-    })
-  })
 }
 
 test.describe('Authentication flows', () => {
@@ -144,6 +144,13 @@ test.describe('Authentication flows', () => {
     await page.goto('/sign-in?redirectUrl=https://evil.com', {
       waitUntil: 'domcontentloaded',
     })
+
+    await page.getByPlaceholder('Username').fill('testuser@test.com')
+    await page.getByPlaceholder('Password').fill('Password123!')
+    await page
+      .getByPlaceholder('Enter CAPTCHA text')
+      .fill('CAPTCHA')
+    await page.getByRole('button', { name: /sign in/i }).click()
 
     await expect(page).toHaveURL(/\/home$/)
     expect(new URL(page.url()).origin).toBe('http://127.0.0.1:4173')

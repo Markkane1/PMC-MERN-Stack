@@ -46,6 +46,7 @@ const { PERMISSION_SEEDS, DEFAULT_GROUP_PERMISSIONS } = require('../../config/pe
   PERMISSION_SEEDS: PermissionSeed[]
   DEFAULT_GROUP_PERMISSIONS: Record<string, string[]>
 }
+const DEFAULT_GROUP_PERMISSION_ENTRIES = Object.entries(DEFAULT_GROUP_PERMISSIONS)
 
 const PERMISSION_ORDER = new Map(
   PERMISSION_SEEDS.map((permission, index) => [permission.permissionKey, index] as const)
@@ -113,16 +114,29 @@ function isValidObjectId(value: string): boolean {
 
 function normalizeRoleDashboardMap(raw: any) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
-  const cleaned: Record<string, string> = {}
-  for (const [role, path] of Object.entries(raw)) {
-    if (typeof role !== 'string') continue
-    if (typeof path !== 'string') continue
-    const trimmedRole = role.trim()
-    const trimmedPath = path.trim()
-    if (!trimmedRole || !trimmedPath || !trimmedPath.startsWith('/')) continue
-    cleaned[trimmedRole] = trimmedPath
-  }
-  return cleaned
+  return Object.fromEntries(
+    Object.entries(raw)
+      .filter(
+        ([role, path]) =>
+          typeof role === 'string' &&
+          typeof path === 'string' &&
+          role.trim().length > 0 &&
+          path.trim().length > 0 &&
+          path.trim().startsWith('/'),
+      )
+      .map(([role, path]) => [role.trim(), (path as string).trim()]),
+  )
+}
+
+function getDefaultGroupPermissions(groupName: string) {
+  const normalizedGroupName = groupName.trim()
+  const upperName = normalizedGroupName.toUpperCase()
+
+  const matchedEntry = DEFAULT_GROUP_PERMISSION_ENTRIES.find(
+    ([key]) => key === normalizedGroupName || key === upperName,
+  )
+
+  return matchedEntry ? matchedEntry[1] : null
 }
 
 function logAdminAction(
@@ -253,7 +267,7 @@ export const resetPermissions = asyncHandler(async (req: AuthRequest, res: Respo
   const groups = await GroupModel.find({}).lean()
   for (const group of groups) {
     const groupName = group.name
-    const defaultPerms = DEFAULT_GROUP_PERMISSIONS[groupName] || DEFAULT_GROUP_PERMISSIONS[groupName?.toUpperCase?.()] || null
+    const defaultPerms = getDefaultGroupPermissions(groupName)
     let nextPermissions = normalizePermissionKeys(group.permissions || [])
     if (['Super', 'Admin'].includes(groupName)) {
       nextPermissions = [...permissionKeys]
@@ -266,8 +280,7 @@ export const resetPermissions = asyncHandler(async (req: AuthRequest, res: Respo
   const groupPermissionLookup = new Map<string, string[]>(
     groups.map((group) => {
       const groupName = group.name
-      const defaultPerms =
-        DEFAULT_GROUP_PERMISSIONS[groupName] || DEFAULT_GROUP_PERMISSIONS[groupName?.toUpperCase?.()] || null
+      const defaultPerms = getDefaultGroupPermissions(groupName)
       let nextPermissions = normalizePermissionKeys(group.permissions || [])
       if (['Super', 'Admin'].includes(groupName)) {
         nextPermissions = [...permissionKeys]
@@ -787,11 +800,18 @@ function escapeRegExp(value: string) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
+function buildContainsFilter(value: string) {
+  return {
+    $regex: escapeRegExp(value),
+    $options: 'i',
+  }
+}
+
 export const listApiLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
   const query = req.query as Record<string, any>
   const filter: Record<string, any> = {}
   if (query.service) filter.serviceName = String(query.service)
-  if (query.endpoint) filter.endpoint = new RegExp(escapeRegExp(String(query.endpoint)), 'i')
+  if (query.endpoint) filter.endpoint = buildContainsFilter(String(query.endpoint))
   if (query.status) filter.statusCode = Number(query.status)
   const range = parseDateRange(query)
   if (range) filter.createdAt = range
@@ -808,7 +828,7 @@ export const listApiLogs = asyncHandler(async (req: AuthRequest, res: Response) 
 export const listAuditLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
   const query = req.query as Record<string, any>
   const filter: Record<string, any> = {}
-  if (query.user) filter.username = new RegExp(escapeRegExp(String(query.user)), 'i')
+  if (query.user) filter.username = buildContainsFilter(String(query.user))
   if (query.action) filter.action = String(query.action)
   if (query.model) filter.modelName = String(query.model)
   const range = parseDateRange(query)
@@ -826,10 +846,10 @@ export const listAuditLogs = asyncHandler(async (req: AuthRequest, res: Response
 export const listAccessLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
   const query = req.query as Record<string, any>
   const filter: Record<string, any> = {}
-  if (query.user) filter.username = new RegExp(escapeRegExp(String(query.user)), 'i')
+  if (query.user) filter.username = buildContainsFilter(String(query.user))
   if (query.model) filter.modelName = String(query.model)
   if (query.method) filter.method = String(query.method).toUpperCase()
-  if (query.endpoint) filter.endpoint = new RegExp(escapeRegExp(String(query.endpoint)), 'i')
+  if (query.endpoint) filter.endpoint = buildContainsFilter(String(query.endpoint))
   const range = parseDateRange(query)
   if (range) filter.timestamp = range
 

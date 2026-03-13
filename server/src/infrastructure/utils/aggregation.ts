@@ -133,10 +133,9 @@ export function countByField(field: string) {
  *   )
  */
 export function groupCountByFields(fields: string[]) {
-  const groupId: Record<string, any> = {}
-  fields.forEach((field) => {
-    groupId[field] = `$${field}`
-  })
+  const groupId = Object.fromEntries(
+    fields.map((field) => [field, `$${field}`]),
+  ) as Record<string, any>
 
   return [
     {
@@ -337,15 +336,14 @@ export function conditionalCount(
   field: string,
   conditions: Array<{ case: string; increment: string }>
 ) {
-  const accumulators: Record<string, any> = {}
-
-  conditions.forEach(({ case: caseValue, increment }) => {
-    accumulators[increment] = {
+  const accumulators = Object.fromEntries(conditions.map(({ case: caseValue, increment }) => [
+    increment,
+    {
       $sum: {
         $cond: [{ $eq: [`$${field}`, caseValue] }, 1, 0],
       },
-    }
-  })
+    },
+  ])) as Record<string, any>
 
   return [
     {

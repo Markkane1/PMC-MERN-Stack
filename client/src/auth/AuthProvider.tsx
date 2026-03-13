@@ -17,6 +17,7 @@ import type {
 import type { ReactNode } from 'react'
 import type { NavigateFunction } from 'react-router-dom'
 import AxiosBase from '@/services/axios/AxiosBase'
+import { getAccessToken } from '@/utils/accessTokenStorage'
 
 type AuthProviderProps = { children: ReactNode }
 
@@ -118,6 +119,18 @@ function AuthProvider({ children }: AuthProviderProps) {
         const bootstrapSession = async () => {
             try {
                 if (!navigator.onLine) return
+                const pathname = window.location.pathname
+                const isPublicEntryRoute =
+                    PUBLIC_ROUTE_PATHS.has(pathname) ||
+                    PUBLIC_ROUTE_PREFIXES.some((prefix) =>
+                        pathname.startsWith(prefix),
+                    ) ||
+                    pathname === appConfig.unAuthenticatedEntryPath
+
+                // Avoid guaranteed 401 noise on public entry routes when no
+                // client-side session token exists yet.
+                if (isPublicEntryRoute && !getAccessToken()) return
+
                 const mappedUser = await hydrateSessionFromProfile()
                 if (!active) return
 
@@ -179,11 +192,18 @@ function AuthProvider({ children }: AuthProviderProps) {
             if (resp) {
                 const accessToken =
                     (resp as { access?: string }).access || resp.token
-                handleSignIn(accessToken ? { accessToken } : undefined, resp.user)
-                if (!resp.user) {
-                    await hydrateSessionFromProfile()
+                const hasImmediateSession = Boolean(accessToken || resp.user)
+
+                if (hasImmediateSession) {
+                    handleSignIn(
+                        accessToken ? { accessToken } : undefined,
+                        resp.user,
+                    )
+                    if (!resp.user) {
+                        await hydrateSessionFromProfile()
+                    }
+                    await redirect()
                 }
-                await redirect()
                 return {
                     status: 'success',
                     message: '',
@@ -233,5 +253,16 @@ function AuthProvider({ children }: AuthProviderProps) {
 }
 
 IsolatedNavigator.displayName = 'IsolatedNavigator'
+
+const PUBLIC_ROUTE_PREFIXES = ['/pub', '/mis/']
+const PUBLIC_ROUTE_PATHS = new Set([
+    '/sign-in',
+    '/sign-up',
+    '/forgot-password',
+    '/reset-password',
+    '/mis-directory',
+    '/ComingSoon',
+    '/cr',
+])
 
 export default AuthProvider

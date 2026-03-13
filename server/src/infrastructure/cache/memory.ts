@@ -87,11 +87,11 @@ export function clearCache(key: string): void {
  * @param pattern Pattern to match (e.g., "districts:*")
  */
 export function clearCachePattern(pattern: string): void {
-  const regex = new RegExp(pattern.replace(/\*/g, '.*'))
+  const normalizedPattern = pattern.trim()
   let cleared = 0
 
   for (const key of cache.keys()) {
-    if (regex.test(key)) {
+    if (matchesWildcardPattern(key, normalizedPattern)) {
       cache.delete(key)
       cleared++
     }
@@ -100,6 +100,39 @@ export function clearCachePattern(pattern: string): void {
   if (cleared > 0) {
     console.log(`[Cache] Cleared ${cleared} entries matching pattern: ${pattern}`)
   }
+}
+
+function matchesWildcardPattern(value: string, pattern: string): boolean {
+  if (!pattern.includes('*')) {
+    return value === pattern
+  }
+
+  const parts = pattern.split('*')
+  let cursor = 0
+
+  for (const [index, part] of parts.entries()) {
+    if (!part) {
+      continue
+    }
+
+    const foundAt = value.indexOf(part, cursor)
+    if (foundAt === -1) {
+      return false
+    }
+
+    if (index === 0 && !pattern.startsWith('*') && foundAt !== 0) {
+      return false
+    }
+
+    cursor = foundAt + part.length
+  }
+
+  const lastPart = parts.at(-1) ?? ''
+  if (!pattern.endsWith('*') && lastPart) {
+    return value.endsWith(lastPart)
+  }
+
+  return true
 }
 
 /**

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useAlertAPI } from '../../api/pmc'
 import { logger } from '@/utils/logger'
 
@@ -28,9 +28,16 @@ export const AlertPreferencesPanel: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [savedMessage, setSavedMessage] = useState('')
+  const savedMessageTimeoutRef = useRef<number | null>(null)
 
   useEffect(() => {
-    loadPreferences()
+    void loadPreferences()
+
+    return () => {
+      if (savedMessageTimeoutRef.current !== null) {
+        window.clearTimeout(savedMessageTimeoutRef.current)
+      }
+    }
   }, [])
 
   const loadPreferences = async () => {
@@ -51,21 +58,6 @@ export const AlertPreferencesPanel: React.FC = () => {
     })
   }
 
-  const handleChannelToggle = (channel: string) => {
-    const channels = preferences.channels || []
-    if (channels.includes(channel)) {
-      setPreferences({
-        ...preferences,
-        channels: channels.filter((c) => c !== channel),
-      })
-    } else {
-      setPreferences({
-        ...preferences,
-        channels: [...channels, channel],
-      })
-    }
-  }
-
   const handleFrequencyChange = (frequency: string) => {
     setPreferences({
       ...preferences,
@@ -79,7 +71,10 @@ export const AlertPreferencesPanel: React.FC = () => {
       await updatePreferences(preferences)
       setSavedMessage('Preferences saved successfully!')
       setIsEditing(false)
-      setTimeout(() => setSavedMessage(''), 3000)
+      if (savedMessageTimeoutRef.current !== null) {
+        window.clearTimeout(savedMessageTimeoutRef.current)
+      }
+      savedMessageTimeoutRef.current = window.setTimeout(() => setSavedMessage(''), 3000)
     } catch (err) {
       logger.error('Failed to save preferences:', err)
     } finally {
@@ -106,14 +101,10 @@ export const AlertPreferencesPanel: React.FC = () => {
 
       {savedMessage && <div className="mb-4 p-3 bg-green-100 text-green-800 rounded">{savedMessage}</div>}
 
-      {/* Notification Channels */}
       <section className="mb-8">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span>📱 Notification Channels</span>
-        </h3>
+        <h3 className="text-lg font-semibold mb-4">Notification Channels</h3>
 
         <div className="space-y-3">
-          {/* In-App Notifications */}
           <div className="flex items-center justify-between p-3 border border-gray-200 rounded hover:bg-gray-50">
             <div>
               <h4 className="font-medium">In-App Notifications</h4>
@@ -131,7 +122,6 @@ export const AlertPreferencesPanel: React.FC = () => {
             />
           </div>
 
-          {/* Email Notifications */}
           <div className="flex items-center justify-between p-3 border border-gray-200 rounded hover:bg-gray-50">
             <div>
               <h4 className="font-medium">Email Notifications</h4>
@@ -149,7 +139,6 @@ export const AlertPreferencesPanel: React.FC = () => {
             />
           </div>
 
-          {/* SMS Notifications */}
           <div className="flex items-center justify-between p-3 border border-gray-200 rounded hover:bg-gray-50">
             <div>
               <h4 className="font-medium">SMS Notifications</h4>
@@ -167,7 +156,6 @@ export const AlertPreferencesPanel: React.FC = () => {
             />
           </div>
 
-          {/* Push Notifications */}
           <div className="flex items-center justify-between p-3 border border-gray-200 rounded hover:bg-gray-50">
             <div>
               <h4 className="font-medium">Push Notifications</h4>
@@ -187,11 +175,8 @@ export const AlertPreferencesPanel: React.FC = () => {
         </div>
       </section>
 
-      {/* Notification Frequency */}
       <section className="mb-8">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span>⏱️ Notification Frequency</span>
-        </h3>
+        <h3 className="text-lg font-semibold mb-4">Notification Frequency</h3>
 
         <div className="space-y-2">
           {['realtime', 'hourly', 'daily', 'weekly'].map((freq) => (
@@ -220,13 +205,9 @@ export const AlertPreferencesPanel: React.FC = () => {
         </div>
       </section>
 
-      {/* Alert Filtering */}
       <section className="mb-8">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span>🎯 Alert Filtering</span>
-        </h3>
+        <h3 className="text-lg font-semibold mb-4">Alert Filtering</h3>
 
-        {/* Critical Only */}
         <div className="flex items-center justify-between p-3 border border-gray-200 rounded hover:bg-gray-50">
           <div>
             <h4 className="font-medium">Critical Alerts Only</h4>
@@ -244,7 +225,6 @@ export const AlertPreferencesPanel: React.FC = () => {
           />
         </div>
 
-        {/* Daily Digest */}
         <div className="flex items-center justify-between p-3 border border-gray-200 rounded hover:bg-gray-50 mt-3">
           <div>
             <h4 className="font-medium">Daily Digest</h4>
@@ -263,7 +243,6 @@ export const AlertPreferencesPanel: React.FC = () => {
         </div>
       </section>
 
-      {/* Action Buttons */}
       {isEditing && (
         <div className="flex gap-4 pt-6 border-t border-gray-200">
           <button
@@ -271,16 +250,16 @@ export const AlertPreferencesPanel: React.FC = () => {
             disabled={saving}
             className="flex-1 bg-green-600 text-white py-2 rounded hover:bg-green-700 disabled:bg-gray-400 font-medium transition-colors"
           >
-            {saving ? 'Saving...' : '✓ Save Preferences'}
+            {saving ? 'Saving...' : 'Save Preferences'}
           </button>
           <button
             onClick={() => {
               setIsEditing(false)
-              loadPreferences()
+              void loadPreferences()
             }}
             className="flex-1 bg-gray-400 text-white py-2 rounded hover:bg-gray-500 font-medium transition-colors"
           >
-            ✕ Discard Changes
+            Discard Changes
           </button>
         </div>
       )}

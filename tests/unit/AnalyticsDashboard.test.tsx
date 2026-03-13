@@ -1,8 +1,13 @@
 // @vitest-environment jsdom
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
-import { BrowserRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard'
+
+const ROUTER_FUTURE_FLAGS = {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true,
+} as const
 
 describe('AnalyticsDashboard Component', () => {
     const mockData = [
@@ -19,9 +24,9 @@ describe('AnalyticsDashboard Component', () => {
 
     const renderComponent = (props = {}) => {
         return render(
-            <BrowserRouter>
+            <MemoryRouter future={ROUTER_FUTURE_FLAGS}>
                 <AnalyticsDashboard data={mockData} metrics={mockMetrics} {...props} />
-            </BrowserRouter>
+            </MemoryRouter>
         )
     }
 

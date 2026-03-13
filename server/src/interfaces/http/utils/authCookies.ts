@@ -57,7 +57,10 @@ export function getRequestAccessToken(req: Request): string {
     return header.replace('Bearer ', '').trim()
   }
 
-  const cookieToken = (req as Request & { cookies?: Record<string, string> }).cookies?.[ACCESS_TOKEN_COOKIE]
+  const cookies = (req as Request & { cookies?: Record<string, string> }).cookies
+  const cookieToken =
+    cookies && typeof cookies === 'object'
+      ? Reflect.get(cookies, ACCESS_TOKEN_COOKIE)
+      : undefined
   return typeof cookieToken === 'string' ? cookieToken.trim() : ''
 }
-

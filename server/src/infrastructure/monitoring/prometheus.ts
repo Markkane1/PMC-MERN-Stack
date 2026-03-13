@@ -158,7 +158,7 @@ export function escapeLabelValue(value: string): string {
  * Parse Prometheus query result
  */
 export function parsePrometheusResult(result: string): Record<string, number> {
-  const metrics: Record<string, number> = {}
+  const metricEntries: Array<[string, number]> = []
 
   result.split('\n').forEach((line) => {
     if (line.startsWith('#')) return // Skip comments
@@ -167,8 +167,8 @@ export function parsePrometheusResult(result: string): Record<string, number> {
     if (!match) return
 
     const [, metricName, value] = match
-    metrics[metricName] = parseFloat(value)
+    metricEntries.push([metricName, parseFloat(value)])
   })
 
-  return metrics
+  return Object.fromEntries(metricEntries) as Record<string, number>
 }

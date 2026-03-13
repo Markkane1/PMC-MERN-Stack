@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { getApiBaseUrl } from '@/utils/apiBaseUrl'
 import { logger } from '@/utils/logger'
+import { unwrapListPayload } from '@/utils/apiPayload'
 
 interface LocationMarker {
     id: string
@@ -92,7 +93,7 @@ export const useGISAnalytics = () => {
                 districtName: string
             }
 
-            const mapped = (Array.isArray(data) ? data : [])
+            const mapped = unwrapListPayload<any>(data)
                 .map((item: any) => {
                     const lat = toNumber(item?.latitude)
                     const lon = toNumber(item?.longitude)
@@ -131,7 +132,7 @@ export const useGISAnalytics = () => {
     const getLocationStats = useCallback(async (district?: string) => {
         try {
             const data = await fetchJson('/pmc/mis-district-plastic-stats/')
-            const rows = Array.isArray(data) ? data : []
+            const rows = unwrapListPayload<any>(data)
             if (!district) return rows
 
             const districtFilter = district.trim().toLowerCase()
@@ -218,7 +219,10 @@ export const useAdvancedAnalytics = () => {
                 { name: 'Total Applicants', value: Number(paymentSummary?.data?.totalApplicants || 0) },
                 { name: 'Payment Collection Rate', value: Number(paymentSummary?.data?.paymentCollectionRate || 0) },
                 { name: 'Overdue Count', value: Number(paymentSummary?.data?.overdueCount || 0) },
-                { name: 'Districts Covered', value: Array.isArray(districtStats) ? districtStats.length : 0 },
+                {
+                    name: 'Districts Covered',
+                    value: unwrapListPayload<any>(districtStats).length,
+                },
             ]
         } catch (err) {
             logger.error('Error fetching summary metrics:', err)
@@ -267,7 +271,7 @@ export const useComparisonAnalytics = () => {
         try {
             const rows = await fetchJson('/pmc/mis-district-plastic-stats/')
             const allowed = new Set(districts.map((district) => district.trim().toLowerCase()))
-            const filtered = (Array.isArray(rows) ? rows : []).filter((row: any) => {
+            const filtered = unwrapListPayload<any>(rows).filter((row: any) => {
                 if (allowed.size === 0) return true
                 return allowed.has(String(row?.district_name || '').toLowerCase())
             })
@@ -292,7 +296,7 @@ export const useComparisonAnalytics = () => {
     const getPerformanceRanking = useCallback(async (metric: string) => {
         try {
             const rows = await fetchJson('/pmc/mis-district-plastic-stats/')
-            return (Array.isArray(rows) ? rows : [])
+            return unwrapListPayload<any>(rows)
                 .map((row: any) => ({
                     district: row?.district_name,
                     value: metricFromDistrictRow(row, metric),

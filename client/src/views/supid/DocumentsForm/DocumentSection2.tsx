@@ -61,6 +61,21 @@ const mobileOperators = [
     { value: 'Warid', label: 'Warid' },
 ]
 
+const openHtmlPreviewDocument = (htmlContent: string) => {
+    const htmlBlob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' })
+    const previewUrl = window.URL.createObjectURL(htmlBlob)
+    const previewWindow = window.open(previewUrl, '_blank', 'noopener,noreferrer')
+
+    if (!previewWindow) {
+        window.URL.revokeObjectURL(previewUrl)
+        throw new Error('Unable to open preview window')
+    }
+
+    window.setTimeout(() => {
+        window.URL.revokeObjectURL(previewUrl)
+    }, 60_000)
+}
+
 const LicenseDetailProducerSection = ({
     control,
     errors,
@@ -244,20 +259,14 @@ const LicenseDetailProducerSection = ({
             )
 
             // Handle successful response
-            const htmlContent = response.data
-            const newWin = window.open('', '_blank')
-            newWin.document.write(htmlContent)
-            newWin.document.close()
+            openHtmlPreviewDocument(response.data)
             updateApplicantDetail({ applicationStatus: 'Fee Challan' })
         } catch (error) {
             logger.error(error)
 
             // Handle error response (if the server sends an HTML error response)
             if (error.response && error.response.data) {
-                const errorContent = error.response.data
-                const errorWin = window.open('', '_blank')
-                errorWin.document.write(errorContent)
-                errorWin.document.close()
+                openHtmlPreviewDocument(error.response.data)
             } else {
                 // If the error does not include a response or response data
                 alert('An unexpected error occurred. Please try again.')
@@ -276,20 +285,14 @@ const LicenseDetailProducerSection = ({
             )
 
             // Handle successful response
-            const htmlContent = response.data
-            const newWin = window.open('', '_blank')
-            newWin.document.write(htmlContent)
-            newWin.document.close()
+            openHtmlPreviewDocument(response.data)
             //   updateApplicantDetail({"applicationStatus": 'Fee Challan'})
         } catch (error) {
             logger.error(error)
 
             // Handle error response (if the server sends an HTML error response)
             if (error.response && error.response.data) {
-                const errorContent = error.response.data
-                const errorWin = window.open('', '_blank')
-                errorWin.document.write(errorContent)
-                errorWin.document.close()
+                openHtmlPreviewDocument(error.response.data)
             } else {
                 // If the error does not include a response or response data
                 alert('An unexpected error occurred. Please try again.')
@@ -568,6 +571,5 @@ const LicenseDetailProducerSection = ({
 }
 
 export default LicenseDetailProducerSection
-
 
 

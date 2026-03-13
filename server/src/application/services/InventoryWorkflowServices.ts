@@ -272,23 +272,27 @@ export class InventoryService {
    * Helper: Aggregate by source type
    */
   private aggregateBySource(items: any[]): Record<string, number> {
-    const result: Record<string, number> = {}
+    const counts = new Map<string, number>()
     for (const item of items) {
-      result[item.sourceType || 'UNKNOWN'] = (result[item.sourceType || 'UNKNOWN'] || 0) + 1
+      const sourceType = typeof item?.sourceType === 'string' && item.sourceType
+        ? item.sourceType
+        : 'UNKNOWN'
+      counts.set(sourceType, (counts.get(sourceType) ?? 0) + 1)
     }
-    return result
+    return Object.fromEntries(counts)
   }
 
   /**
    * Helper: Group by property
    */
   private groupByProperty(items: any[], property: string): Record<string, number> {
-    const result: Record<string, number> = {}
+    const counts = new Map<string, number>()
     for (const item of items) {
-      const key = item[property] || 'UNKNOWN'
-      result[key] = (result[key] || 0) + 1
+      const value = Reflect.get(item as Record<string, unknown>, property)
+      const key = typeof value === 'string' && value ? value : 'UNKNOWN'
+      counts.set(key, (counts.get(key) ?? 0) + 1)
     }
-    return result
+    return Object.fromEntries(counts)
   }
 }
 

@@ -16,9 +16,35 @@ export interface CacheClient {
 
 let redisInstance: CacheClient | null = null
 
-function wildcardPatternToRegex(pattern: string) {
-  const escaped = pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')
-  return new RegExp(`^${escaped}$`)
+function wildcardPatternMatches(value: string, pattern: string): boolean {
+  if (!pattern.includes('*')) {
+    return value === pattern
+  }
+
+  const parts = pattern.split('*')
+  let cursor = 0
+
+  for (const [index, part] of parts.entries()) {
+    if (!part) continue
+
+    const foundAt = value.indexOf(part, cursor)
+    if (foundAt === -1) {
+      return false
+    }
+
+    if (index === 0 && !pattern.startsWith('*') && foundAt !== 0) {
+      return false
+    }
+
+    cursor = foundAt + part.length
+  }
+
+  const lastPart = parts.at(-1) ?? ''
+  if (!pattern.endsWith('*') && lastPart) {
+    return value.endsWith(lastPart)
+  }
+
+  return true
 }
 
 class LruRedisFallback implements CacheClient {
@@ -48,8 +74,9 @@ class LruRedisFallback implements CacheClient {
   }
 
   async keys(pattern: string) {
-    const regex = wildcardPatternToRegex(pattern)
-    return Array.from(this.cache.keys()).filter((key) => regex.test(key))
+    return Array.from(this.cache.keys()).filter((key) =>
+      wildcardPatternMatches(key, pattern),
+    )
   }
 
   async ping() {

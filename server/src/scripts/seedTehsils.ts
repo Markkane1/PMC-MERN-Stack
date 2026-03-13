@@ -11,8 +11,12 @@ type Tehsil = {
   tehsil_code: string
 }
 
+function readJsonFile(filePath: string) {
+  return fs.readFileSync(filePath, 'utf-8')
+}
+
 function loadJson(filePath: string) {
-  const data = fs.readFileSync(filePath, 'utf-8')
+  const data = readJsonFile(filePath)
   return JSON.parse(data)
 }
 

@@ -4,7 +4,8 @@ import SignInForm from './components/SignInForm'
 import ActionLink from '@/components/shared/ActionLink'
 import useTimeOutMessage from '@/utils/hooks/useTimeOutMessage'
 import { useThemeStore } from '@/store/themeStore'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 
 type SignInProps = {
     signUpUrl?: string
@@ -18,8 +19,17 @@ export const SignInBase = ({
     disableSubmit,
 }: SignInProps) => {
     const [message, setMessage] = useTimeOutMessage()
+    const location = useLocation()
 
     const mode = useThemeStore((state) => state.mode)
+
+    useEffect(() => {
+        const nextMessage =
+            (location.state as { message?: string } | null)?.message || ''
+        if (nextMessage) {
+            setMessage(nextMessage)
+        }
+    }, [location.state, setMessage])
 
     return (
         <>

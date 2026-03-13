@@ -22,11 +22,9 @@ function sanitizeValue(value: unknown): unknown {
 
   if (value && typeof value === 'object') {
     const source = value as Record<string, unknown>
-    const out: Record<string, unknown> = {}
-    for (const [key, item] of Object.entries(source)) {
-      out[key] = sanitizeValue(item)
-    }
-    return out
+    return Object.fromEntries(
+      Object.entries(source).map(([key, item]) => [key, sanitizeValue(item)]),
+    )
   }
 
   return value
@@ -41,13 +39,12 @@ export function sanitizeRequestInput(req: Request, _res: Response, next: NextFun
 
 export function normalizeQueryParameters(req: Request, _res: Response, next: NextFunction) {
   const query = req.query as Record<string, unknown>
-
-  for (const [key, value] of Object.entries(query)) {
-    if (Array.isArray(value)) {
-      // Deterministically keep the first value for duplicate keys.
-      query[key] = value[0]
-    }
-  }
+  req.query = Object.fromEntries(
+    Object.entries(query).map(([key, value]) => [
+      key,
+      Array.isArray(value) ? value[0] : value,
+    ]),
+  ) as Request['query']
 
   next()
 }

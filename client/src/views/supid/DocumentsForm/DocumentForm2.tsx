@@ -29,23 +29,7 @@ const validationSchema: ZodType<LicenseDetailFormSchema> = z.object({
             (file) => !file || file.size <= 10 * 1024 * 1024, // Check file size
             { message: 'File must be smaller than 10 MB.' },
         ),
-    // Make the field mandatory
 })
-// .refine(
-//   (data) => {
-//     console.log(data.existingFileId)
-//     // If there's no existing file ID, then flow_diagram is required
-//     if ((data.existingFileId === 'false' || data.existingFileId === '') && !data.flow_diagram) {
-//         return false;
-//     }
-//     return true;
-// },
-// {
-//     message: "A new file or an existing file is required.",
-//     // You can attach the error to either field. Here we attach it to "flow_diagram."
-//     path: ["flow_diagram"],
-// }
-// )
 // Base License Detail Fields
 const validationLicenseDetailFieldsSchema: ZodType<LicenseDetailFormSchema> =
     z.object({
@@ -296,4 +280,3 @@ const DocumentForm = (props: CustomerFormProps) => {
 }
 
 export default DocumentForm
-

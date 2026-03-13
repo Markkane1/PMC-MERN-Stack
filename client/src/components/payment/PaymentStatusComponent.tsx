@@ -13,7 +13,15 @@ interface PaymentStatus {
   nextDueDate?: string
 }
 
-export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ applicantId }) => {
+type PaymentStatusComponentProps = {
+  applicantId: string
+  allowManualVerification?: boolean
+}
+
+export const PaymentStatusComponent: React.FC<PaymentStatusComponentProps> = ({
+  applicantId,
+  allowManualVerification = false,
+}) => {
   const { getPaymentStatus, generateChalan, verifyPayment, loading, error } = usePaymentAPI()
   const [payment, setPayment] = useState<PaymentStatus | null>(null)
   const [showVerifyForm, setShowVerifyForm] = useState(false)
@@ -21,17 +29,29 @@ export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ appl
   const [verifyLoading, setVerifyLoading] = useState(false)
 
   useEffect(() => {
-    loadPaymentStatus()
-  }, [applicantId])
-
-  const loadPaymentStatus = async () => {
-    try {
-      const data = await getPaymentStatus(parseInt(applicantId, 10))
-      setPayment(data)
-    } catch (err) {
-      logger.error('Failed to load payment status:', err)
+    if (!applicantId || loading || Boolean(error)) {
+      return
     }
-  }
+
+    let active = true
+
+    const loadPaymentStatus = async () => {
+      try {
+        const data = await getPaymentStatus(parseInt(applicantId, 10))
+        if (active) {
+          setPayment(data)
+        }
+      } catch (err) {
+        logger.error('Failed to load payment status:', err)
+      }
+    }
+
+    void loadPaymentStatus()
+
+    return () => {
+      active = false
+    }
+  }, [applicantId, error, getPaymentStatus, loading])
 
   const handleGenerateChalan = async () => {
     if (!payment) return
@@ -65,7 +85,8 @@ export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ appl
       await verifyPayment(parseInt(applicantId, 10), parseFloat(verifyData.amount), verifyData.referenceNumber)
       setShowVerifyForm(false)
       setVerifyData({ amount: '', referenceNumber: '' })
-      loadPaymentStatus()
+      const data = await getPaymentStatus(parseInt(applicantId, 10))
+      setPayment(data)
     } catch (err) {
       logger.error('Failed to verify payment:', err)
     } finally {
@@ -137,14 +158,16 @@ export const PaymentStatusComponent: React.FC<{ applicantId: string }> = ({ appl
             Generate and Download Chalan
           </button>
 
-          <button
-            onClick={() => setShowVerifyForm(!showVerifyForm)}
-            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors"
-          >
-            Verify Payment
-          </button>
+          {allowManualVerification && (
+            <button
+              onClick={() => setShowVerifyForm(!showVerifyForm)}
+              className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition-colors"
+            >
+              Verify Payment
+            </button>
+          )}
 
-          {showVerifyForm && (
+          {allowManualVerification && showVerifyForm && (
             <form onSubmit={handleVerifyPayment} className="mt-4 p-4 bg-gray-50 rounded">
               <div className="mb-3">
                 <label className="block text-sm font-medium mb-1">Amount Paid</label>

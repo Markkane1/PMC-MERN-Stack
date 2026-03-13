@@ -33,6 +33,27 @@ export interface BusinessQueryResult {
   hasMore: boolean
 }
 
+const BUSINESS_SORT_FIELDS = {
+  createdAt: 'createdAt',
+  businessName: 'businessName',
+  status: 'status',
+} as const
+
+const buildBusinessSort = (
+  sort: BusinessFilterOptions['sort'],
+  sortValue: 1 | -1,
+): Record<string, 1 | -1> => {
+  switch (sort) {
+    case 'businessName':
+      return { [BUSINESS_SORT_FIELDS.businessName]: sortValue }
+    case 'status':
+      return { [BUSINESS_SORT_FIELDS.status]: sortValue }
+    case 'createdAt':
+    default:
+      return { [BUSINESS_SORT_FIELDS.createdAt]: sortValue }
+  }
+}
+
 /**
  * Specialized repository for managing BusinessProfile operations
  */
@@ -139,9 +160,8 @@ export class BusinessProfileRepository {
     query.isActive = isActive
 
     // Build sort object
-    const sortObj: Record<string, 1 | -1> = {}
     const sortValue = sortOrder === 'asc' ? 1 : -1
-    sortObj[sort] = sortValue
+    const sortObj = buildBusinessSort(sort, sortValue)
 
     // Execute query
     const [businesses, total] = await Promise.all([

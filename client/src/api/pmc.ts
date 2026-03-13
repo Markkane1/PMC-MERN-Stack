@@ -14,6 +14,18 @@ type GenerateChalanPayload = {
   bankCode?: string
 }
 
+type PaginationMeta = {
+  page: number
+  limit: number
+  total: number
+  totalPages: number
+}
+
+type PaginatedResponse<T> = {
+  data: T[]
+  pagination: PaginationMeta
+}
+
 // Hook for Payment APIs
 export const usePaymentAPI = () => {
   const [loading, setLoading] = useState(false)
@@ -96,17 +108,25 @@ export const useAlertAPI = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const getAlerts = useCallback(async (limit = 20, offset = 0) => {
+  const getAlerts = useCallback(async (page = 1, limit = 20): Promise<PaginatedResponse<any>> => {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch(`${API_BASE_URL}/pmc/alerts?limit=${limit}&offset=${offset}`, {
+      const response = await fetch(`${API_BASE_URL}/pmc/alerts?page=${page}&limit=${limit}`, {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
       })
       const data = await response.json()
-      if (!response.ok) throw new Error(data.message)
-      return data.data
+      if (!response.ok) throw new Error(data.message || 'Failed to load alerts')
+      return {
+        data: Array.isArray(data?.data) ? data.data : [],
+        pagination: data?.pagination || {
+          page,
+          limit,
+          total: Array.isArray(data?.data) ? data.data.length : 0,
+          totalPages: 1,
+        },
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error'
       setError(message)

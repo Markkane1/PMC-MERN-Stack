@@ -36,9 +36,9 @@ export class QRDecoderService {
       // Convert RGBA to grayscale array expected by jsQR
       const grayScaleData = new Uint8ClampedArray(width * height)
       for (let i = 0; i < imageData.length; i += 4) {
-        const r = imageData[i]
-        const g = imageData[i + 1]
-        const b = imageData[i + 2]
+        const r = imageData.at(i) ?? 0
+        const g = imageData.at(i + 1) ?? 0
+        const b = imageData.at(i + 2) ?? 0
         // Standard luminosity formula
         const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b)
         grayScaleData[i / 4] = gray
@@ -110,9 +110,9 @@ export class QRDecoderService {
 
       const grayScaleData = new Uint8ClampedArray(width * height)
       for (let i = 0; i < imageData.length; i += 4) {
-        const r = imageData[i]
-        const g = imageData[i + 1]
-        const b = imageData[i + 2]
+        const r = imageData.at(i) ?? 0
+        const g = imageData.at(i + 1) ?? 0
+        const b = imageData.at(i + 2) ?? 0
         const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b)
         grayScaleData[i / 4] = gray
       }

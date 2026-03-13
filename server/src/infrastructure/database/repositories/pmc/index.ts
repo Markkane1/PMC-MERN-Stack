@@ -716,9 +716,12 @@ export const businessProfileRepositoryMongo: BusinessProfileRepository = {
     const docs = await BusinessProfileModel.find(buildLegacyAwareFilter(filter)).lean().select('-__v').maxTimeMS(30000)
     return docs.map(mapBusinessProfile)
   },
-  async searchByBusinessName(regex: RegExp, limit: number) {
+  async searchByBusinessName(query: string, limit: number) {
     const docs = await BusinessProfileModel.find({
-      $or: [{ businessName: regex }, { business_name: regex }],
+      $or: [
+        { businessName: { $regex: query, $options: 'i' } },
+        { business_name: { $regex: query, $options: 'i' } },
+      ],
     } as any)
       .select('-__v')
       .limit(limit)

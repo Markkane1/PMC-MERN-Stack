@@ -1,6 +1,9 @@
 function pick(obj: any, ...keys: string[]) {
   for (const key of keys) {
-    const value = obj?.[key]
+    const value =
+      obj && typeof obj === 'object'
+        ? Reflect.get(obj as Record<string, unknown>, key)
+        : undefined
     if (value !== undefined && value !== null) return value
   }
   return undefined

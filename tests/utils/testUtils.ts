@@ -1,7 +1,12 @@
 import { render, RenderOptions } from '@testing-library/react'
 import { ReactElement } from 'react'
-import { BrowserRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
+
+const ROUTER_FUTURE_FLAGS = {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true,
+} as const
 
 /**
  * Custom render function that wraps components with necessary providers
@@ -11,7 +16,7 @@ export const renderWithProviders = (
     options: Omit<RenderOptions, 'wrapper'> = {}
 ) => {
     const Wrapper = ({ children }: { children: ReactElement }) => (
-        <BrowserRouter>{children}</BrowserRouter>
+        <MemoryRouter future={ROUTER_FUTURE_FLAGS}>{children}</MemoryRouter>
     )
 
     return render(ui, { wrapper: Wrapper, ...options })

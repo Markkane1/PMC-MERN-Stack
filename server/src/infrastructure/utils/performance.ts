@@ -232,14 +232,14 @@ export class PerformanceProfiler {
    * Export metrics as JSON for analysis
    */
   export(): Record<string, PerformanceStats[]> {
-    const result: Record<string, PerformanceStats[]> = {}
+    const entries: Array<[string, PerformanceStats[]]> = []
     this.metrics.forEach((metrics, name) => {
       const operationMetrics = this.getStats(name)
       if (operationMetrics) {
-        result[name] = [operationMetrics]
+        entries.push([name, [operationMetrics]])
       }
     })
-    return result
+    return Object.fromEntries(entries) as Record<string, PerformanceStats[]>
   }
 }
 
@@ -391,14 +391,23 @@ export class RequestDurationTracker {
       p95: number
     }
   > {
-    const result: Record<string, any> = {}
+    const entries: Array<[string, { count: number; avg: number; min: number; max: number; p95: number }]> = []
     this.durations.forEach((_, endpoint) => {
       const stats = this.getEndpointStats(endpoint)
       if (stats) {
-        result[endpoint] = stats
+        entries.push([endpoint, stats])
       }
     })
-    return result
+    return Object.fromEntries(entries) as Record<
+      string,
+      {
+        count: number
+        avg: number
+        min: number
+        max: number
+        p95: number
+      }
+    >
   }
 
   /**

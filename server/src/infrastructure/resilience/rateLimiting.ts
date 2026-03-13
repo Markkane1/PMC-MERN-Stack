@@ -124,7 +124,7 @@ export class CacheBackedRateLimiter {
 
   getStats(): Record<string, RateLimitStatus> {
     const prefix = `${this.config.keyPrefix || 'rate'}:`
-    const result: Record<string, RateLimitStatus> = {}
+    const entries: Array<[string, RateLimitStatus]> = []
 
     for (const [cacheKey] of rateLimitCache.entries()) {
       if (!cacheKey.startsWith(prefix)) {
@@ -132,10 +132,10 @@ export class CacheBackedRateLimiter {
       }
 
       const key = cacheKey.slice(prefix.length)
-      result[key] = this.getStatus(key)
+      entries.push([key, this.getStatus(key)])
     }
 
-    return result
+    return Object.fromEntries(entries) as Record<string, RateLimitStatus>
   }
 
   private getCacheKey(key: string) {

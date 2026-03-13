@@ -83,6 +83,32 @@ function normalizeGeom(geom: any): string | null {
   return null
 }
 
+const incrementDistrictRegistrationCount = (
+  districtStats: Map<string, Map<string, number>>,
+  districtName: string,
+  registrationFor: string,
+) => {
+  let registrations = districtStats.get(districtName)
+  if (!registrations) {
+    registrations = new Map<string, number>()
+    districtStats.set(districtName, registrations)
+  }
+
+  const currentCount = registrations.get(registrationFor) || 0
+  registrations.set(registrationFor, currentCount + 1)
+}
+
+const readValueFromKeys = (obj: Record<string, unknown> | null | undefined, keys: string[]) => {
+  if (!obj) return undefined
+  for (const key of keys) {
+    const value = Reflect.get(obj, key)
+    if (value !== undefined && value !== null && value !== '') {
+      return value
+    }
+  }
+  return undefined
+}
+
 
 export const listUserGroups = asyncHandler(async (req: AuthRequest, res: Response) => {
   const user = req.user
@@ -396,18 +422,17 @@ export const applicantStatistics = asyncHandler(async (_req: AuthRequest, res: R
   }
 
   // Build district statistics
-  const districtData: Record<string, Record<string, number>> = {}
+  const districtData = new Map<string, Map<string, number>>()
   for (const applicant of applicants) {
     const applicantId = Number((applicant as any)?.numericId ?? (applicant as any)?.id)
     const profile = Number.isFinite(applicantId) ? profileByApplicantId.get(applicantId) : null
     const districtName = (profile?.districtId ? districtMap.get(profile.districtId) : null) || 'Unknown'
     const regFor = (applicant as any).registrationFor || (applicant as any).registration_for || 'Unknown'
-    districtData[districtName] ||= {}
-    districtData[districtName][regFor] = (districtData[districtName][regFor] || 0) + 1
+    incrementDistrictRegistrationCount(districtData, districtName, regFor)
   }
 
-  const districtDataList = Object.entries(districtData).flatMap(([districtName, regs]) =>
-    Object.entries(regs).map(([registration_for, count]) => ({
+  const districtDataList = Array.from(districtData.entries()).flatMap(([districtName, regs]) =>
+    Array.from(regs.entries()).map(([registration_for, count]) => ({
       registration_for,
       businessprofile__district__district_name: districtName,
       count,
@@ -440,15 +465,8 @@ export const districtPlasticStats = asyncHandler(async (_req: Request, res: Resp
     return Number.isFinite(num) ? num : 0
   }
 
-  const readFromKeys = (obj: any, keys: string[]) => {
-    if (!obj) return 0
-    for (const key of keys) {
-      if (obj[key] !== undefined && obj[key] !== null && obj[key] !== '') {
-        return readNumber(obj[key])
-      }
-    }
-    return 0
-  }
+  const readFromKeys = (obj: Record<string, unknown> | null | undefined, keys: string[]) =>
+    readNumber(readValueFromKeys(obj, keys))
 
   const [districts, profiles] = await Promise.all([
     defaultDeps.districtRepo.list(),

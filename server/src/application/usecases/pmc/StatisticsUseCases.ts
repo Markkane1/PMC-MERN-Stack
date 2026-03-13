@@ -30,12 +30,166 @@ const USER_GROUPS = ['APPLICANT', 'LSO', 'LSM', 'LSM2', 'TL', 'DO', 'DEO', 'DG',
 const USER_GROUPS_DO = ['APPLICANT', 'DO', 'DEO', 'DG', 'Download License']
 const STATS_CACHE_TTL_SECONDS = 120
 
+type SubmittedModuloKey = '0' | '1' | '2'
+type SubmittedBreakdown = {
+  total: number
+  moduloCounts: Record<SubmittedModuloKey, number>
+}
+type StatsGroupKey =
+  | 'All-Applications'
+  | 'Challan-Downloaded'
+  | 'Submitted'
+  | 'PMC'
+  | 'LSO1'
+  | 'LSO2'
+  | 'LSO3'
+  | (typeof USER_GROUPS)[number]
+type DoStatsKey = (typeof USER_GROUPS_DO)[number]
+
+const isSubmittedModuloKey = (value: string): value is SubmittedModuloKey =>
+  value === '0' || value === '1' || value === '2'
+
+const assignModuloCount = (
+  moduloCounts: Record<SubmittedModuloKey, number>,
+  mod: string,
+  count: number,
+) => {
+  switch (mod) {
+    case '0':
+      moduloCounts['0'] = count
+      break
+    case '1':
+      moduloCounts['1'] = count
+      break
+    case '2':
+      moduloCounts['2'] = count
+      break
+    default:
+      break
+  }
+}
+
+const incrementModuloCount = (
+  moduloCounts: Record<SubmittedModuloKey, number>,
+  mod: string,
+) => {
+  switch (mod) {
+    case '0':
+      moduloCounts['0'] += 1
+      break
+    case '1':
+      moduloCounts['1'] += 1
+      break
+    case '2':
+      moduloCounts['2'] += 1
+      break
+    default:
+      break
+  }
+}
+
+const isStatsGroupKey = (value: string): value is StatsGroupKey =>
+  value === 'All-Applications'
+  || value === 'Challan-Downloaded'
+  || value === 'Submitted'
+  || value === 'PMC'
+  || value === 'LSO1'
+  || value === 'LSO2'
+  || value === 'LSO3'
+  || USER_GROUPS.includes(value)
+
+const assignStatsGroupCount = (
+  stats: Record<string, number>,
+  group: string,
+  count: number,
+) => {
+  if (!isStatsGroupKey(group)) return
+  switch (group) {
+    case 'All-Applications':
+      stats['All-Applications'] = count
+      break
+    case 'Challan-Downloaded':
+      stats['Challan-Downloaded'] = count
+      break
+    case 'Submitted':
+      stats.Submitted = count
+      break
+    case 'PMC':
+      stats.PMC = count
+      break
+    case 'LSO1':
+      stats.LSO1 = count
+      break
+    case 'LSO2':
+      stats.LSO2 = count
+      break
+    case 'LSO3':
+      stats.LSO3 = count
+      break
+    case 'APPLICANT':
+      stats.APPLICANT = count
+      break
+    case 'LSO':
+      stats.LSO = count
+      break
+    case 'LSM':
+      stats.LSM = count
+      break
+    case 'LSM2':
+      stats.LSM2 = count
+      break
+    case 'TL':
+      stats.TL = count
+      break
+    case 'DO':
+      stats.DO = count
+      break
+    case 'DEO':
+      stats.DEO = count
+      break
+    case 'DG':
+      stats.DG = count
+      break
+    case 'Download License':
+      stats['Download License'] = count
+      break
+    default:
+      break
+  }
+}
+
+const assignDoStatsGroupCount = (
+  stats: Record<string, number>,
+  group: string,
+  count: number,
+) => {
+  switch (group) {
+    case 'APPLICANT':
+      stats.APPLICANT = count
+      break
+    case 'DO':
+      stats.DO = count
+      break
+    case 'DEO':
+      stats.DEO = count
+      break
+    case 'DG':
+      stats.DG = count
+      break
+    case 'Download License':
+      stats['Download License'] = count
+      break
+    default:
+      break
+  }
+}
+
 async function getSubmittedBreakdown(submittedRepo: ApplicationSubmittedRepository): Promise<{
   total: number
   moduloCounts: Record<'0' | '1' | '2', number>
 }> {
   const cacheKey = 'stats:submitted-breakdown:v1'
-  const cached = await cacheManager.get<{ total: number; moduloCounts: Record<'0' | '1' | '2', number> }>(cacheKey)
+  const cached = await cacheManager.get<SubmittedBreakdown>(cacheKey)
   if (cached) {
     return cached
   }
@@ -75,8 +229,8 @@ async function getSubmittedBreakdown(submittedRepo: ApplicationSubmittedReposito
     for (const row of grouped as any[]) {
       const mod = String(row?._id) as '0' | '1' | '2'
       const count = Number(row?.count || 0)
-      if (mod in moduloCounts) {
-        moduloCounts[mod] = count
+      if (isSubmittedModuloKey(mod)) {
+        assignModuloCount(moduloCounts, mod, count)
         total += count
       }
     }
@@ -89,7 +243,7 @@ async function getSubmittedBreakdown(submittedRepo: ApplicationSubmittedReposito
 
     for (const applicantId of ids) {
       const mod = String(applicantId % 3) as '0' | '1' | '2'
-      moduloCounts[mod] += 1
+      incrementModuloCount(moduloCounts, mod)
     }
     total = ids.length
   }
@@ -120,17 +274,16 @@ async function getDistrictApplicantIdsByDistrictId(districtId: number): Promise<
 }
 
 const buildEmptyDoStats = () => {
-  const stats: Record<string, number> = {}
-  for (const group of USER_GROUPS_DO) stats[group] = 0
-  return stats
+  return Object.fromEntries(USER_GROUPS_DO.map((group) => [group, 0])) as Record<
+    string,
+    number
+  >
 }
 
 const toCacheFriendlyStats = (stats: Record<string, number>) => {
-  const payload: Record<string, number> = {}
-  for (const [key, value] of Object.entries(stats)) {
-    payload[key] = Number(value || 0)
-  }
-  return payload
+  return Object.fromEntries(
+    Object.entries(stats).map(([key, value]) => [key, Number(value || 0)]),
+  ) as Record<string, number>
 }
 
 export const listApplicants = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -167,27 +320,31 @@ export const listApplicants = asyncHandler(async (req: AuthRequest, res: Respons
 
   const result: Record<string, number> = {}
   if (isSuper) {
-    for (const group of ['All-Applications', 'Challan-Downloaded', 'Submitted', 'PMC', ...USER_GROUPS]) {
-      result[group] = 0
-    }
+    Object.assign(
+      result,
+      Object.fromEntries(
+        ['All-Applications', 'Challan-Downloaded', 'Submitted', 'PMC', ...USER_GROUPS].map(
+          (group) => [group, 0],
+        ),
+      ),
+    )
     result['All-Applications'] = totalCount
     result['Challan-Downloaded'] = challanDownloadedAgg[0]?.count || 0
-
-    result['Submitted'] = submittedBreakdown?.total || 0
-    result['LSO1'] = submittedBreakdown?.moduloCounts?.['1'] || 0
-    result['LSO2'] = submittedBreakdown?.moduloCounts?.['2'] || 0
-    result['LSO3'] = submittedBreakdown?.moduloCounts?.['0'] || 0
+    result.Submitted = submittedBreakdown?.total || 0
+    result.LSO1 = submittedBreakdown?.moduloCounts?.['1'] || 0
+    result.LSO2 = submittedBreakdown?.moduloCounts?.['2'] || 0
+    result.LSO3 = submittedBreakdown?.moduloCounts?.['0'] || 0
   } else {
-    for (const group of USER_GROUPS) {
-      result[group] = 0
-    }
+    Object.assign(result, Object.fromEntries(USER_GROUPS.map((group) => [group, 0])))
   }
 
   for (const stat of stats) {
-    result[stat._id] = stat.count
+    const key = String(stat?._id || '')
+    if (!key) continue
+    assignStatsGroupCount(result, key, Number(stat?.count || 0))
   }
 
-  result['PMC'] = (result['LSO'] || 0) + (result['LSM'] || 0) + (result['LSM2'] || 0) + (result['TL'] || 0)
+  result.PMC = (result.LSO || 0) + (result.LSM || 0) + (result.LSM2 || 0) + (result.TL || 0)
 
   const normalized = toCacheFriendlyStats(result)
   await cacheManager.set(cacheKey, normalized, { ttl: STATS_CACHE_TTL_SECONDS })
@@ -266,9 +423,8 @@ export const listApplicantsDo = asyncHandler(async (req: AuthRequest, res: Respo
   const stats = buildEmptyDoStats()
   for (const row of groupedStats as any[]) {
     const group = String(row?._id || '')
-    if (group in stats) {
-      stats[group] = Number(row?.count || 0)
-    }
+    if (!USER_GROUPS_DO.includes(group)) continue
+    assignDoStatsGroupCount(stats, group, Number(row?.count || 0))
   }
 
   const normalized = toCacheFriendlyStats(stats)

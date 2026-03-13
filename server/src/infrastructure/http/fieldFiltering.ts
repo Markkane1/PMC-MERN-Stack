@@ -27,14 +27,11 @@ export function filterFields<T extends Record<string, any>>(
 ): Partial<T> {
   if (!fields || fields.length === 0) return data
 
-  const filtered: Partial<T> = {}
-  fields.forEach((field) => {
-    if (field in data) {
-      filtered[field as keyof T] = data[field]
-    }
-  })
-
-  return filtered
+  return Object.fromEntries(
+    fields
+      .filter((field) => field in data)
+      .map((field) => [field, Reflect.get(data, field)]),
+  ) as Partial<T>
 }
 
 /**

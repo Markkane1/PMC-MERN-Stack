@@ -97,15 +97,19 @@ export const searchQuery = asyncHandler(async (req: Request, res: Response) => {
   const query = String(req.query.query || '').trim()
   if (!query) return res.json(paginateArray([], parsePaginationParams(req.query)))
 
-  const regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i')
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const containsFilter = {
+    $regex: escapedQuery,
+    $options: 'i',
+  }
 
   const applicants = await defaultDeps.applicantRepo.list({
     $or: [
-      { trackingNumber: regex },
-      { firstName: regex },
-      { lastName: regex },
-      { cnic: regex },
-      { mobileNo: regex },
+      { trackingNumber: containsFilter },
+      { firstName: containsFilter },
+      { lastName: containsFilter },
+      { cnic: containsFilter },
+      { mobileNo: containsFilter },
     ],
   })
 
@@ -118,7 +122,7 @@ export const searchQuery = asyncHandler(async (req: Request, res: Response) => {
     categoryTitle: 'Applications',
   }))
 
-  const businessProfiles = await defaultDeps.businessProfileRepo.searchByBusinessName(regex, 20)
+  const businessProfiles = await defaultDeps.businessProfileRepo.searchByBusinessName(escapedQuery, 20)
 
   const businessItems = businessProfiles.map((profile: any) => ({
     key: `biz-${(profile as any).applicantId}`,

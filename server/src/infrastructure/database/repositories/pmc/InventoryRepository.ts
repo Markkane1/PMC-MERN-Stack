@@ -34,6 +34,54 @@ export interface InventoryQueryResult {
   hasMore: boolean
 }
 
+const buildInventorySort = (
+  sort: InventoryFilterOptions['sort'],
+  sortValue: 1 | -1,
+): Record<string, 1 | -1> => {
+  switch (sort) {
+    case 'name':
+      return { name: sortValue }
+    case 'quantity':
+      return { quantity: sortValue }
+    case 'createdAt':
+    default:
+      return { createdAt: sortValue }
+  }
+}
+
+const compareInventoryItems = (
+  left: Record<string, unknown>,
+  right: Record<string, unknown>,
+  sort: InventoryFilterOptions['sort'],
+  sortValue: 1 | -1,
+) => {
+  const readComparable = (item: Record<string, unknown>) => {
+    switch (sort) {
+      case 'name':
+        return String(item.name ?? '')
+      case 'quantity':
+        return Number(item.quantity ?? 0)
+      case 'createdAt':
+      default:
+        return new Date(String(item.createdAt ?? 0)).getTime()
+    }
+  }
+
+  const leftValue = readComparable(left)
+  const rightValue = readComparable(right)
+
+  if (typeof leftValue === 'string' && typeof rightValue === 'string') {
+    const comparison = leftValue.localeCompare(rightValue)
+    return sortValue === 1 ? comparison : comparison * -1
+  }
+
+  const numericLeft = Number(leftValue || 0)
+  const numericRight = Number(rightValue || 0)
+  return sortValue === 1
+    ? numericLeft - numericRight
+    : numericRight - numericLeft
+}
+
 /**
  * Specialized repository for managing inventory (PlasticItem, Product, ByProduct, RawMaterial)
  */
@@ -301,9 +349,8 @@ export class InventoryRepository {
       sortOrder = 'desc'
     } = filter
 
-    const sortObj: Record<string, 1 | -1> = {}
     const sortValue = sortOrder === 'asc' ? 1 : -1
-    sortObj[sort] = sortValue
+    const sortObj = buildInventorySort(sort, sortValue)
 
     let results: any[] = []
     let total = 0
@@ -386,13 +433,7 @@ export class InventoryRepository {
 
     // Sort and paginate
     results = results
-      .sort((a: any, b: any) => {
-        if (sortValue === 1) {
-          return (a[sort] || 0) - (b[sort] || 0)
-        } else {
-          return (b[sort] || 0) - (a[sort] || 0)
-        }
-      })
+      .sort((a: any, b: any) => compareInventoryItems(a as Record<string, unknown>, b as Record<string, unknown>, sort, sortValue))
       .slice(offset, offset + limit)
 
     const page = Math.floor(offset / limit) + 1

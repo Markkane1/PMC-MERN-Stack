@@ -21,6 +21,18 @@ export interface LoadBalancerStats {
   avgResponseTime: number
 }
 
+function serializeStats(stats: Map<string, LoadBalancerStats>): Record<string, LoadBalancerStats> {
+  return Object.fromEntries(
+    Array.from(stats.entries()).map(([id, stat]) => [
+      id,
+      {
+        ...stat,
+        avgResponseTime: stat.requestCount > 0 ? stat.totalResponseTime / stat.requestCount : 0,
+      },
+    ]),
+  ) as Record<string, LoadBalancerStats>
+}
+
 /**
  * Round-robin load balancer
  * Distributes requests evenly across all nodes
@@ -66,14 +78,7 @@ export class RoundRobinBalancer {
   }
 
   getStats(): Record<string, LoadBalancerStats> {
-    const result: Record<string, LoadBalancerStats> = {}
-    for (const [id, stat] of this.stats) {
-      result[id] = {
-        ...stat,
-        avgResponseTime: stat.requestCount > 0 ? stat.totalResponseTime / stat.requestCount : 0,
-      }
-    }
-    return result
+    return serializeStats(this.stats)
   }
 
   recordResponse(nodeId: string, responseTime: number, isError: boolean): void {
@@ -161,14 +166,7 @@ export class LeastConnectionsBalancer {
   }
 
   getStats(): Record<string, LoadBalancerStats> {
-    const result: Record<string, LoadBalancerStats> = {}
-    for (const [id, stat] of this.stats) {
-      result[id] = {
-        ...stat,
-        avgResponseTime: stat.requestCount > 0 ? stat.totalResponseTime / stat.requestCount : 0,
-      }
-    }
-    return result
+    return serializeStats(this.stats)
   }
 
   getNodes(): LoadBalancerNode[] {
@@ -252,14 +250,7 @@ export class WeightedBalancer {
   }
 
   getStats(): Record<string, LoadBalancerStats> {
-    const result: Record<string, LoadBalancerStats> = {}
-    for (const [id, stat] of this.stats) {
-      result[id] = {
-        ...stat,
-        avgResponseTime: stat.requestCount > 0 ? stat.totalResponseTime / stat.requestCount : 0,
-      }
-    }
-    return result
+    return serializeStats(this.stats)
   }
 
   getNodes(): LoadBalancerNode[] {
@@ -300,7 +291,8 @@ export class IpHashBalancer {
     // Hash IP to select same node for same client
     const hash = this.hashIp(clientIp)
     const index = hash % healthyNodes.length
-    const node = healthyNodes[index]
+    const node = healthyNodes.at(index)
+    if (!node) return null
 
     this.recordSelection(node)
     return node
@@ -333,14 +325,7 @@ export class IpHashBalancer {
   }
 
   getStats(): Record<string, LoadBalancerStats> {
-    const result: Record<string, LoadBalancerStats> = {}
-    for (const [id, stat] of this.stats) {
-      result[id] = {
-        ...stat,
-        avgResponseTime: stat.requestCount > 0 ? stat.totalResponseTime / stat.requestCount : 0,
-      }
-    }
-    return result
+    return serializeStats(this.stats)
   }
 
   getNodes(): LoadBalancerNode[] {

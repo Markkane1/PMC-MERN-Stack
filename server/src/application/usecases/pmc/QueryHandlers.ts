@@ -33,6 +33,50 @@ function isRegistrationOwner(req: AuthRequest, registration: any): boolean {
   return Boolean(userId && ownerId && userId === ownerId)
 }
 
+function pickApplicantDocumentUpdates(source: Record<string, unknown>) {
+  const updates: Record<string, unknown> = {}
+
+  if (Object.prototype.hasOwnProperty.call(source, 'documentType')) updates.documentType = source.documentType
+  if (Object.prototype.hasOwnProperty.call(source, 'expiryDate')) updates.expiryDate = source.expiryDate
+  if (Object.prototype.hasOwnProperty.call(source, 'status')) updates.status = source.status
+  if (Object.prototype.hasOwnProperty.call(source, 'documentDescription')) updates.documentDescription = source.documentDescription
+  if (Object.prototype.hasOwnProperty.call(source, 'rejectionReason')) updates.rejectionReason = source.rejectionReason
+  if (Object.prototype.hasOwnProperty.call(source, 'notes')) updates.notes = source.notes
+  if (Object.prototype.hasOwnProperty.call(source, 'tags')) updates.tags = source.tags
+  if (Object.prototype.hasOwnProperty.call(source, 'verifiedBy')) updates.verifiedBy = source.verifiedBy
+  if (Object.prototype.hasOwnProperty.call(source, 'verificationDate')) updates.verificationDate = source.verificationDate
+  if (Object.prototype.hasOwnProperty.call(source, 'updatedBy')) updates.updatedBy = source.updatedBy
+  if (Object.prototype.hasOwnProperty.call(source, 'isActive')) updates.isActive = source.isActive
+
+  return updates
+}
+
+function pickDistrictDocumentUpdates(source: Record<string, unknown>) {
+  const updates: Record<string, unknown> = {}
+
+  if (Object.prototype.hasOwnProperty.call(source, 'documentType')) updates.documentType = source.documentType
+  if (Object.prototype.hasOwnProperty.call(source, 'title')) updates.title = source.title
+  if (Object.prototype.hasOwnProperty.call(source, 'documentDate')) updates.documentDate = source.documentDate
+
+  return updates
+}
+
+function pickCompetitionRegistrationUpdates(source: Record<string, unknown>) {
+  const updates: Record<string, unknown> = {}
+
+  if (Object.prototype.hasOwnProperty.call(source, 'fullName')) updates.fullName = source.fullName
+  if (Object.prototype.hasOwnProperty.call(source, 'institute')) updates.institute = source.institute
+  if (Object.prototype.hasOwnProperty.call(source, 'grade')) updates.grade = source.grade
+  if (Object.prototype.hasOwnProperty.call(source, 'category')) updates.category = source.category
+  if (Object.prototype.hasOwnProperty.call(source, 'competitionType')) updates.competitionType = source.competitionType
+  if (Object.prototype.hasOwnProperty.call(source, 'mobile')) updates.mobile = source.mobile
+  if (Object.prototype.hasOwnProperty.call(source, 'studentCardFrontPath')) updates.studentCardFrontPath = source.studentCardFrontPath
+  if (Object.prototype.hasOwnProperty.call(source, 'studentCardBackPath')) updates.studentCardBackPath = source.studentCardBackPath
+  if (Object.prototype.hasOwnProperty.call(source, 'photoObjectPath')) updates.photoObjectPath = source.photoObjectPath
+
+  return updates
+}
+
 /**
  * GET /business-profiles/by_applicant/?applicant_id=X
  * Dedicated query endpoint for fetching business profiles by applicant
@@ -110,7 +154,12 @@ export const updateApplicantDocument = asyncHandler(async (req: AuthRequest, res
       return res.status(400).json({ message: 'Invalid document id' })
     }
 
-    const updated = await ApplicantDocumentModel.findByIdAndUpdate(documentId, req.body, { new: true }).lean()
+    const updates = pickApplicantDocumentUpdates((req.body || {}) as Record<string, unknown>)
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: 'No valid applicant document fields supplied for update' })
+    }
+
+    const updated = await ApplicantDocumentModel.findByIdAndUpdate(documentId, { $set: updates }, { new: true }).lean()
     
     if (!updated) {
       return res.status(404).json({ message: 'Document not found' })
@@ -182,9 +231,14 @@ export const updateDistrictDocument = asyncHandler(async (req: AuthRequest, res:
       return res.status(400).json({ message: 'Invalid district document id' })
     }
 
+    const updates = pickDistrictDocumentUpdates((req.body || {}) as Record<string, unknown>)
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: 'No valid district document fields supplied for update' })
+    }
+
     const updated = await DistrictPlasticCommitteeDocumentModel.findByIdAndUpdate(
       documentId,
-      req.body,
+      { $set: updates },
       { new: true }
     ).lean()
     
@@ -351,7 +405,12 @@ export const updateCompetitionRegistration = asyncHandler(async (req: AuthReques
       return res.status(403).json({ message: 'Forbidden' })
     }
 
-    const updated = await competitionRegistrationRepositoryMongo.update(registrationId, req.body)
+    const updates = pickCompetitionRegistrationUpdates((req.body || {}) as Record<string, unknown>)
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: 'No valid competition registration fields supplied for update' })
+    }
+
+    const updated = await competitionRegistrationRepositoryMongo.update(registrationId, updates)
     
     if (!updated) {
       return res.status(404).json({ message: 'Competition registration not found' })

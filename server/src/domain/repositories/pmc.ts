@@ -43,7 +43,7 @@ export interface BusinessProfileRepository {
   listByApplicantIds(applicantIds: number[]): Promise<any[]>
   listByDistrictId(districtId: number): Promise<any[]>
   list(filter?: Record<string, unknown>): Promise<any[]>
-  searchByBusinessName(regex: RegExp, limit: number): Promise<any[]>
+  searchByBusinessName(query: string, limit: number): Promise<any[]>
 }
 
 export interface DistrictRepository {

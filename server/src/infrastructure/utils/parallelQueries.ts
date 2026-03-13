@@ -82,12 +82,9 @@ export async function parallelQueriesWithMetadata<T extends Record<string, Promi
   const keys = Object.keys(queries) as (keyof T)[]
   const values = await Promise.all(Object.values(queries))
 
-  const result: any = {}
-  keys.forEach((key, index) => {
-    result[key] = values[index]
-  })
-
-  return result
+  return Object.fromEntries(
+    keys.map((key, index) => [key, values.at(index)]),
+  ) as { [K in keyof T]: Awaited<T[K]> }
 }
 
 /**
@@ -242,7 +239,12 @@ export class QueuedExecutor {
       this.running++
 
       try {
-        results[index] = await queryFunctions[index]()
+        const queryFunction = queryFunctions.at(index)
+        if (!queryFunction) {
+          return
+        }
+        const result = await queryFunction()
+        results.splice(index, 1, result)
       } catch (error) {
         console.error(`Query ${index} failed:`, error)
         throw error
@@ -285,20 +287,19 @@ export async function timedParallelQueries<T extends Record<string, Promise<any>
 }> {
   const startTime = Date.now()
   const keys = Object.keys(queries) as (keyof T)[]
-  const timing: Record<string, number> = {}
 
-  const timedQueries = keys.map(async (key) => {
+  const timedEntries = await Promise.all(keys.map(async (key) => {
     const start = Date.now()
-    const result = await queries[key]
-    timing[key as string] = Date.now() - start
-    return result
-  })
+    const result = await Reflect.get(queries, key) as Awaited<T[typeof key]>
+    return [key, result, Date.now() - start] as const
+  }))
 
-  const results = await Promise.all(timedQueries)
-  const data: any = {}
-  keys.forEach((key, index) => {
-    data[key] = results[index]
-  })
+  const data = Object.fromEntries(
+    timedEntries.map(([key, result]) => [key, result]),
+  ) as { [K in keyof T]: Awaited<T[K]> }
+  const timing = Object.fromEntries(
+    timedEntries.map(([key, , duration]) => [String(key), duration]),
+  ) as Record<string, number>
 
   return {
     data,

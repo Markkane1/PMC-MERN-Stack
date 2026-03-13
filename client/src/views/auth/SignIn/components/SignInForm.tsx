@@ -195,7 +195,7 @@ const SignInForm = (props: SignInFormProps) => {
                             className="text-blue-600 hover:text-blue-800"
                             title="Refresh CAPTCHA"
                         >
-                            ðŸ”
+                            Refresh
                         </button>
                     </div>
                     <Controller

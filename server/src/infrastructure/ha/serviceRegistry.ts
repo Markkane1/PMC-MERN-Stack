@@ -140,11 +140,9 @@ export class ServiceRegistry {
    * Get registry stats
    */
   getStats() {
-    const stats: Record<string, any> = {}
-
-    for (const [serviceName, instances] of this.services) {
+    return Object.fromEntries(Array.from(this.services.entries()).map(([serviceName, instances]) => {
       const instanceList = Array.from(instances.values())
-      stats[serviceName] = {
+      return [serviceName, {
         totalInstances: instanceList.length,
         healthyInstances: instanceList.filter((i) => i.healthy).length,
         unhealthyInstances: instanceList.filter((i) => !i.healthy).length,
@@ -155,10 +153,8 @@ export class ServiceRegistry {
           healthy: i.healthy,
           lastHeartbeat: i.lastHeartbeat,
         })),
-      }
-    }
-
-    return stats
+      }]
+    }))
   }
 
   /**

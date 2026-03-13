@@ -41,7 +41,9 @@ function normalizeGeomToGeoJSON(geom: any): any | null {
 }
 
 function getClubField(club: any, camelKey: string, snakeKey: string) {
-  return club?.[camelKey] ?? club?.[snakeKey]
+  if (!club || typeof club !== 'object') return undefined
+  return Reflect.get(club as Record<string, unknown>, camelKey) ??
+    Reflect.get(club as Record<string, unknown>, snakeKey)
 }
 const ALLOWED_GROUPS = new Set(['Super', 'EEC', 'Admin', 'DEO', 'DG', 'DO', 'LSM', 'LSO', 'TL'])
 
@@ -56,12 +58,12 @@ export const districtsClubCounts = asyncHandler(async (_req: Request, res: Respo
     defaultDeps.clubRepo.list(),
   ])
 
-  const counts: Record<string, number> = {}
+  const counts = new Map<string, number>()
   for (const club of clubs) {
     const districtId = ((club as any).districtId ?? (club as any).district_id ?? null)
     if (districtId === null || districtId === undefined || districtId === '') continue
     const key = String(districtId)
-    counts[key] = (counts[key] || 0) + 1
+    counts.set(key, (counts.get(key) ?? 0) + 1)
   }
 
   const features = districts.map((d: any) => {
@@ -73,7 +75,7 @@ export const districtsClubCounts = asyncHandler(async (_req: Request, res: Respo
       properties: {
         id: districtId,
         name,
-        club_count: counts[String(districtId)] || 0,
+        club_count: counts.get(String(districtId)) || 0,
       },
     }
   })

@@ -18,6 +18,7 @@ import { Link } from 'react-router-dom'
 import { Divider, Select, MenuItem, Box } from '@mui/material'
 import { MaterialReactTable } from 'material-react-table'
 import { logger } from '@/utils/logger'
+import { filterWithGeom, unwrapListPayload } from '@/utils/apiPayload'
 
 // Helper function
 function getCategoryColor(category: any) {
@@ -124,11 +125,12 @@ const DistrictMap = ({ onDistrictClick }: any) => {
                 const resp = await AxiosBase.get(
                     '/pmc/applicant-location-public/',
                 )
-                setApplicantData(resp.data)
+                const rows = unwrapListPayload<any>(resp.data)
+                setApplicantData(rows)
 
-                // Extract unique district names directly from resp.data
+                // Extract unique district names from normalized rows.
                 const distinctDistricts = new Set(
-                    resp.data.map((row: any) => row.district_name).filter(Boolean),
+                    rows.map((row: any) => row.district_name).filter(Boolean),
                 )
                 const sortedDistricts = Array.from(distinctDistricts).sort()
                 setDistrictOptions(sortedDistricts)
@@ -184,8 +186,8 @@ const DistrictMap = ({ onDistrictClick }: any) => {
             let districtData = stateDistrictData
             if (!districtData) {
                 const response = await AxiosBase.get('/pmc/districts-public')
-                districtData = response.data.filter((d: any) => d.geom)
-                // optionally store for later use
+                districtData = filterWithGeom<any>(response.data)
+                setStateDistrictData(districtData)
             }
 
             const geoJsonFeatures = districtData.map((district: any) => ({
@@ -204,18 +206,21 @@ const DistrictMap = ({ onDistrictClick }: any) => {
             }
             const vectorSource = vectorLayer.getSource()
             vectorSource.clear()
-            vectorSource.addFeatures(
-                new GeoJSON().readFeatures(geoJson, {
-                    featureProjection: 'EPSG:3857',
-                }),
-            )
+            const features = new GeoJSON().readFeatures(geoJson, {
+                featureProjection: 'EPSG:3857',
+            })
+            if (features.length > 0) {
+                vectorSource.addFeatures(features)
+            }
 
             // Fit map
-            const extent = vectorSource.getExtent()
-            mapInstance.getView().fit(extent, {
-                padding: [50, 50, 50, 50],
-                maxZoom: 10,
-            })
+            if (features.length > 0) {
+                const extent = vectorSource.getExtent()
+                mapInstance.getView().fit(extent, {
+                    padding: [50, 50, 50, 50],
+                    maxZoom: 10,
+                })
+            }
 
             setHasFetchedDistricts(true)
         }
@@ -903,7 +908,5 @@ const MyDataTable = ({
 }
 
 export default DistrictMap
-
-
 
 

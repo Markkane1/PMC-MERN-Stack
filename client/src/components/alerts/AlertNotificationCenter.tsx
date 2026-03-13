@@ -17,33 +17,65 @@ export const AlertNotificationCenter: React.FC = () => {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
-  const [page, setPage] = useState(0)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
 
   useEffect(() => {
-    loadAlerts()
-    loadUnreadCount()
+    let active = true
 
-    // Refresh every 30 seconds
+    const loadInitialState = async () => {
+      await Promise.all([loadAlerts(1, active), loadUnreadCount(active)])
+    }
+
+    void loadInitialState()
+
     const interval = setInterval(() => {
-      loadUnreadCount()
+      void loadUnreadCount(active)
     }, 30000)
 
-    return () => clearInterval(interval)
+    return () => {
+      active = false
+      clearInterval(interval)
+    }
   }, [])
 
-  const loadAlerts = async () => {
+  useEffect(() => {
+    if (page === 1) {
+      return
+    }
+
+    let active = true
+    void loadAlerts(page, active)
+
+    return () => {
+      active = false
+    }
+  }, [page])
+
+  const loadAlerts = async (targetPage = 1, active = true) => {
     try {
-      const data = await getAlerts(10, page * 10)
-      setAlerts(data || [])
+      const response = await getAlerts(targetPage, 10)
+      if (!active) {
+        return
+      }
+
+      setHasMore(response.pagination.page < response.pagination.totalPages)
+      setAlerts((previousAlerts) =>
+        targetPage === 1
+          ? response.data || []
+          : [...previousAlerts, ...(response.data || [])]
+      )
     } catch (err) {
       logger.error('Failed to load alerts:', err)
     }
   }
 
-  const loadUnreadCount = async () => {
+  const loadUnreadCount = async (active = true) => {
     try {
       const count = await getUnreadCount()
-      setUnreadCount(count)
+      if (active) {
+        setUnreadCount(count)
+      }
     } catch (err) {
       logger.error('Failed to load unread count:', err)
     }
@@ -52,8 +84,10 @@ export const AlertNotificationCenter: React.FC = () => {
   const handleMarkAsRead = async (alertId: string) => {
     try {
       await markAsRead(alertId)
-      setAlerts(alerts.map((a) => (a._id === alertId ? { ...a, isRead: true } : a)))
-      setUnreadCount(Math.max(0, unreadCount - 1))
+      setAlerts((currentAlerts) =>
+        currentAlerts.map((alert) => (alert._id === alertId ? { ...alert, isRead: true } : alert))
+      )
+      setUnreadCount((currentCount) => Math.max(0, currentCount - 1))
     } catch (err) {
       logger.error('Failed to mark alert as read:', err)
     }
@@ -62,7 +96,7 @@ export const AlertNotificationCenter: React.FC = () => {
   const handleDelete = async (alertId: string) => {
     try {
       await deleteAlert(alertId)
-      setAlerts(alerts.filter((a) => a._id !== alertId))
+      setAlerts((currentAlerts) => currentAlerts.filter((alert) => alert._id !== alertId))
     } catch (err) {
       logger.error('Failed to delete alert:', err)
     }
@@ -77,7 +111,6 @@ export const AlertNotificationCenter: React.FC = () => {
 
   return (
     <div className="relative">
-      {/* Bell Icon */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
@@ -92,7 +125,6 @@ export const AlertNotificationCenter: React.FC = () => {
         )}
       </button>
 
-      {/* Dropdown Panel */}
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
           <div className="p-4 border-b border-gray-200">
@@ -121,17 +153,18 @@ export const AlertNotificationCenter: React.FC = () => {
                   <button
                     onClick={() => handleDelete(alert._id)}
                     className="ml-2 text-gray-400 hover:text-red-600 focus:outline-none"
+                    aria-label="Delete notification"
                   >
-                    ✕
+                    x
                   </button>
                 </div>
               </div>
             ))}
 
-          {!loading && alerts.length > 0 && (
+          {!loading && alerts.length > 0 && hasMore && (
             <div className="p-3 border-t border-gray-200 text-center">
               <button
-                onClick={() => setPage(page + 1)}
+                onClick={() => setPage((currentPage) => currentPage + 1)}
                 className="text-sm text-blue-600 hover:text-blue-800 font-medium"
               >
                 Load More

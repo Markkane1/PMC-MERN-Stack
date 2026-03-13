@@ -74,6 +74,14 @@ function resolveSafePath(rootDir: string, parts: string[]) {
   return target
 }
 
+function fileExists(filePath: string) {
+  return fs.existsSync(filePath)
+}
+
+function statPath(filePath: string) {
+  return fs.statSync(filePath)
+}
+
 function toDocumentUrl(docPath?: string) {
   if (!docPath) return docPath
   if (docPath.startsWith('/api/pmc/media')) return docPath
@@ -284,7 +292,7 @@ export const downloadLatestApplicantDocument = asyncHandler(async (req: AuthRequ
     : relativePath
   const filePath = resolveSafePath(env.uploadDir, normalizedPath.split('/'))
 
-  if (!filePath || !fs.existsSync(filePath)) {
+  if (!filePath || !fileExists(filePath)) {
     return res.status(404).json({ message: 'File not found' })
   }
 
@@ -306,10 +314,10 @@ export const downloadMedia = asyncHandler(async (req: Request, res: Response) =>
     return res.status(400).json({ message: 'Invalid file path' })
   }
 
-  if (!fs.existsSync(filePath)) {
+  if (!fileExists(filePath)) {
     return res.status(404).json({ message: 'File not found' })
   }
-  if (!fs.statSync(filePath).isFile()) {
+  if (!statPath(filePath).isFile()) {
     return res.status(404).json({ message: 'File not found' })
   }
 

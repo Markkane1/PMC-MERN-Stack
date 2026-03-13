@@ -31,6 +31,7 @@ import { MaterialReactTable } from 'material-react-table'
 import ConfirmDialog from '@/components/shared/ConfirmDialog'
 import TablerIcon from '@/components/shared/TablerIcon'
 import { logger } from '@/utils/logger'
+import { filterWithGeom, unwrapListPayload } from '@/utils/apiPayload'
 
 // Helper function
 function getCategoryColor(category: any) {
@@ -230,11 +231,7 @@ const MISDirectory = () => {
                     params: { include_totals: 1 },
                 })
                 const payload = resp.data
-                const rows = Array.isArray(payload)
-                    ? payload
-                    : Array.isArray(payload?.rows)
-                      ? payload.rows
-                      : []
+                const rows = unwrapListPayload<any>(payload)
                 const normalizedRows = rows.map((row: any) => {
                     const normalized = { ...row }
                     for (const key of numericKeys) {
@@ -309,8 +306,8 @@ const MISDirectory = () => {
             let districtData = stateDistrictData
             if (!districtData) {
                 const response = await AxiosBase.get('/pmc/districts-public')
-                districtData = response.data.filter((d: any) => d.geom)
-                // optionally store for later use
+                districtData = filterWithGeom<any>(response.data)
+                setStateDistrictData(districtData)
             }
 
             const geoJsonFeatures = districtData.map((district: any) => ({
@@ -329,18 +326,21 @@ const MISDirectory = () => {
             }
             const vectorSource = vectorLayer.getSource()
             vectorSource.clear()
-            vectorSource.addFeatures(
-                new GeoJSON().readFeatures(geoJson, {
-                    featureProjection: 'EPSG:3857',
-                }),
-            )
+            const features = new GeoJSON().readFeatures(geoJson, {
+                featureProjection: 'EPSG:3857',
+            })
+            if (features.length > 0) {
+                vectorSource.addFeatures(features)
+            }
 
             // Fit map
-            const extent = vectorSource.getExtent()
-            mapInstance.getView().fit(extent, {
-                padding: [50, 50, 50, 50],
-                maxZoom: 10,
-            })
+            if (features.length > 0) {
+                const extent = vectorSource.getExtent()
+                mapInstance.getView().fit(extent, {
+                    padding: [50, 50, 50, 50],
+                    maxZoom: 10,
+                })
+            }
 
             setHasFetchedDistricts(true)
         }
@@ -1080,7 +1080,5 @@ const MyDataTable = ({
 }
 
 export default MISDirectory
-
-
 
 

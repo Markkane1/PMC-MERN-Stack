@@ -41,8 +41,7 @@ describe('QueryBuilder', () => {
     const query = new QueryBuilder().dateRange('createdAt', start, end).regex('name', 'john').build()
 
     expect(query.createdAt).toEqual({ $gte: start, $lte: end })
-    expect(query.name).toBeInstanceOf(RegExp)
-    expect((query.name as RegExp).source).toBe('john')
+    expect(query.name).toEqual({ $regex: 'john', $options: 'i' })
   })
 
   it('should build logical operators OR and AND', () => {
@@ -88,7 +87,7 @@ describe('CommonFilters', () => {
     expect(recent.createdAt).toBeDefined()
     expect((recent.createdAt as { $gte: Date; $lte: Date }).$gte).toBeInstanceOf(Date)
     expect((recent.createdAt as { $gte: Date; $lte: Date }).$lte).toBeInstanceOf(Date)
-    expect(byName.firstName).toBeInstanceOf(RegExp)
+    expect(byName.firstName).toEqual({ $regex: 'ali', $options: 'i' })
   })
 
   it('should combine multiple filters using $and', () => {

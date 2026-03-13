@@ -31,17 +31,16 @@ export async function analyzeSlowQueries(
     console.log(`Found ${slowQueries.length} slow queries:\n`)
 
     // Group by collection
-    const byCollection: Record<string, any[]> = {}
+    const byCollection = new Map<string, any[]>()
     slowQueries.forEach((q: any) => {
       const collection = q.ns?.split('.')[1] || 'unknown'
-      if (!byCollection[collection]) {
-        byCollection[collection] = []
-      }
-      byCollection[collection].push(q)
+      const collectionQueries = byCollection.get(collection) || []
+      collectionQueries.push(q)
+      byCollection.set(collection, collectionQueries)
     })
 
     // Display results by collection
-    Object.entries(byCollection).forEach(([collection, queries]) => {
+    Array.from(byCollection.entries()).forEach(([collection, queries]) => {
       console.log(`\n📍 Collection: ${collection}`)
       console.log('─'.repeat(80))
 

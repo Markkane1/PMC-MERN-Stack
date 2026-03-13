@@ -31,6 +31,27 @@ export interface DocumentQueryResult {
   hasMore: boolean
 }
 
+const DOCUMENT_SORT_FIELDS = {
+  uploadDate: 'uploadDate',
+  expiryDate: 'expiryDate',
+  status: 'status',
+} as const
+
+const buildDocumentSort = (
+  sort: DocumentFilterOptions['sort'],
+  sortValue: 1 | -1,
+): Record<string, 1 | -1> => {
+  switch (sort) {
+    case 'expiryDate':
+      return { [DOCUMENT_SORT_FIELDS.expiryDate]: sortValue }
+    case 'status':
+      return { [DOCUMENT_SORT_FIELDS.status]: sortValue }
+    case 'uploadDate':
+    default:
+      return { [DOCUMENT_SORT_FIELDS.uploadDate]: sortValue }
+  }
+}
+
 /**
  * Specialized repository for managing ApplicantDocument operations
  * Provides pagination, filtering, analytics, and cache invalidation support
@@ -151,9 +172,8 @@ export class DocumentRepository {
     query.isActive = true
 
     // Build sort object
-    const sortObj: Record<string, 1 | -1> = {}
     const sortValue = sortOrder === 'asc' ? 1 : -1
-    sortObj[sort] = sortValue
+    const sortObj = buildDocumentSort(sort, sortValue)
 
     // Execute query
     const [documents, total] = await Promise.all([

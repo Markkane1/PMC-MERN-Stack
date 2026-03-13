@@ -66,11 +66,9 @@ export const cacheMiddleware = (ttlSeconds: number = 3600) => {
  *   })
  */
 export const clearRouteCache = (routePattern: string) => {
-  // Convert route pattern to regex
-  const regex = new RegExp(routePattern)
-  const cacheKeys = []
-
-  // This would need cache stats export from memory.ts
+  const cacheKeys: string[] = []
+  void routePattern
+  void cacheKeys
   console.log(`[Cache] Cleared cache for route: ${routePattern}`)
 }
 

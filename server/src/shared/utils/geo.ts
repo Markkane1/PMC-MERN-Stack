@@ -1,22 +1,33 @@
 export function pointInPolygon(point: [number, number], polygon: number[][]) {
   const [x, y] = point
   let inside = false
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i][0]
-    const yi = polygon[i][1]
-    const xj = polygon[j][0]
-    const yj = polygon[j][1]
+  const points = polygon.filter((coords): coords is [number, number] =>
+    Array.isArray(coords) &&
+    coords.length >= 2 &&
+    typeof coords[0] === 'number' &&
+    typeof coords[1] === 'number',
+  )
+
+  if (points.length < 3) {
+    return false
+  }
+
+  let previousPoint = points.at(-1) as [number, number]
+  for (const currentPoint of points) {
+    const [xi, yi] = currentPoint
+    const [xj, yj] = previousPoint
 
     const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi + 0.0) + xi
     if (intersect) inside = !inside
+    previousPoint = currentPoint
   }
   return inside
 }
 
 export function pointInMultiPolygon(point: [number, number], multi: number[][][][]) {
   for (const polygon of multi) {
-    // polygon[0] is outer ring
-    if (polygon.length > 0 && pointInPolygon(point, polygon[0])) {
+    const [outerRing] = polygon
+    if (outerRing && pointInPolygon(point, outerRing)) {
       return true
     }
   }

@@ -40,13 +40,81 @@ const defaultDeps: PsidDeps = {
   psidRepo: psidTrackingRepositoryMongo,
 }
 
+const PSID_READ_PERMISSIONS = new Set([
+  'pmc.view_applicantdetail',
+  'pmc.view_psidtracking',
+])
+
+const PSID_WRITE_PERMISSIONS = new Set([
+  'pmc.add_psidtracking',
+  'pmc.change_psidtracking',
+])
+
+function normalizeUserId(value: unknown): string | null {
+  if (value === undefined || value === null) {
+    return null
+  }
+
+  const normalized = String(value).trim()
+  return normalized ? normalized : null
+}
+
+function hasAnyPermission(user: any, permissions: Set<string>): boolean {
+  const userPermissions = Array.isArray(user?.permissions) ? user.permissions : []
+  return userPermissions.some((permission: string) => permissions.has(permission))
+}
+
+async function ensureApplicantPsidAccess(
+  req: AuthRequest,
+  res: Response,
+  applicantId: number,
+  mode: 'read' | 'write'
+): Promise<boolean> {
+  const user = req.user
+  const isPrivileged =
+    Boolean(user?.isSuperadmin || user?.groups?.includes('Super') || user?.groups?.includes('Admin')) ||
+    hasAnyPermission(user, mode === 'write' ? PSID_WRITE_PERMISSIONS : PSID_READ_PERMISSIONS)
+
+  if (isPrivileged) {
+    return true
+  }
+
+  const applicant = await defaultDeps.applicantRepo.findByNumericId(applicantId)
+  if (!applicant) {
+    res.status(404).send(buildHtmlResponse('Error', '<p>Applicant not found</p>', 404))
+    return false
+  }
+
+  const applicantOwnerId = normalizeUserId((applicant as any).createdBy ?? (applicant as any).created_by)
+  const candidateOwnerIds = new Set(
+    [user?._id, user?.id, user?.sourceId].map(normalizeUserId).filter(Boolean) as string[]
+  )
+  const sessionApplicantId = Number(user?.applicantId)
+
+  if ((applicantOwnerId && candidateOwnerIds.has(applicantOwnerId)) || sessionApplicantId === applicantId) {
+    return true
+  }
+
+  res.status(403).send(buildHtmlResponse('Forbidden', '<p>You do not have access to this applicant.</p>', 403))
+  return false
+}
+
 export const generatePsid = asyncHandler(async (req: AuthRequest, res: Response) => {
   const applicantId = req.query.applicant_id as string | undefined
   if (!applicantId) {
     return res.status(400).send(buildHtmlResponse('Error', '<p>Missing applicant_id</p>', 400))
   }
 
-  const applicant = await defaultDeps.applicantRepo.findByNumericId(Number(applicantId))
+  const numericApplicantId = Number(applicantId)
+  if (!Number.isFinite(numericApplicantId) || numericApplicantId <= 0) {
+    return res.status(400).send(buildHtmlResponse('Error', '<p>Invalid applicant_id</p>', 400))
+  }
+
+  if (!(await ensureApplicantPsidAccess(req, res, numericApplicantId, 'write'))) {
+    return
+  }
+
+  const applicant = await defaultDeps.applicantRepo.findByNumericId(numericApplicantId)
   if (!applicant) {
     return res.status(404).send(buildHtmlResponse('Error', '<p>Applicant not found</p>', 404))
   }
@@ -76,7 +144,17 @@ export const checkPsidStatus = asyncHandler(async (req: Request, res: Response) 
     return res.status(400).send(buildHtmlResponse('Error', '<p>Missing applicant_id</p>', 400))
   }
 
-  const psid = await defaultDeps.psidRepo.findLatestByApplicantId(Number(applicantId))
+  const authReq = req as AuthRequest
+  const numericApplicantId = Number(applicantId)
+  if (!Number.isFinite(numericApplicantId) || numericApplicantId <= 0) {
+    return res.status(400).send(buildHtmlResponse('Error', '<p>Invalid applicant_id</p>', 400))
+  }
+
+  if (!(await ensureApplicantPsidAccess(authReq, res, numericApplicantId, 'read'))) {
+    return
+  }
+
+  const psid = await defaultDeps.psidRepo.findLatestByApplicantId(numericApplicantId)
   if (!psid) {
     return res.status(404).send(buildHtmlResponse('Error', '<p>No PSID found for the applicant</p>', 404))
   }
@@ -124,17 +202,17 @@ export const checkPsidStatus = asyncHandler(async (req: Request, res: Response) 
 export const paymentIntimation = asyncHandler(async (req: Request, res: Response) => {
   const data = (req as any).body || {}
   const requiredFields = [
-    'consumerNumber',
-    'psidStatus',
-    'deptTransactionId',
-    'amountPaid',
-    'paidDate',
-    'paidTime',
-    'bankCode',
-  ]
+    ['consumerNumber', data.consumerNumber],
+    ['psidStatus', data.psidStatus],
+    ['deptTransactionId', data.deptTransactionId],
+    ['amountPaid', data.amountPaid],
+    ['paidDate', data.paidDate],
+    ['paidTime', data.paidTime],
+    ['bankCode', data.bankCode],
+  ] as const
 
-  for (const field of requiredFields) {
-    if (!data[field]) {
+  for (const [field, value] of requiredFields) {
+    if (!value) {
       return logAndRespond(req, res, { status: 'Fail', message: `${field} is required and cannot be empty` }, 400)
     }
   }

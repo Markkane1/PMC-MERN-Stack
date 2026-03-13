@@ -257,23 +257,26 @@ export class HealthCheckAggregator {
   }
 
   async runAllChecks(): Promise<Record<string, HealthCheckResult>> {
-    const results: Record<string, HealthCheckResult> = {}
+    const results = new Map<string, HealthCheckResult>()
 
     for (const [name, { check }] of this.checks) {
       try {
         const result = await check.check()
-        results[name] = result
-        this.checks.get(name)!.lastResult = result
+        results.set(name, result)
+        const checkEntry = this.checks.get(name)
+        if (checkEntry) {
+          checkEntry.lastResult = result
+        }
       } catch (error) {
-        results[name] = {
+        results.set(name, {
           status: HealthStatus.UNHEALTHY,
           timestamp: Date.now(),
           checks: { error: (error as Error).message },
-        }
+        })
       }
     }
 
-    return results
+    return Object.fromEntries(results.entries()) as Record<string, HealthCheckResult>
   }
 
   async getOverallStatus(): Promise<{
@@ -304,12 +307,18 @@ export class HealthCheckAggregator {
         const interval = setInterval(async () => {
           try {
             const result = await check.check()
-            this.checks.get(name)!.lastResult = result
+            const checkEntry = this.checks.get(name)
+            if (checkEntry) {
+              checkEntry.lastResult = result
+            }
           } catch (error) {
-            this.checks.get(name)!.lastResult = {
-              status: HealthStatus.UNHEALTHY,
-              timestamp: Date.now(),
-              checks: { error: (error as Error).message },
+            const checkEntry = this.checks.get(name)
+            if (checkEntry) {
+              checkEntry.lastResult = {
+                status: HealthStatus.UNHEALTHY,
+                timestamp: Date.now(),
+                checks: { error: (error as Error).message },
+              }
             }
           }
         }, intervalMs)
@@ -327,11 +336,9 @@ export class HealthCheckAggregator {
   }
 
   getLastResults(): Record<string, HealthCheckResult | undefined> {
-    const results: Record<string, HealthCheckResult | undefined> = {}
-    for (const [name, { lastResult }] of this.checks) {
-      results[name] = lastResult
-    }
-    return results
+    return Object.fromEntries(
+      Array.from(this.checks.entries()).map(([name, { lastResult }]) => [name, lastResult]),
+    ) as Record<string, HealthCheckResult | undefined>
   }
 }
 

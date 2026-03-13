@@ -1,8 +1,11 @@
 import { Router, Request, Response } from 'express'
 import { cacheManager } from '../../../infrastructure/cache/cacheManager'
 import { getRedisClient } from '../../../infrastructure/cache/redisClient'
+import { authenticate, requireGroup } from '../middlewares/auth'
 
 const cacheRouter = Router()
+
+cacheRouter.use(authenticate, requireGroup(['Admin', 'Super']))
 
 /**
  * Health check for Redis connection
