@@ -1,3 +1,9 @@
+const path = require('node:path')
+
+const rootDir = __dirname
+const clientTsconfig = path.join(rootDir, 'client', 'tsconfig.eslint.json')
+const serverTsconfig = path.join(rootDir, 'server', 'tsconfig.json')
+
 module.exports = {
   root: true,
   ignorePatterns: [
@@ -24,7 +30,8 @@ module.exports = {
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: './client/tsconfig.eslint.json',
+        tsconfigRootDir: rootDir,
+        project: [clientTsconfig],
       },
       plugins: ['@typescript-eslint', 'import', 'react', 'react-hooks', 'react-refresh'],
       extends: [
@@ -44,7 +51,7 @@ module.exports = {
         },
         'import/resolver': {
           typescript: {
-            project: './client/tsconfig.eslint.json',
+            project: clientTsconfig,
             alwaysTryTypes: true,
           },
         },
@@ -85,7 +92,8 @@ module.exports = {
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: './server/tsconfig.json',
+        tsconfigRootDir: rootDir,
+        project: [serverTsconfig],
       },
       plugins: ['@typescript-eslint', 'security'],
       extends: [

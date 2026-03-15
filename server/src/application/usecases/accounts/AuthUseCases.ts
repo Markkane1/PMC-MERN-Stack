@@ -20,7 +20,12 @@ import {
   psidTrackingRepositoryMongo,
   districtRepositoryMongo,
 } from '../../../infrastructure/database/repositories/pmc'
-import { setAuthCookie, clearAuthCookie } from '../../../interfaces/http/utils/authCookies'
+import {
+  clearAuthCookie,
+  clearCsrfCookie,
+  setAuthCookie,
+  setCsrfCookie,
+} from '../../../interfaces/http/utils/authCookies'
 import { getClientIpAddress, loginRateLimiter } from '../../../infrastructure/resilience/rateLimiting'
 
 const captchaCache = new NodeCache({ stdTTL: 300 })
@@ -161,6 +166,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
   const tokens = signTokens(String(user.id))
   setAuthCookie(res, tokens.access)
+  setCsrfCookie(res)
   await logAudit({
     userId: String(user.id),
     username: user.username,
@@ -264,6 +270,7 @@ export const generateCaptcha = asyncHandler(async (_req: Request, res: Response)
 
 export const logout = asyncHandler(async (req: AuthRequest, res: Response) => {
   clearAuthCookie(res)
+  clearCsrfCookie(res)
   const user = req.user
   if (user) {
     await logAudit({

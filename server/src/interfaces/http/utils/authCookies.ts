@@ -1,7 +1,10 @@
+import crypto from 'crypto'
 import type { Request, Response, CookieOptions } from 'express'
 import { env } from '../../../infrastructure/config/env'
 
 export const ACCESS_TOKEN_COOKIE = 'pmc_access_token'
+export const CSRF_TOKEN_COOKIE = 'pmc_csrf_token'
+export const CSRF_TOKEN_HEADER = 'x-csrf-token'
 
 function parseDurationToMs(value: string): number {
   const trimmed = String(value || '').trim()
@@ -40,8 +43,24 @@ function authCookieOptions(): CookieOptions {
   }
 }
 
+function csrfCookieOptions(): CookieOptions {
+  return {
+    httpOnly: false,
+    secure: env.nodeEnv === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: parseDurationToMs(env.jwtExpiresIn),
+  }
+}
+
 export function setAuthCookie(res: Response, accessToken: string) {
   res.cookie(ACCESS_TOKEN_COOKIE, accessToken, authCookieOptions())
+}
+
+export function setCsrfCookie(res: Response, csrfToken?: string) {
+  const token = csrfToken || crypto.randomBytes(32).toString('hex')
+  res.cookie(CSRF_TOKEN_COOKIE, token, csrfCookieOptions())
+  return token
 }
 
 export function clearAuthCookie(res: Response) {
@@ -49,6 +68,19 @@ export function clearAuthCookie(res: Response) {
     ...authCookieOptions(),
     maxAge: 0,
   })
+}
+
+export function clearCsrfCookie(res: Response) {
+  res.clearCookie(CSRF_TOKEN_COOKIE, {
+    ...csrfCookieOptions(),
+    maxAge: 0,
+  })
+}
+
+export function ensureCsrfCookie(req: Request, res: Response) {
+  const existing = getCsrfCookie(req)
+  if (existing) return existing
+  return setCsrfCookie(res)
 }
 
 export function getRequestAccessToken(req: Request): string {
@@ -61,6 +93,24 @@ export function getRequestAccessToken(req: Request): string {
   const cookieToken =
     cookies && typeof cookies === 'object'
       ? Reflect.get(cookies, ACCESS_TOKEN_COOKIE)
+      : undefined
+  return typeof cookieToken === 'string' ? cookieToken.trim() : ''
+}
+
+export function getRequestAuthCookie(req: Request): string {
+  const cookies = (req as Request & { cookies?: Record<string, string> }).cookies
+  const cookieToken =
+    cookies && typeof cookies === 'object'
+      ? Reflect.get(cookies, ACCESS_TOKEN_COOKIE)
+      : undefined
+  return typeof cookieToken === 'string' ? cookieToken.trim() : ''
+}
+
+export function getCsrfCookie(req: Request): string {
+  const cookies = (req as Request & { cookies?: Record<string, string> }).cookies
+  const cookieToken =
+    cookies && typeof cookies === 'object'
+      ? Reflect.get(cookies, CSRF_TOKEN_COOKIE)
       : undefined
   return typeof cookieToken === 'string' ? cookieToken.trim() : ''
 }

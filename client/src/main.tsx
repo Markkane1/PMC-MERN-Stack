@@ -4,6 +4,9 @@ import App from './App'
 import './index.css'
 import * as serviceWorkerRegistration from './serviceWorkerRegistration'
 import { logger } from '@/utils/logger'
+import { initializeCsrfFetch } from '@/utils/csrf'
+
+initializeCsrfFetch()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(<App />)
 

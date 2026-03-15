@@ -11,6 +11,7 @@ import { apiRouter } from './interfaces/http/routes'
 import { normalizeQueryParameters, sanitizeRequestInput } from './interfaces/http/middlewares/securityInput'
 import { RequestTracker, ConnectionPoolMonitor } from './interfaces/http/middlewares/concurrency'
 import { ResponseTimeMonitor } from './interfaces/http/middlewares/performanceMonitor'
+import { attachCsrfCookie, requireCsrfForCookieAuth } from './interfaces/http/middlewares/csrf'
 import { cacheHeadersMiddleware } from './interfaces/http/middleware/cacheHeaders'
 import {
   etagMiddleware,
@@ -95,13 +96,14 @@ export function createApp() {
       credentials: true,
       optionsSuccessStatus: 204,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
       maxAge: 86400, // 24 hours
     })
   )
 
   // Parse cookies for httpOnly auth-token flow.
   app.use(cookieParser())
+  app.use(attachCsrfCookie)
 
   // Harden unexpected HTTP verbs on API surface.
   app.use('/api', (req: Request, res: Response, next: NextFunction) => {
@@ -166,6 +168,7 @@ export function createApp() {
   app.use(mongoSanitize())
   app.use(sanitizeRequestInput)
   app.use(normalizeQueryParameters)
+  app.use('/api', requireCsrfForCookieAuth)
 
   // Request logging
   app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'))

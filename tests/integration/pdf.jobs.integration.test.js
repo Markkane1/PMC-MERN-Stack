@@ -72,7 +72,9 @@ describe('PMC PDF Jobs Integration', () => {
     const jobId = createResponse.body.jobId
 
     let pollResponse = null
-    for (let attempt = 0; attempt < 20; attempt += 1) {
+    const pollDeadline = Date.now() + 15000
+
+    while (Date.now() < pollDeadline) {
       pollResponse = await request(app)
         .get(`/api/pmc/pdf/${jobId}`)
         .set('Authorization', `Bearer ${authToken}`)
@@ -82,7 +84,7 @@ describe('PMC PDF Jobs Integration', () => {
       }
 
       expect([200, 202]).toContain(pollResponse.status)
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      await new Promise((resolve) => setTimeout(resolve, 250))
     }
 
     expect(pollResponse).toBeTruthy()

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { asyncHandler } from '../../../shared/utils/asyncHandler'
+import { authenticate } from './auth'
 
 /**
  * External Service Token Authentication Middleware
@@ -135,9 +136,8 @@ export const authenticateUserOrService = (req: Request, res: Response, next: Nex
     return authenticateServiceToken(req, res, next)
   }
 
-  // Otherwise, fall back to user authentication
-  // This would be imported from your existing auth middleware
-  next()
+  // Otherwise, require standard user authentication.
+  return authenticate(req as any, res, next)
 }
 
 /**

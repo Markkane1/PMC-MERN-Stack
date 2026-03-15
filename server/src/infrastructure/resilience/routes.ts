@@ -7,6 +7,7 @@ import { Router, Request, Response } from 'express'
 import { ipRateLimiter, endpointRateLimiter, userRateLimiter } from './rateLimiting'
 import { circuitBreakerManager } from './circuitBreaker'
 import { getRateLimitingStats, resetRateLimits } from './middleware'
+import { authenticate, requireGroup } from '../../interfaces/http/middlewares/auth'
 
 export const resilienceRouter = Router()
 
@@ -14,7 +15,7 @@ export const resilienceRouter = Router()
  * GET /rate-limits
  * Get all rate limiting stats
  */
-resilienceRouter.get('/rate-limits', (req: Request, res: Response) => {
+resilienceRouter.get('/rate-limits', authenticate, requireGroup(['Admin', 'Super']), (req: Request, res: Response) => {
   const response = {
     success: true,
     data: {
@@ -34,7 +35,11 @@ resilienceRouter.get('/rate-limits', (req: Request, res: Response) => {
  * GET /rate-limits/ip/:ip
  * Get rate limit status for specific IP
  */
-resilienceRouter.get('/rate-limits/ip/:ip', (req: Request, res: Response) => {
+resilienceRouter.get(
+  '/rate-limits/ip/:ip',
+  authenticate,
+  requireGroup(['Admin', 'Super']),
+  (req: Request, res: Response) => {
   const { ip } = req.params
   const status = ipRateLimiter.getStatus(ip)
 
@@ -46,13 +51,18 @@ resilienceRouter.get('/rate-limits/ip/:ip', (req: Request, res: Response) => {
     },
     timestamp: new Date().toISOString(),
   })
-})
+  }
+)
 
 /**
  * GET /rate-limits/endpoint
  * Get rate limits for all endpoints
  */
-resilienceRouter.get('/rate-limits/endpoint', (req: Request, res: Response) => {
+resilienceRouter.get(
+  '/rate-limits/endpoint',
+  authenticate,
+  requireGroup(['Admin', 'Super']),
+  (req: Request, res: Response) => {
   const limits = endpointRateLimiter.getStats()
 
   res.json({
@@ -63,13 +73,18 @@ resilienceRouter.get('/rate-limits/endpoint', (req: Request, res: Response) => {
     },
     timestamp: new Date().toISOString(),
   })
-})
+  }
+)
 
 /**
  * DELETE /rate-limits/reset
  * Reset all rate limits
  */
-resilienceRouter.delete('/rate-limits/reset', (req: Request, res: Response) => {
+resilienceRouter.delete(
+  '/rate-limits/reset',
+  authenticate,
+  requireGroup(['Admin', 'Super']),
+  (req: Request, res: Response) => {
   const { scope, identifier } = req.query
 
   const result = resetRateLimits(
@@ -82,13 +97,18 @@ resilienceRouter.delete('/rate-limits/reset', (req: Request, res: Response) => {
     data: result,
     timestamp: new Date().toISOString(),
   })
-})
+  }
+)
 
 /**
  * GET /circuit-breakers
  * Get status of all circuit breakers
  */
-resilienceRouter.get('/circuit-breakers', (req: Request, res: Response) => {
+resilienceRouter.get(
+  '/circuit-breakers',
+  authenticate,
+  requireGroup(['Admin', 'Super']),
+  (req: Request, res: Response) => {
   const status = circuitBreakerManager.getAllStatus()
 
   res.json({
@@ -99,13 +119,18 @@ resilienceRouter.get('/circuit-breakers', (req: Request, res: Response) => {
     },
     timestamp: new Date().toISOString(),
   })
-})
+  }
+)
 
 /**
  * POST /circuit-breakers/:name/reset
  * Reset a specific circuit breaker
  */
-resilienceRouter.post('/circuit-breakers/:name/reset', (req: Request, res: Response) => {
+resilienceRouter.post(
+  '/circuit-breakers/:name/reset',
+  authenticate,
+  requireGroup(['Admin', 'Super']),
+  (req: Request, res: Response) => {
   const { name } = req.params
   circuitBreakerManager.reset(name)
 
@@ -117,13 +142,18 @@ resilienceRouter.post('/circuit-breakers/:name/reset', (req: Request, res: Respo
     },
     timestamp: new Date().toISOString(),
   })
-})
+  }
+)
 
 /**
  * POST /circuit-breakers/reset-all
  * Reset all circuit breakers
  */
-resilienceRouter.post('/circuit-breakers/reset-all', (req: Request, res: Response) => {
+resilienceRouter.post(
+  '/circuit-breakers/reset-all',
+  authenticate,
+  requireGroup(['Admin', 'Super']),
+  (req: Request, res: Response) => {
   circuitBreakerManager.resetAll()
 
   res.json({
@@ -133,13 +163,18 @@ resilienceRouter.post('/circuit-breakers/reset-all', (req: Request, res: Respons
     },
     timestamp: new Date().toISOString(),
   })
-})
+  }
+)
 
 /**
  * GET /resilience/summary
  * Get comprehensive resilience status
  */
-resilienceRouter.get('/resilience/summary', (req: Request, res: Response) => {
+resilienceRouter.get(
+  '/resilience/summary',
+  authenticate,
+  requireGroup(['Admin', 'Super']),
+  (req: Request, res: Response) => {
   const rateLimits = endpointRateLimiter.getStats()
   const circuitBreakers = circuitBreakerManager.getAllStatus()
 
@@ -165,7 +200,8 @@ resilienceRouter.get('/resilience/summary', (req: Request, res: Response) => {
     success: true,
     data: summary,
   })
-})
+  }
+)
 
 /**
  * GET /resilience/health
@@ -194,7 +230,11 @@ resilienceRouter.get('/resilience/health', (req: Request, res: Response) => {
  * GET /resilience/strategies
  * Get available resilience strategies
  */
-resilienceRouter.get('/resilience/strategies', (req: Request, res: Response) => {
+resilienceRouter.get(
+  '/resilience/strategies',
+  authenticate,
+  requireGroup(['Admin', 'Super']),
+  (req: Request, res: Response) => {
   res.json({
     success: true,
     data: {
@@ -226,4 +266,5 @@ resilienceRouter.get('/resilience/strategies', (req: Request, res: Response) => 
     },
     timestamp: new Date().toISOString(),
   })
-})
+  }
+)

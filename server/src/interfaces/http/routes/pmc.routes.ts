@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { authenticate, requirePermission } from '../middlewares/auth'
 import { authenticateServiceToken, authenticateUserOrService } from '../middlewares/externalTokenAuth'
-import { parseMultipart } from '../middlewares/multipart'
+import { parseMultipart, parseMultipartQrImage } from '../middlewares/multipart'
 import { cacheMiddleware } from '../middlewares/cache'
 import {
   listApplicants,
@@ -325,7 +325,7 @@ pmcRouter.get('/idm_clubs/all/', clubsGeojsonAllViewset)
 
 // Utilities
 pmcRouter.get('/ping/', ping)
-pmcRouter.post('/verify-chalan/', parseMultipart, verifyChalan)
+pmcRouter.post('/verify-chalan/', parseMultipartQrImage, verifyChalan)
 pmcRouter.get('/verify-chalan/', verifyChalan) // Backward compatibility for plain query calls
 pmcRouter.get('/confiscation-lookup/', confiscationLookup)
 

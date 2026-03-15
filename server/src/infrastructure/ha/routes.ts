@@ -3,18 +3,36 @@
  * API endpoints for managing cluster, load balancing, and health checks
  */
 
-import { Router, Request, Response } from 'express'
+import { Router, Request, Response, NextFunction } from 'express'
 import { roundRobinBalancer } from './loadBalancer'
 import { serviceRegistry } from './serviceRegistry'
 import { healthCheckAggregator, HealthStatus } from './healthCheck'
+import { authenticate, requireGroup } from '../../interfaces/http/middlewares/auth'
+import { authenticateServiceToken } from '../../interfaces/http/middlewares/externalTokenAuth'
 
 export const haRouter = Router()
+
+function allowAdminOrService(req: Request, res: Response, next: NextFunction) {
+  const hasServiceToken =
+    Boolean(req.headers['x-service-token']) ||
+    Boolean(req.query.service_token) ||
+    Boolean(req.query.serviceToken)
+
+  if (hasServiceToken) {
+    return authenticateServiceToken(req, res, next)
+  }
+
+  return authenticate(req as any, res, (err?: unknown) => {
+    if (err) return next(err as any)
+    return requireGroup(['Admin', 'Super'])(req as any, res, next)
+  })
+}
 
 /**
  * GET /load-balancer/nodes
  * Get all load balancer nodes and their stats
  */
-haRouter.get('/load-balancer/nodes', (req: Request, res: Response) => {
+haRouter.get('/load-balancer/nodes', allowAdminOrService, (req: Request, res: Response) => {
   const nodes = roundRobinBalancer.getNodes()
   const stats = roundRobinBalancer.getStats()
 
@@ -40,7 +58,7 @@ haRouter.get('/load-balancer/nodes', (req: Request, res: Response) => {
  * POST /load-balancer/nodes
  * Add a new node
  */
-haRouter.post('/load-balancer/nodes', (req: Request, res: Response) => {
+haRouter.post('/load-balancer/nodes', allowAdminOrService, (req: Request, res: Response) => {
   const { id, host, port, weight } = req.body
 
   if (!id || !host || !port) {
@@ -64,7 +82,7 @@ haRouter.post('/load-balancer/nodes', (req: Request, res: Response) => {
  * DELETE /load-balancer/nodes/:nodeId
  * Remove a node
  */
-haRouter.delete('/load-balancer/nodes/:nodeId', (req: Request, res: Response) => {
+haRouter.delete('/load-balancer/nodes/:nodeId', allowAdminOrService, (req: Request, res: Response) => {
   const { nodeId } = req.params
   roundRobinBalancer.removeNode(nodeId)
 
@@ -79,7 +97,7 @@ haRouter.delete('/load-balancer/nodes/:nodeId', (req: Request, res: Response) =>
  * GET /service-registry/services
  * List all registered services
  */
-haRouter.get('/service-registry/services', (req: Request, res: Response) => {
+haRouter.get('/service-registry/services', allowAdminOrService, (req: Request, res: Response) => {
   const services = serviceRegistry.getAllServices()
   const stats = serviceRegistry.getStats()
 
@@ -98,7 +116,7 @@ haRouter.get('/service-registry/services', (req: Request, res: Response) => {
  * GET /service-registry/services/:serviceName
  * List all instances of a service
  */
-haRouter.get('/service-registry/services/:serviceName', (req: Request, res: Response) => {
+haRouter.get('/service-registry/services/:serviceName', allowAdminOrService, (req: Request, res: Response) => {
   const { serviceName } = req.params
   const instances = serviceRegistry.getInstances(serviceName)
   const healthyInstances = serviceRegistry.getHealthyInstances(serviceName)
@@ -127,7 +145,7 @@ haRouter.get('/service-registry/services/:serviceName', (req: Request, res: Resp
  * POST /service-registry/register
  * Register a service instance
  */
-haRouter.post('/service-registry/register', (req: Request, res: Response) => {
+haRouter.post('/service-registry/register', allowAdminOrService, (req: Request, res: Response) => {
   const { id, serviceName, host, port, tags, metadata } = req.body
 
   if (!id || !serviceName || !host || !port) {
@@ -158,7 +176,10 @@ haRouter.post('/service-registry/register', (req: Request, res: Response) => {
  * DELETE /service-registry/deregister/:serviceName/:instanceId
  * Deregister a service instance
  */
-haRouter.delete('/service-registry/deregister/:serviceName/:instanceId', (req: Request, res: Response) => {
+haRouter.delete(
+  '/service-registry/deregister/:serviceName/:instanceId',
+  allowAdminOrService,
+  (req: Request, res: Response) => {
   const { serviceName, instanceId } = req.params
   serviceRegistry.deregister(serviceName, instanceId)
 
@@ -167,7 +188,8 @@ haRouter.delete('/service-registry/deregister/:serviceName/:instanceId', (req: R
     data: { message: `Service ${serviceName}/${instanceId} deregistered` },
     timestamp: new Date().toISOString(),
   })
-})
+  }
+)
 
 /**
  * POST /service-registry/heartbeat/:serviceName/:instanceId
@@ -175,6 +197,7 @@ haRouter.delete('/service-registry/deregister/:serviceName/:instanceId', (req: R
  */
 haRouter.post(
   '/service-registry/heartbeat/:serviceName/:instanceId',
+  allowAdminOrService,
   (req: Request, res: Response) => {
     const { serviceName, instanceId } = req.params
     const success = serviceRegistry.heartbeat(serviceName, instanceId)
@@ -199,7 +222,7 @@ haRouter.post(
  * GET /health-checks
  * Get all health check results
  */
-haRouter.get('/health-checks', async (req: Request, res: Response) => {
+haRouter.get('/health-checks', allowAdminOrService, async (req: Request, res: Response) => {
   const { status, results } = await healthCheckAggregator.getOverallStatus()
 
   res.json({
@@ -217,7 +240,7 @@ haRouter.get('/health-checks', async (req: Request, res: Response) => {
  * POST /health-checks/run
  * Run all health checks immediately
  */
-haRouter.post('/health-checks/run', async (req: Request, res: Response) => {
+haRouter.post('/health-checks/run', allowAdminOrService, async (req: Request, res: Response) => {
   const results = await healthCheckAggregator.runAllChecks()
 
   res.json({
@@ -231,7 +254,7 @@ haRouter.post('/health-checks/run', async (req: Request, res: Response) => {
  * GET /ha/status
  * Get comprehensive HA status
  */
-haRouter.get('/ha/status', async (req: Request, res: Response) => {
+haRouter.get('/ha/status', allowAdminOrService, async (req: Request, res: Response) => {
   const { status: healthStatus, results } = await healthCheckAggregator.getOverallStatus()
   const nodes = roundRobinBalancer.getNodes()
   const services = serviceRegistry.getAllServices()
